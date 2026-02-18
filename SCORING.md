@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-18
+> Last verified against code: 2026-02-19
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -15,9 +15,9 @@ Only compiled JS is distributed:
 
 ```
 dist/
-  index.js                     # MCP server entry point (3 tools)
+  index.js                     # MCP server entry point (4 tools)
   cli.js                       # CLI entry point
-  types.js                     # Grade functions
+  types.js                     # Grade functions + normalizeScore
   health-check.js              # Orchestrator
   report-formatter.js          # Markdown output
   setup/
@@ -26,8 +26,11 @@ dist/
     structure.js               # Layer 3: Structure (15 pts)
     memory.js                  # Layer 4: Memory (15 pts)
     brain-health.js            # Layer 5: Brain Health Infra (10 pts)
-    hooks.js                   # Layer 6: Hooks (10 pts)
+    hooks.js                   # Layer 6: Hooks (13 pts)
     personalization.js         # Layer 7: Personalization (10 pts)
+    mcp-security.js            # Layer 8: MCP Security (8 pts)
+    config-hygiene.js          # Layer 9: Config Hygiene (7 pts)
+    plugins.js                 # Layer 10: Plugin Coverage (6 pts)
   usage/
     sessions.js                # Layer 1: Sessions (25 pts)
     patterns.js                # Layer 2: Patterns (25 pts)
@@ -41,6 +44,8 @@ dist/
     context-aware-skills.js    # Layer 3: Context-Aware Skills (10 pts)
   dashboard/
     generate.js                # HTML dashboard generator
+  tools/
+    generate-pdf.js            # PDF report via headless Chrome
 ```
 
 ---
@@ -51,15 +56,17 @@ dist/
 
 | Dimension | Max | What it measures |
 |-----------|-----|------------------|
-| Setup Quality | 100 | Is the brain correctly configured? (static file analysis) |
+| Setup Quality | 124 | Is the brain correctly configured? (static file analysis) |
 | Usage Activity | 115 | Is the brain being used? (file dates, session counts, pattern growth) |
 | AI Fluency | 30 | How effectively does the user work with AI? (delegation, context engineering, compounding) |
 
-**Total: 245 points**
+**Total: 269 points**
+
+All dimensions are **normalized to /100** for display. The report and dashboard show `normalizedScore/100` for each dimension, calculated as `Math.round((points / maxPoints) * 100)`.
 
 ### Orchestrator (`health-check.js`)
 
-Runs all setup layers in parallel via `Promise.all()`, then all usage layers in parallel, then all fluency layers in parallel. Sums points per dimension. Generates top 5 fixes sorted by point deficit (highest potential improvement first).
+Runs all setup layers in parallel via `Promise.all()`, then all usage layers in parallel, then all fluency layers in parallel. Sums points per dimension. Generates top 5 fixes sorted by normalized deficit (highest potential improvement first).
 
 ### Security Hardening
 
@@ -68,14 +75,14 @@ Runs all setup layers in parallel via `Promise.all()`, then all usage layers in 
 | Home directory boundary | `health-check.js:27` | `rootPath.startsWith(homeDir + '/')` |
 | Directory-only input | `health-check.js:31` | `stat(rootPath).isDirectory()` |
 | Path null-byte check | `index.js:22` | Zod `.refine(p => !p.includes('\0'))` |
-| No shell execution | All files | No `exec`, `spawn`, `fork` anywhere |
+| No shell execution | All files except hooks.js | hooks.js uses `execFileSync('bash', ...)` for syntax checks only |
 | No network calls | All files | Zero `fetch`, `http`, `https` imports |
 | File count limits | `memory.js:33`, `structure.js:43` | `entries.slice(0, MAX_ENTRIES)` caps at 500 |
 | Depth limits | `memory.js:29`, `structure.js:35` | `depth > 3` or `depth > 4` recursion guards |
 
 ---
 
-## Setup Quality — 7 Layers (100 pts)
+## Setup Quality — 10 Layers (124 pts)
 
 ### Layer 1: CLAUDE.md Foundation (20 pts) — `setup/claude-md.js`
 
@@ -125,13 +132,14 @@ Scans both `.claude/skills/` and `.codex/skills/`. Uses `gray-matter` to parse Y
 | Tracking files present | 3 | 2+ found (3) | 1 (1) | 0 (0) | Checks: growth-log.md, quality-metrics.md, pattern-confidence.md in brain-health/ or alternative locations |
 | Getting started guide | 3 | Found (3) | — | Not found (0) | Checks: ONBOARDING_SUMMARY.md, README.md, GETTING_STARTED.md, agent_docs/README.md |
 
-### Layer 6: Automation & Hooks (10 pts) — `setup/hooks.js`
+### Layer 6: Automation & Hooks (13 pts) — `setup/hooks.js`
 
 | Check | Max | Pass | Warn | Fail | Detection |
 |-------|-----|------|------|------|-----------|
 | Settings with hooks configured | 4 | 3+ lifecycle events (4) | 2 events (3) or 1 event (2) or settings exists no hooks (1) | No settings (0) | `Object.keys(hooks).length` — counts distinct events (SessionStart, PreToolUse, PostToolUse, etc.) and total hooks |
 | Tool lifecycle hooks | 3 | Has PreToolUse or PostToolUse (3) | Has other hooks (1) | None (0) | `hookEvents.some(e => e === 'PreToolUse' \|\| e === 'PostToolUse')` |
 | Hook scripts valid | 3 | All executable (3) or inline hooks (3) | Some executable (1) | None executable (0) | Extracts `.sh/.py/.js/.ts` paths from hook commands, checks `access(path, X_OK)` |
+| Hook health validation | 3 | All pass (3) | Fragile patterns or no-op issues (1) | Syntax errors (0) | Validates bash syntax (`bash -n`), detects fragile patterns (unguarded find/grep with `set -e`, unguarded positional params with `set -u`), tests no-op safety (non-matching stdin should exit 0) |
 
 ### Layer 7: Personalization Quality (10 pts) — `setup/personalization.js`
 
@@ -140,6 +148,38 @@ Scans both `.claude/skills/` and `.codex/skills/`. Uses `gray-matter` to parse Y
 | CLAUDE.md mentions specific role | 4 | Real About Me >50 chars, no placeholders (4) | Thin About Me (2) | Placeholders detected (0) | Checks for `{{PLACEHOLDER}}`, `[your `, `[insert `, `TODO`, `REPLACE_ME` |
 | Skills match profession | 3 | 2+ non-generic (3) | 1 (1) | 0 or all generic (0) | Filters skill names against: test, example, demo, hello, sample, template, skill-1, skill-2 |
 | Agent configuration | 3 | 2+ agents (3) | 1 (1) | 0 (0) | Counts `.md` files in `.claude/agents/` |
+
+### Layer 8: MCP Security (8 pts) — `setup/mcp-security.js`
+
+Scans MCP configuration files for secret leaks and scope issues.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Secret detection in MCP configs | 3 | No secrets found (3) | — | Secrets detected (0) | Scans `.mcp.json`, `.mcp/` directory, `.claude.json` for SECRET_PATTERNS (API keys, tokens, passwords, secrets in env/args) |
+| MCP scope appropriateness | 2 | No project-level secrets (2) | — | Project configs contain secrets (0) | Project-level `.mcp.json` should not embed credentials — use user-level config instead |
+| Git-tracked secrets | 2 | Clean (2) | — | `.mcp.json` tracked with secrets (0) | Checks if `.mcp.json` is git-tracked and contains secret patterns |
+| Settings permission leaks | 1 | No embedded keys (1) | — | API keys/tokens in allow-list (0) | Checks settings allow-lists for embedded API keys or tokens |
+
+### Layer 9: Config Hygiene (7 pts) — `setup/config-hygiene.js`
+
+Evaluates configuration sprawl and organization.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Config size | 2 | <500 total lines (2) | 500-1000 lines (1) | >1000 lines (0) | Counts total lines across `settings.json`, `settings.local.json`, `~/.claude.json` |
+| Duplicate MCP servers | 2 | No duplicates (2) | — | Duplicates found (0) | Compares server names in `.mcp.json` vs `~/.claude.json` — same server in both scopes is a duplicate |
+| Stale permission patterns | 2 | <50 patterns (2) | 50-100 (1) | >100 patterns (0) | Counts allow-list entries, checks for patterns referencing non-existent file paths |
+| Settings organization | 1 | Hooks in settings.json (1) | — | Hooks in settings.local.json (0) | Hooks should be in shared `settings.json`, not local-only `settings.local.json` |
+
+### Layer 10: Plugin Coverage (6 pts) — `setup/plugins.js`
+
+Evaluates installed Claude Code plugins.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Plugins installed | 3 | 3+ active plugins (3) | 1-2 plugins (1) | 0 plugins (0) | Counts installed plugins |
+| Plugin recommendations | 2 | 50%+ of recommended (2) | <50% (1) | 0% (0) | Checks against 6 recommended: Context7, Feature Dev, Security Guidance, Playground, Canvas, Claude HUD |
+| Third-party plugins | 1 | Any community plugins (1) | — | None (0) | Bonus point for community/third-party plugins |
 
 ---
 
@@ -247,6 +287,8 @@ Measures whether skills reference knowledge directories (memory/, docs/, pattern
 
 ## Grade Scales
 
+All grade functions use **percentage** (`points / maxPoints * 100`), not raw points.
+
 ### Setup Quality
 
 ```javascript
@@ -272,12 +314,12 @@ Measures whether skills reference knowledge directories (memory/, docs/, pattern
 ### AI Fluency
 
 ```javascript
-// types.js:getFluencyGrade() — uses percentage (points/maxPoints * 100)
->= 80% → { grade: 'Expert',     label: 'Advanced AI collaboration' }
->= 60% → { grade: 'Proficient', label: 'Effective AI usage' }
->= 40% → { grade: 'Developing', label: 'Learning to leverage AI' }
->= 20% → { grade: 'Beginner',   label: 'Basic AI interaction' }
-<  20% → { grade: 'Novice',     label: 'Not yet leveraging AI effectively' }
+// types.js:getFluencyGrade()
+>= 85% → { grade: 'Expert',     label: 'Advanced AI collaboration' }
+>= 70% → { grade: 'Proficient', label: 'Effective AI usage' }
+>= 50% → { grade: 'Developing', label: 'Learning to leverage AI' }
+>= 30% → { grade: 'Beginner',   label: 'Basic AI interaction' }
+<  30% → { grade: 'Novice',     label: 'Not yet leveraging AI effectively' }
 ```
 
 ---
@@ -285,10 +327,11 @@ Measures whether skills reference knowledge directories (memory/, docs/, pattern
 ## Top Fixes Algorithm (`health-check.js:generateTopFixes`)
 
 1. Collect all checks with `status !== 'pass'` from setup, usage, and fluency layers
-2. Calculate `deficit = maxPoints - points` for each
-3. Sort descending by deficit (highest potential improvement first)
-4. Take top 5
-5. Format as: `"TITLE (+N pts category)"`
+2. Calculate raw `deficit = maxPoints - points` for each check
+3. **Normalize** the deficit to the dimension's /100 scale: `normalizedDeficit = Math.round((rawDeficit / dimensionMaxPoints) * 100)`
+4. Sort descending by normalized deficit (highest impact on the /100 score first)
+5. Take top 5
+6. Format as: `"TITLE (+N pts category)"` where N is the normalized deficit
 
 ---
 
@@ -308,6 +351,11 @@ Output: Action plan for weakest layer in chosen dimension
 
 Input: `{ path?: string, output?: string }` — defaults to `health-check-report.html` in current directory
 Output: Self-contained HTML dashboard with score visualizations, grade badges, and fix suggestions
+
+### Tool 4: `generate_pdf`
+
+Input: `{ path?: string, output?: string }` — defaults to `health-check-report.pdf` in current directory
+Output: PDF report via headless Chrome/Chromium (requires Chrome installed)
 
 ---
 
@@ -335,14 +383,16 @@ All git commands run locally. The MCP server has zero network imports (`fetch`, 
 
 ## Report Format (`report-formatter.js`)
 
+All dimensions display as **normalized/100** regardless of raw max points:
+
 ```
 ================================================================
   SECOND BRAIN HEALTH CHECK
 ================================================================
 
-SETUP QUALITY:    82/100 (B - Good foundation)
-USAGE ACTIVITY:   67/115 (Starting - early days)
-AI FLUENCY:       20/30 (Proficient - Effective AI usage)
+SETUP QUALITY:    88/100 (A - Production-ready)
+USAGE ACTIVITY:   87/100 (Active - Brain is compounding)
+AI FLUENCY:       100/100 (Expert - Advanced AI collaboration)
 
 ----------------------------------------------------------------
 SETUP QUALITY BREAKDOWN
