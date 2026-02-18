@@ -1,8 +1,9 @@
 /**
- * Dashboard Generator — Brutalist Design
+ * Dashboard Generator — Brutalist Design + Story
  *
  * Generates a self-contained HTML dashboard from health check results.
  * Matches the PDF report aesthetic: monospace, dark, angular, no-nonsense.
+ * Weaves narrative context between data sections for first-time readers.
  */
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -36,6 +37,39 @@ function statusSquare(status) {
     const colors = { pass: '#22c55e', warn: '#f59e0b', fail: '#ef4444' };
     const c = colors[status] || '#555';
     return `<span style="display:inline-block;width:10px;height:10px;min-width:10px;background:${c};margin-top:2px;"></span>`;
+}
+
+/** Guided remediation hints for common fix titles */
+const FIX_REMEDIATION = {
+    'quality tracking active': 'Create <code style="color:#4455ee;">memory/quality-metrics.md</code> and log a dated entry after each work session.',
+    'growth log populated': 'Create <code style="color:#4455ee;">memory/growth-log.md</code> with dated entries tracking what your brain learned each week.',
+    'activity spans multiple days': 'Use your Second Brain across multiple days. Session diversity matters more than session count.',
+    'codex compatibility': 'Run <code style="color:#4455ee;">mkdir -p .codex/skills</code> and symlink or copy your Claude skills there.',
+    'style/voice files populated': 'Add files to <code style="color:#4455ee;">memory/style-voice/</code> or <code style="color:#4455ee;">memory/personal/</code> describing your writing voice, communication preferences, or company context.',
+    'memory files evolving': 'Edit existing memory files as you learn new things. A static brain is a dead brain.',
+    'auto memory populated': 'Use Claude Code regularly. Auto-memory fills itself as patterns emerge across sessions.',
+    'tracking files present': 'Create <code style="color:#4455ee;">brain-health/growth-log.md</code> and <code style="color:#4455ee;">brain-health/quality-metrics.md</code> to track your brain\'s evolution.',
+    'config size': 'Audit <code style="color:#4455ee;">~/.claude.json</code> and <code style="color:#4455ee;">.claude/settings.local.json</code> for stale entries. Remove permissions you no longer need.',
+    'stale permission patterns': 'Run <code style="color:#4455ee;">claude permissions reset</code> or manually prune unused patterns from settings files.',
+    'hook health validation': 'Add <code style="color:#4455ee;">|| true</code> after <code style="color:#4455ee;">grep</code> and <code style="color:#4455ee;">find</code> commands in hook scripts using <code style="color:#4455ee;">set -e</code>.',
+    'pattern confidence tracking': 'Add HIGH/MEDIUM/LOW confidence labels to your <code style="color:#4455ee;">_pattern-tracker.md</code> entries.',
+    'settings permission leaks': 'Remove API keys and tokens from permission allow-lists in settings files.',
+    'memory dir with subdirectories': 'Create subdirectories in <code style="color:#4455ee;">memory/</code>: semantic/, episodic/, personal/, style-voice/.',
+    'patterns directory': 'Run <code style="color:#4455ee;">mkdir -p memory/semantic/patterns</code> to store learned patterns.',
+    'index files for navigation': 'Add <code style="color:#4455ee;">index.md</code> files to your top-level knowledge directories so the agent can navigate.',
+    'brain health directory': 'Run <code style="color:#4455ee;">mkdir brain-health</code> and add tracking files for growth metrics.',
+    'getting started guide': 'Create a <code style="color:#4455ee;">README.md</code> or <code style="color:#4455ee;">ONBOARDING_SUMMARY.md</code> at your project root.',
+    'agent configuration': 'Create <code style="color:#4455ee;">.claude/agents/</code> with .md files defining specialized agent personas.',
+    'external doc references': 'Add "Read X before working on Y" tables in CLAUDE.md pointing to docs/ files.',
+    'skills reference knowledge dirs': 'Update skill instructions to reference <code style="color:#4455ee;">memory/</code>, <code style="color:#4455ee;">docs/</code>, or <code style="color:#4455ee;">patterns/</code> directories.',
+};
+
+function getRemediation(title) {
+    const key = title.toLowerCase();
+    for (const [pattern, hint] of Object.entries(FIX_REMEDIATION)) {
+        if (key.includes(pattern)) return hint;
+    }
+    return null;
 }
 
 function renderDimension(dim, label) {
@@ -92,6 +126,39 @@ function renderDimension(dim, label) {
     </div>`;
 }
 
+function getDimensionIntro(dim, label) {
+    if (!dim) return '';
+    const pct = dim.maxPoints > 0 ? Math.round((dim.totalPoints / dim.maxPoints) * 100) : 0;
+
+    const intros = {
+        'Setup Quality': pct >= 70
+            ? 'Your setup is strong. The architecture is in place &mdash; CLAUDE.md is routing, skills are configured, memory has structure. Focus on the yellow and red items below.'
+            : 'Setup is where most Second Brains stall. Without the right architecture, AI has no context to work with &mdash; like hiring a brilliant assistant and giving them no onboarding.',
+        'Usage Activity': pct >= 70
+            ? 'Your brain is alive. Sessions are happening, patterns are forming, memory is growing. This is where compound learning kicks in &mdash; every session makes the next one better.'
+            : 'A Second Brain only works if you use it. The goal is not perfection &mdash; it is consistency. Even 10 minutes a day builds compound knowledge over weeks.',
+        'AI Fluency': pct >= 70
+            ? 'You are not just using AI &mdash; you are engineering context. Your skills orchestrate tools, reference knowledge, and use progressive disclosure.'
+            : 'Fluency measures how you collaborate with AI, not just whether you use it. The leap from &ldquo;I use Claude&rdquo; to &ldquo;my skills orchestrate tools and pull from a knowledge graph&rdquo; is what this tracks.',
+    };
+
+    const headings = {
+        'Setup Quality': 'YOUR FOUNDATION',
+        'Usage Activity': 'YOUR MOMENTUM',
+        'AI Fluency': 'YOUR CRAFT',
+    };
+
+    const text = intros[label] || '';
+    const heading = headings[label] || '';
+    if (!text) return '';
+
+    return `
+    <div style="border-left:2px solid #2233cc;padding:12px 20px;margin-top:40px;margin-bottom:-8px;font-size:12px;color:#888;line-height:1.7;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:6px;">${heading}</div>
+        ${text}
+    </div>`;
+}
+
 function renderTopFixes(fixes) {
     if (!fixes || fixes.length === 0) return '';
 
@@ -102,6 +169,11 @@ function renderTopFixes(fixes) {
         const catColors = { setup: '#4455ee', usage: '#5544ee', fluency: '#6644cc' };
         const badgeColor = catColors[fix.category] || '#4455ee';
 
+        const remediation = getRemediation(fix.title);
+        const remediationHtml = remediation
+            ? `<div style="font-size:11px;color:#4455ee;margin-top:6px;padding:6px 10px;background:#0d0d1a;border-left:2px solid #2233cc;line-height:1.6;">${remediation}</div>`
+            : '';
+
         rowsHtml += `
         <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #1a1a1a;">
             <span style="font-size:20px;font-weight:700;color:#2a2a2a;flex-shrink:0;width:30px;">${num}</span>
@@ -111,6 +183,7 @@ function renderTopFixes(fixes) {
                     <span style="font-size:10px;padding:2px 7px;border:1px solid ${badgeColor};color:${badgeColor};text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">${escapeHtml(fix.impact)}</span>
                 </div>
                 <p style="font-size:12px;color:#666;margin:0;">${escapeHtml(fix.description)}</p>
+                ${remediationHtml}
             </div>
         </div>`;
     }
@@ -119,6 +192,50 @@ function renderTopFixes(fixes) {
     <div style="border:1px solid #2a2a2a;margin-top:32px;">
         <div style="background:#0d0d40;padding:13px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;">TOP FIXES &mdash; HIGHEST IMPACT</div>
         ${rowsHtml}
+    </div>`;
+}
+
+function renderJourneyStage(overallPct) {
+    const stages = [
+        { min: 0,  label: 'BLANK SLATE',      desc: 'You have a repo. Not much else.' },
+        { min: 30, label: 'SCAFFOLDED',        desc: 'Structure exists. Skills are configured.' },
+        { min: 50, label: 'PRACTICING',        desc: 'Daily usage. Patterns starting to form.' },
+        { min: 70, label: 'COMPOUNDING',       desc: 'Memory grows between sessions. AI knows your context.' },
+        { min: 85, label: 'PRODUCTION-GRADE',  desc: 'Self-improving system. Hooks, reviews, compound loops.' },
+    ];
+
+    let currentIdx = 0;
+    for (let i = stages.length - 1; i >= 0; i--) {
+        if (overallPct >= stages[i].min) { currentIdx = i; break; }
+    }
+
+    const nextStage = currentIdx < stages.length - 1 ? stages[currentIdx + 1] : null;
+    const nextText = nextStage
+        ? `The jump from <span style="color:#ccc;">${stages[currentIdx].label}</span> to <span style="color:#ccc;">${nextStage.label}</span> is usually about the areas where you scored lowest. Check your Top Fixes above.`
+        : 'You are running a production-grade Second Brain. The system is self-improving. Share this report &mdash; show others what is possible.';
+
+    let stageListHtml = '';
+    for (let i = 0; i < stages.length; i++) {
+        const isCurrent = i === currentIdx;
+        const isPast = i < currentIdx;
+        const color = isCurrent ? '#22c55e' : isPast ? '#555' : '#333';
+        const marker = isCurrent ? 'x' : isPast ? '/' : ' ';
+        const labelStyle = isCurrent ? 'color:#22c55e;font-weight:700;' : `color:${color};`;
+        stageListHtml += `
+        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;">
+            <span style="color:${color};">[${marker}]</span>
+            <span style="${labelStyle}min-width:160px;">${stages[i].label}</span>
+            <span style="color:${color};">${stages[i].desc}</span>
+        </div>`;
+    }
+
+    return `
+    <div style="border:1px solid #2a2a2a;padding:28px 28px 24px;margin-top:48px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;margin-bottom:16px;">YOUR SECOND BRAIN JOURNEY</div>
+        ${stageListHtml}
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;font-size:12px;color:#888;line-height:1.7;">
+            You are in the <span style="color:#22c55e;font-weight:700;">${stages[currentIdx].label}</span> stage. ${nextText}
+        </div>
     </div>`;
 }
 
@@ -162,7 +279,7 @@ export function generateDashboardHtml(report) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Second Brain Health Check &mdash; Diagnostic Report</title>
+<title>Second Brain Health Check &mdash; ${overallPct}% (Grade ${overallGrade})</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -178,11 +295,13 @@ export function generateDashboardHtml(report) {
   .container { max-width: 840px; margin: 0 auto; }
   a { color: #22c55e; text-decoration: none; }
   a:hover { text-decoration: underline; }
+  code { font-family: inherit; }
   @media (max-width: 680px) {
     body { padding: 24px 20px; }
     .score-panel { grid-template-columns: 1fr !important; }
     .score-right { border-left: none !important; border-top: 1px solid #2a2a2a !important; }
     .big-num { font-size: 88px !important; }
+    .journey-row { flex-wrap: wrap; }
   }
 </style>
 </head>
@@ -197,9 +316,20 @@ export function generateDashboardHtml(report) {
 
     <!-- Title -->
     <h1 style="font-size:56px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:-0.01em;line-height:1;margin-bottom:8px;">DIAGNOSTIC REPORT</h1>
-    <span style="font-size:13px;color:#22c55e;display:block;margin-bottom:24px;">${escapeHtml(shortPath)}</span>
+    <span style="font-size:13px;color:#22c55e;display:block;margin-bottom:4px;">${escapeHtml(shortPath)}</span>
+    <span style="font-size:12px;color:#555;font-style:italic;display:block;margin-bottom:24px;">Your Second Brain, examined.</span>
 
     <div style="border-top:1px solid #2a2a2a;margin-bottom:32px;"></div>
+
+    <!-- What is a Second Brain? -->
+    <div style="border-left:2px solid #2233cc;padding:16px 20px;margin-bottom:32px;font-size:12px;color:#888;line-height:1.7;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:8px;">WHAT IS A SECOND BRAIN?</div>
+        A Second Brain is a structured AI workspace that learns how you work.
+        It is not an app. It is a repository &mdash; CLAUDE.md instructions, custom
+        skills, memory systems, and automation hooks &mdash; configured for your
+        specific role, tools, and workflows.<br><br>
+        The more you use it, the smarter it gets. That is the whole point.
+    </div>
 
     <!-- Score panel -->
     <div class="score-panel" style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #2a2a2a;">
@@ -250,28 +380,50 @@ export function generateDashboardHtml(report) {
         </div>
     </div>
 
+    <!-- How to read this report -->
+    <div style="border-left:2px solid #2233cc;padding:16px 20px;margin-top:32px;margin-bottom:8px;font-size:12px;color:#888;line-height:1.7;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:12px;">HOW TO READ THIS REPORT</div>
+        This report measures three things:<br><br>
+        <span style="color:#ccc;font-weight:700;">SETUP</span> &mdash; Does your brain have the right architecture?
+        Your CLAUDE.md file, skill library, memory system, hooks, and directory
+        structure. A well-set-up brain gives AI the context it needs to help you.<br><br>
+        <span style="color:#ccc;font-weight:700;">USAGE</span> &mdash; Is the brain being used, or collecting dust?
+        Session logs, evolving patterns, growing memory. A brain that compounds
+        is one that gets used daily and learns from every session.<br><br>
+        <span style="color:#ccc;font-weight:700;">FLUENCY</span> &mdash; How sophisticated is your AI collaboration?
+        Not just &ldquo;do you use AI&rdquo; but &ldquo;do your skills orchestrate
+        multiple tools, reference knowledge directories, and use progressive
+        disclosure?&rdquo; This is the difference between prompting and engineering.
+    </div>
+
     <!-- Top Fixes -->
     ${renderTopFixes(report.topFixes)}
 
     <!-- Setup -->
+    ${getDimensionIntro(report.setup, 'Setup Quality')}
     ${renderDimension(report.setup, 'Setup Quality')}
 
     <!-- Usage -->
+    ${getDimensionIntro(report.usage, 'Usage Activity')}
     ${renderDimension(report.usage, 'Usage Activity')}
 
     <!-- Fluency -->
+    ${report.fluency ? getDimensionIntro(report.fluency, 'AI Fluency') : ''}
     ${report.fluency ? renderDimension(report.fluency, 'AI Fluency') : ''}
+
+    <!-- Journey Stage -->
+    ${renderJourneyStage(overallPct)}
 
     <!-- CTA -->
     ${overallPct >= 85
-        ? `<div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:48px;margin-bottom:32px;">
-        <div style="font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:12px;">YOUR BRAIN IS IN THE TOP TIER</div>
-        <p style="font-size:12px;color:#555;margin-bottom:24px;line-height:1.7;">Score ${overallPct}%. You're running a production-grade Second Brain.<br>Share the health check with your team.</p>
-        <a href="https://www.iwoszapar.com/second-brain-ai" style="display:inline-block;padding:12px 36px;background:#2233cc;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;text-decoration:none;">SEE WHAT&rsquo;S NEXT</a>
+        ? `<div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:32px;margin-bottom:32px;">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:16px;">YOU BUILT SOMETHING RARE</div>
+        <p style="font-size:12px;color:#888;margin-bottom:24px;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto;">Score ${overallPct}%. Most people never get past Scaffolded. Your brain is compounding. If you want to help your team get here too, the Team Brain add-on gives everyone a personal brain with shared context.</p>
+        <a href="https://www.iwoszapar.com/teams" style="display:inline-block;padding:12px 36px;background:#2233cc;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;text-decoration:none;">EXPLORE TEAM BRAIN</a>
     </div>`
-        : `<div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:48px;margin-bottom:32px;">
-        <div style="font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:12px;">WANT A SECOND BRAIN THAT SCORES 85+?</div>
-        <p style="font-size:12px;color:#555;margin-bottom:24px;line-height:1.7;">Pre-configured AI workspace with skills, hooks, memory systems,<br>and knowledge architecture built in.</p>
+        : `<div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:32px;margin-bottom:32px;">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:16px;">THE FASTEST WAY TO PRODUCTION-GRADE</div>
+        <p style="font-size:12px;color:#888;margin-bottom:24px;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto;">You could fix everything on this report yourself. It would take weeks of trial and error. Or you could start with a Second Brain that already scores 85+ out of the box &mdash; pre-configured with skills, hooks, memory systems, and knowledge architecture built for how you actually work.</p>
         <a href="https://www.iwoszapar.com/second-brain-ai" style="display:inline-block;padding:12px 36px;background:#2233cc;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;text-decoration:none;">GET YOUR SECOND BRAIN</a>
     </div>`
     }
