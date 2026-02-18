@@ -230,7 +230,7 @@ export function generateDashboardHtml(report) {
             <div style="margin-bottom:18px;">
                 <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:7px;">
                     <span>USAGE</span>
-                    <span>${usagePts}/${usageMax}</span>
+                    <span>${report.usage?.normalizedScore || usageBarPct}/100</span>
                 </div>
                 <div style="height:4px;background:#1a1a1a;">
                     <div style="height:100%;width:${usageBarPct}%;background:${getBarColor(usagePts, usageMax)};"></div>
@@ -241,7 +241,7 @@ export function generateDashboardHtml(report) {
             <div>
                 <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:7px;">
                     <span>FLUENCY</span>
-                    <span>${fluencyPts}/${fluencyMax}</span>
+                    <span>${report.fluency?.normalizedScore || fluencyBarPct}/100</span>
                 </div>
                 <div style="height:4px;background:#1a1a1a;">
                     <div style="height:100%;width:${fluencyBarPct}%;background:${getBarColor(fluencyPts, fluencyMax)};"></div>
