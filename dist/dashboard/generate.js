@@ -82,7 +82,7 @@ function renderDimension(dim, label) {
                     <p style="font-size:14px;color:#94a3b8;margin:0;">${escapeHtml(dim.gradeLabel)}</p>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:32px;font-weight:700;color:${color};">${dim.totalPoints}<span style="font-size:16px;color:#64748b;">/${dim.maxPoints}</span></div>
+                    <div style="font-size:32px;font-weight:700;color:${color};">${dim.normalizedScore || pct}<span style="font-size:16px;color:#64748b;">/100</span></div>
                     <span style="display:inline-block;padding:2px 10px;border-radius:9999px;font-size:12px;font-weight:600;color:#0f172a;background:${badgeColor};">${escapeHtml(dim.grade)}</span>
                 </div>
             </div>
@@ -177,21 +177,21 @@ export function generateDashboardHtml(report) {
                 <div style="height:4px;background:#1e293b;border-radius:2px;overflow:hidden;">
                     <div style="height:100%;width:${report.setup?.maxPoints ? Math.round((report.setup.totalPoints / report.setup.maxPoints) * 100) : 0}%;background:${getScoreColor(report.setup?.totalPoints || 0, report.setup?.maxPoints || 1)};border-radius:2px;"></div>
                 </div>
-                <div style="font-size:11px;color:#64748b;margin-top:2px;">${report.setup?.totalPoints || 0}/${report.setup?.maxPoints || 0}</div>
+                <div style="font-size:11px;color:#64748b;margin-top:2px;">${report.setup?.normalizedScore || 0}/100</div>
             </div>
             <div>
                 <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">Usage</div>
                 <div style="height:4px;background:#1e293b;border-radius:2px;overflow:hidden;">
                     <div style="height:100%;width:${report.usage?.maxPoints ? Math.round((report.usage.totalPoints / report.usage.maxPoints) * 100) : 0}%;background:${getScoreColor(report.usage?.totalPoints || 0, report.usage?.maxPoints || 1)};border-radius:2px;"></div>
                 </div>
-                <div style="font-size:11px;color:#64748b;margin-top:2px;">${report.usage?.totalPoints || 0}/${report.usage?.maxPoints || 0}</div>
+                <div style="font-size:11px;color:#64748b;margin-top:2px;">${report.usage?.normalizedScore || 0}/100</div>
             </div>
             <div>
                 <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">Fluency</div>
                 <div style="height:4px;background:#1e293b;border-radius:2px;overflow:hidden;">
                     <div style="height:100%;width:${report.fluency?.maxPoints ? Math.round((report.fluency.totalPoints / report.fluency.maxPoints) * 100) : 0}%;background:${getScoreColor(report.fluency?.totalPoints || 0, report.fluency?.maxPoints || 1)};border-radius:2px;"></div>
                 </div>
-                <div style="font-size:11px;color:#64748b;margin-top:2px;">${report.fluency?.totalPoints || 0}/${report.fluency?.maxPoints || 0}</div>
+                <div style="font-size:11px;color:#64748b;margin-top:2px;">${report.fluency?.normalizedScore || 0}/100</div>
             </div>
         </div>
     </div>

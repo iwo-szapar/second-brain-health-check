@@ -5,7 +5,7 @@
  */
 import { resolve } from 'node:path';
 import { stat, realpath } from 'node:fs/promises';
-import { getSetupGrade, getUsageGrade, getFluencyGrade } from './types.js';
+import { getSetupGrade, getUsageGrade, getFluencyGrade, normalizeScore } from './types.js';
 // Setup layers
 import { checkClaudeMd } from './setup/claude-md.js';
 import { checkSkills } from './setup/skills.js';
@@ -14,6 +14,9 @@ import { checkMemory } from './setup/memory.js';
 import { checkBrainHealth } from './setup/brain-health.js';
 import { checkHooks } from './setup/hooks.js';
 import { checkPersonalization } from './setup/personalization.js';
+import { checkMcpSecurity } from './setup/mcp-security.js';
+import { checkConfigHygiene } from './setup/config-hygiene.js';
+import { checkPlugins } from './setup/plugins.js';
 // Usage layers
 import { checkSessions } from './usage/sessions.js';
 import { checkPatterns } from './usage/patterns.js';
@@ -50,6 +53,9 @@ export async function runHealthCheck(path) {
             checkBrainHealth(rootPath),
             checkHooks(rootPath),
             checkPersonalization(rootPath),
+            checkMcpSecurity(rootPath),
+            checkConfigHygiene(rootPath),
+            checkPlugins(rootPath),
         ]),
         Promise.all([
             checkSessions(rootPath),
@@ -71,12 +77,13 @@ export async function runHealthCheck(path) {
     const usageMax = usageLayers.reduce((sum, l) => sum + l.maxPoints, 0);
     const fluencyTotal = fluencyLayers.reduce((sum, l) => sum + l.points, 0);
     const fluencyMax = fluencyLayers.reduce((sum, l) => sum + l.maxPoints, 0);
-    const setupGrade = getSetupGrade(setupTotal);
-    const usageGrade = getUsageGrade(usageTotal);
+    const setupGrade = getSetupGrade(setupTotal, setupMax);
+    const usageGrade = getUsageGrade(usageTotal, usageMax);
     const fluencyGrade = getFluencyGrade(fluencyTotal, fluencyMax);
     const setup = {
         totalPoints: setupTotal,
         maxPoints: setupMax,
+        normalizedScore: normalizeScore(setupTotal, setupMax),
         grade: setupGrade.grade,
         gradeLabel: setupGrade.label,
         layers: setupLayers,
@@ -84,6 +91,7 @@ export async function runHealthCheck(path) {
     const usage = {
         totalPoints: usageTotal,
         maxPoints: usageMax,
+        normalizedScore: normalizeScore(usageTotal, usageMax),
         grade: usageGrade.grade,
         gradeLabel: usageGrade.label,
         layers: usageLayers,
@@ -91,6 +99,7 @@ export async function runHealthCheck(path) {
     const fluency = {
         totalPoints: fluencyTotal,
         maxPoints: fluencyMax,
+        normalizedScore: normalizeScore(fluencyTotal, fluencyMax),
         grade: fluencyGrade.grade,
         gradeLabel: fluencyGrade.label,
         layers: fluencyLayers,
@@ -107,15 +116,24 @@ export async function runHealthCheck(path) {
 }
 function generateTopFixes(setupLayers, usageLayers, fluencyLayers) {
     const allChecks = [];
+    const dimMaxes = {
+        setup: setupLayers.reduce((s, l) => s + l.maxPoints, 0),
+        usage: usageLayers.reduce((s, l) => s + l.maxPoints, 0),
+        fluency: fluencyLayers.reduce((s, l) => s + l.maxPoints, 0),
+    };
     const addChecks = (layers, category) => {
         for (const layer of layers) {
             for (const check of layer.checks) {
                 if (check.status !== 'pass') {
+                    const rawDeficit = check.maxPoints - check.points;
+                    const dimMax = dimMaxes[category] || 1;
+                    const normalizedDeficit = Math.round((rawDeficit / dimMax) * 100);
                     allChecks.push({
                         check,
                         layer: layer.name,
                         category,
-                        deficit: check.maxPoints - check.points,
+                        deficit: rawDeficit,
+                        normalizedDeficit,
                     });
                 }
             }
@@ -124,12 +142,12 @@ function generateTopFixes(setupLayers, usageLayers, fluencyLayers) {
     addChecks(setupLayers, 'setup');
     addChecks(usageLayers, 'usage');
     addChecks(fluencyLayers, 'fluency');
-    // Sort by deficit (highest potential improvement first)
-    allChecks.sort((a, b) => b.deficit - a.deficit);
+    // Sort by normalized deficit (highest potential improvement first)
+    allChecks.sort((a, b) => b.normalizedDeficit - a.normalizedDeficit);
     // Take top 5
     return allChecks.slice(0, 5).map(item => ({
         title: item.check.name.toUpperCase(),
-        impact: `+${item.deficit} pts ${item.category}`,
+        impact: `+${item.normalizedDeficit}% ${item.category}`,
         description: item.check.message,
         category: item.category,
     }));

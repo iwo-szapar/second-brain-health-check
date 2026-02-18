@@ -31,10 +31,10 @@ export function formatReport(report) {
     lines.push('  SECOND BRAIN HEALTH CHECK');
     lines.push('================================================================');
     lines.push('');
-    lines.push(`SETUP QUALITY:    ${report.setup.totalPoints}/${report.setup.maxPoints} (${report.setup.grade} - ${report.setup.gradeLabel})`);
-    lines.push(`USAGE ACTIVITY:   ${report.usage.totalPoints}/${report.usage.maxPoints} (${report.usage.grade} - ${report.usage.gradeLabel})`);
+    lines.push(`SETUP QUALITY:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
+    lines.push(`USAGE ACTIVITY:   ${report.usage.normalizedScore}/100 (${report.usage.grade} - ${report.usage.gradeLabel})`);
     if (report.fluency) {
-        lines.push(`AI FLUENCY:       ${report.fluency.totalPoints}/${report.fluency.maxPoints} (${report.fluency.grade} - ${report.fluency.gradeLabel})`);
+        lines.push(`AI FLUENCY:       ${report.fluency.normalizedScore}/100 (${report.fluency.grade} - ${report.fluency.gradeLabel})`);
     }
     lines.push('');
     // Setup breakdown
@@ -110,7 +110,7 @@ export function formatFixSuggestions(report, focus) {
         : 'USAGE ACTIVITY';
     lines.push('================================================================');
     lines.push(`  FIX PLAN: ${reportName}`);
-    lines.push(`  Current: ${targetReport.totalPoints}/${targetReport.maxPoints} (${targetReport.grade})`);
+    lines.push(`  Current: ${targetReport.normalizedScore}/100 (${targetReport.grade})`);
     lines.push('================================================================');
     lines.push('');
     // Find the weakest layer

@@ -2,11 +2,13 @@
  * Setup Layer: Hooks Configuration
  *
  * Evaluates whether .claude/settings.json contains hooks for lifecycle
- * automation, checks for tool lifecycle hooks, and verifies that
- * referenced hook scripts exist on disk.
+ * automation, checks for tool lifecycle hooks, verifies that referenced
+ * hook scripts exist on disk, and validates hook health (syntax, fragile
+ * patterns, no-op safety).
  */
 import { readFile, access } from 'node:fs/promises';
-import { join, isAbsolute } from 'node:path';
+import { join, isAbsolute, basename } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 function extractScriptPaths(command) {
     const paths = [];
@@ -15,6 +17,176 @@ function extractScriptPaths(command) {
         paths.push(m);
     }
     return paths;
+}
+
+/**
+ * Collect all hook entries from settings, properly traversing
+ * both flat ({ command: "..." }) and nested ({ hooks: [{ command: "..." }] })
+ * hook structures.
+ *
+ * Returns array of { event, matcher, command, scriptPaths, resolvedPaths }
+ */
+function collectAllHooks(hooks, rootPath) {
+    const collected = [];
+    for (const event of Object.keys(hooks)) {
+        const eventEntries = hooks[event];
+        if (!Array.isArray(eventEntries)) continue;
+
+        for (const entry of eventEntries) {
+            // Nested structure: { matcher, hooks: [{ type, command }] }
+            if (Array.isArray(entry.hooks)) {
+                for (const h of entry.hooks) {
+                    const command = h.command || h.cmd || '';
+                    if (typeof command !== 'string') continue;
+                    const scriptPaths = extractScriptPaths(command);
+                    collected.push({
+                        event,
+                        matcher: entry.matcher || null,
+                        command,
+                        scriptPaths,
+                        resolvedPaths: scriptPaths.map(p => resolvePath(p, rootPath)),
+                    });
+                }
+            }
+            // Flat structure: { command: "..." }
+            const directCommand = entry.command || entry.cmd || '';
+            if (typeof directCommand === 'string' && directCommand) {
+                const scriptPaths = extractScriptPaths(directCommand);
+                collected.push({
+                    event,
+                    matcher: entry.matcher || null,
+                    command: directCommand,
+                    scriptPaths,
+                    resolvedPaths: scriptPaths.map(p => resolvePath(p, rootPath)),
+                });
+            }
+        }
+    }
+    return collected;
+}
+
+function resolvePath(scriptPath, rootPath) {
+    let resolved = scriptPath;
+    resolved = resolved.replace(/\$CLAUDE_PROJECT_DIR/g, rootPath);
+    resolved = resolved.replace(/\$\{CLAUDE_PROJECT_DIR\}/g, rootPath);
+    if (!isAbsolute(resolved)) {
+        resolved = join(rootPath, resolved);
+    }
+    return resolved;
+}
+
+/**
+ * Check bash syntax using `bash -n` (parse-only, no execution).
+ * Returns null if valid, error message if invalid.
+ */
+function checkBashSyntax(filePath) {
+    try {
+        execFileSync('bash', ['-n', filePath], {
+            timeout: 5000,
+            stdio: ['pipe', 'pipe', 'pipe'],
+        });
+        return null; // valid
+    } catch (err) {
+        const stderr = err.stderr ? err.stderr.toString().trim() : 'Unknown syntax error';
+        return stderr;
+    }
+}
+
+/**
+ * Detect fragile patterns in shell scripts that can cause silent failures.
+ * Returns array of warning strings.
+ */
+function detectFragilePatterns(content, scriptName) {
+    const warnings = [];
+
+    const hasSetE = /set\s+-[a-z]*e/.test(content);
+    const hasPipefail = /set\s+-[a-z]*o\s+pipefail/.test(content) || /set\s+-euo\s+pipefail/.test(content);
+    const hasSetU = /set\s+-[a-z]*u/.test(content);
+
+    // Check: set -e/pipefail with unguarded find/grep -l/pipe chains
+    if (hasSetE || hasPipefail) {
+        // find on potentially non-existent dirs (find without || true or if-guard)
+        const findLines = content.match(/^[^#]*\bfind\s+/gm) || [];
+        for (const line of findLines) {
+            if (!line.includes('|| true') && !line.includes('|| :') && !line.includes('2>/dev/null')) {
+                warnings.push(`${scriptName}: \`find\` used with strict mode (set -e/pipefail) without error guard — will abort if directory missing`);
+                break;
+            }
+        }
+
+        // grep without || true
+        const grepLines = content.match(/^[^#]*\bgrep\b/gm) || [];
+        for (const line of grepLines) {
+            if (!line.includes('|| true') && !line.includes('|| :') && !line.includes('|| exit')) {
+                warnings.push(`${scriptName}: \`grep\` used with strict mode without error guard — exit code 1 on no match will abort script`);
+                break;
+            }
+        }
+    }
+
+    // Check: set -u without default values for common optional vars
+    if (hasSetU) {
+        // Look for $1, $2 etc without ${1:-default} pattern
+        const positionalRaw = content.match(/\$[1-9]/g) || [];
+        const positionalSafe = content.match(/\$\{[1-9]:-/g) || [];
+        if (positionalRaw.length > 0 && positionalSafe.length === 0) {
+            warnings.push(`${scriptName}: \`set -u\` used with unguarded positional params ($1, $2) — will fail if args not provided`);
+        }
+
+        // Check for unguarded hook-specific env vars
+        const hookVars = ['CLAUDE_PROJECT_DIR', 'TOOL_NAME', 'TOOL_INPUT'];
+        const usedUnguarded = hookVars.filter(v => {
+            const used = content.includes(`$${v}`) || content.includes(`\${${v}}`);
+            const guarded = content.includes(`\${${v}:-`);
+            return used && !guarded;
+        });
+        if (usedUnguarded.length > 0) {
+            warnings.push(`${scriptName}: \`set -u\` with hook env vars lacking defaults (${usedUnguarded.join(', ')}) — script may fail when vars aren't set`);
+        }
+    }
+
+    return warnings;
+}
+
+/**
+ * Test no-op safety: send non-matching stdin to the hook and verify exit 0.
+ * Returns null if safe, warning string if not.
+ */
+function testNoOpSafety(resolvedPath, event) {
+    // Build a test payload that should NOT match any real hook condition
+    let testPayload;
+    if (event === 'PostToolUse') {
+        testPayload = JSON.stringify({
+            tool_name: 'Bash',
+            tool_input: { command: 'echo health_check_noop_test' },
+        });
+    } else if (event === 'PreToolUse') {
+        testPayload = JSON.stringify({
+            tool_name: 'Read',
+            tool_input: { file_path: '/tmp/health_check_noop_test' },
+        });
+    } else {
+        // SessionStart, Stop, etc — send empty object
+        testPayload = JSON.stringify({});
+    }
+
+    try {
+        execFileSync('bash', ['-c', `echo ${JSON.stringify(testPayload)} | bash ${JSON.stringify(resolvedPath)}`], {
+            timeout: 5000,
+            stdio: ['pipe', 'pipe', 'pipe'],
+            cwd: '/tmp',
+        });
+        return null; // exit 0 = safe
+    } catch (err) {
+        const code = err.status || 'unknown';
+        const scriptFile = basename(resolvedPath);
+        // Exit code 2 is used by Claude hooks to block tool execution — that's intentional
+        // but on a no-op input it suggests the hook is too aggressive
+        if (code === 2) {
+            return `${scriptFile}: blocks non-matching input (exit 2) — hook may be too aggressive, should exit 0 for non-matching tools`;
+        }
+        return `${scriptFile}: exits with code ${code} on non-matching input — should exit 0 to pass through`;
+    }
 }
 
 export async function checkHooks(rootPath) {
@@ -33,7 +205,7 @@ export async function checkHooks(rootPath) {
         return {
             name: 'Hooks Configuration',
             points: 0,
-            maxPoints: 10,
+            maxPoints: 13,
             checks: [{
                 name: 'Settings with hooks configured',
                 status: 'fail',
@@ -52,22 +224,25 @@ export async function checkHooks(rootPath) {
                 points: 0,
                 maxPoints: 3,
                 message: 'No settings file to evaluate',
+            }, {
+                name: 'Hook health validation',
+                status: 'fail',
+                points: 0,
+                maxPoints: 3,
+                message: 'No settings file to evaluate',
             }],
         };
     }
 
-    const hooks = settings.hooks || {};
-    const hookEvents = Object.keys(hooks);
+    const hooksConfig = settings.hooks || {};
+    const hookEvents = Object.keys(hooksConfig);
+
+    // Collect all hooks with proper nesting traversal
+    const allHookEntries = collectAllHooks(hooksConfig, rootPath);
 
     // Check 1: Settings with hooks configured (4 pts)
     {
-        let totalHooks = 0;
-        for (const event of hookEvents) {
-            const eventHooks = hooks[event];
-            if (Array.isArray(eventHooks)) {
-                totalHooks += eventHooks.length;
-            }
-        }
+        const totalHooks = allHookEntries.length;
 
         let status, points;
         if (hookEvents.length >= 3) {
@@ -126,28 +301,22 @@ export async function checkHooks(rootPath) {
         });
     }
 
-    // Check 3: Hook scripts valid (3 pts)
+    // Check 3: Hook scripts exist on disk (3 pts)
     {
-        const allPaths = [];
+        const allScriptPaths = [];
         let hasInlineOnly = true;
 
-        for (const event of hookEvents) {
-            const eventHooks = hooks[event];
-            if (!Array.isArray(eventHooks)) continue;
-
-            for (const hook of eventHooks) {
-                const command = hook.command || hook.cmd || '';
-                if (typeof command !== 'string') continue;
-
-                const scriptPaths = extractScriptPaths(command);
-                if (scriptPaths.length > 0) {
-                    hasInlineOnly = false;
-                    allPaths.push(...scriptPaths);
-                }
+        for (const entry of allHookEntries) {
+            if (entry.scriptPaths.length > 0) {
+                hasInlineOnly = false;
+                allScriptPaths.push(...entry.resolvedPaths);
             }
         }
 
-        if (allPaths.length === 0 && hookEvents.length > 0) {
+        // Deduplicate
+        const uniquePaths = [...new Set(allScriptPaths)];
+
+        if (uniquePaths.length === 0 && hookEvents.length > 0) {
             checks.push({
                 name: 'Hook scripts valid',
                 status: hasInlineOnly ? 'pass' : 'fail',
@@ -157,25 +326,20 @@ export async function checkHooks(rootPath) {
                     ? 'Hooks use inline commands (no external script files)'
                     : 'No hook scripts found',
             });
-        } else if (allPaths.length > 0) {
+        } else if (uniquePaths.length > 0) {
             let existCount = 0;
-            for (const scriptPath of allPaths) {
-                let resolved = scriptPath;
-                resolved = resolved.replace(/\$CLAUDE_PROJECT_DIR/g, rootPath);
-                resolved = resolved.replace(/\$\{CLAUDE_PROJECT_DIR\}/g, rootPath);
-                if (!isAbsolute(resolved)) {
-                    resolved = join(rootPath, resolved);
-                }
+            const missingScripts = [];
+            for (const resolved of uniquePaths) {
                 try {
                     await access(resolved);
                     existCount++;
                 } catch {
-                    // file doesn't exist
+                    missingScripts.push(basename(resolved));
                 }
             }
 
             let status, points;
-            if (existCount === allPaths.length) {
+            if (existCount === uniquePaths.length) {
                 status = 'pass';
                 points = 3;
             } else if (existCount > 0) {
@@ -186,12 +350,15 @@ export async function checkHooks(rootPath) {
                 points = 0;
             }
 
+            const msg = `${existCount}/${uniquePaths.length} referenced hook script(s) exist on disk`;
             checks.push({
                 name: 'Hook scripts valid',
                 status,
                 points,
                 maxPoints: 3,
-                message: `${existCount}/${allPaths.length} referenced hook script(s) exist on disk`,
+                message: missingScripts.length > 0
+                    ? `${msg} — missing: ${missingScripts.join(', ')}`
+                    : msg,
             });
         } else {
             checks.push({
@@ -204,12 +371,130 @@ export async function checkHooks(rootPath) {
         }
     }
 
+    // Check 4: Hook health validation (3 pts)
+    // Sub-checks: syntax, fragile patterns, no-op safety
+    {
+        // Gather all unique resolved paths for scripts that exist
+        const scriptEntries = []; // { resolvedPath, event, scriptName }
+        const seenPaths = new Set();
+
+        for (const entry of allHookEntries) {
+            for (let i = 0; i < entry.resolvedPaths.length; i++) {
+                const resolved = entry.resolvedPaths[i];
+                if (seenPaths.has(resolved)) continue;
+                seenPaths.add(resolved);
+
+                // Only validate scripts that exist on disk
+                try {
+                    await access(resolved);
+                    scriptEntries.push({
+                        resolvedPath: resolved,
+                        event: entry.event,
+                        scriptName: basename(resolved),
+                    });
+                } catch {
+                    // skip missing scripts — already reported in Check 3
+                }
+            }
+        }
+
+        if (scriptEntries.length === 0) {
+            // No external scripts to validate (inline-only or no hooks)
+            checks.push({
+                name: 'Hook health validation',
+                status: hookEvents.length > 0 ? 'pass' : 'fail',
+                points: hookEvents.length > 0 ? 3 : 0,
+                maxPoints: 3,
+                message: hookEvents.length > 0
+                    ? 'No external hook scripts to validate (inline commands only)'
+                    : 'No hooks to validate',
+            });
+        } else {
+            const syntaxErrors = [];
+            const fragileWarnings = [];
+            const noopWarnings = [];
+
+            for (const { resolvedPath, event, scriptName } of scriptEntries) {
+                // Sub-check A: Bash syntax
+                if (resolvedPath.endsWith('.sh')) {
+                    const syntaxErr = checkBashSyntax(resolvedPath);
+                    if (syntaxErr) {
+                        syntaxErrors.push(`${scriptName}: ${syntaxErr}`);
+                    }
+                }
+
+                // Sub-check B: Fragile pattern detection
+                try {
+                    const content = await readFile(resolvedPath, 'utf-8');
+                    const fragile = detectFragilePatterns(content, scriptName);
+                    fragileWarnings.push(...fragile);
+                } catch {
+                    // can't read file — skip
+                }
+
+                // Sub-check C: No-op safety (only for Pre/PostToolUse hooks)
+                if (event === 'PreToolUse' || event === 'PostToolUse') {
+                    const noopResult = testNoOpSafety(resolvedPath, event);
+                    if (noopResult) {
+                        noopWarnings.push(noopResult);
+                    }
+                }
+            }
+
+            const totalIssues = syntaxErrors.length + fragileWarnings.length + noopWarnings.length;
+            const hasSyntaxErrors = syntaxErrors.length > 0;
+
+            let status, points;
+            if (totalIssues === 0) {
+                status = 'pass';
+                points = 3;
+            } else if (hasSyntaxErrors) {
+                // Syntax errors are serious
+                status = 'fail';
+                points = 0;
+            } else if (fragileWarnings.length > 0 || noopWarnings.length > 0) {
+                // Warnings only — partial credit
+                status = 'warn';
+                points = 1;
+            } else {
+                status = 'warn';
+                points = 1;
+            }
+
+            // Build detailed message
+            const parts = [];
+            parts.push(`Validated ${scriptEntries.length} hook script(s)`);
+
+            if (syntaxErrors.length > 0) {
+                parts.push(`SYNTAX ERRORS (${syntaxErrors.length}): ${syntaxErrors.join('; ')}`);
+            }
+            if (fragileWarnings.length > 0) {
+                parts.push(`Fragile patterns (${fragileWarnings.length}): ${fragileWarnings.join('; ')}`);
+            }
+            if (noopWarnings.length > 0) {
+                parts.push(`No-op safety (${noopWarnings.length}): ${noopWarnings.join('; ')}`);
+            }
+            if (totalIssues === 0) {
+                parts.push('All scripts pass syntax, fragile pattern, and no-op safety checks');
+            }
+
+            checks.push({
+                name: 'Hook health validation',
+                status,
+                points,
+                maxPoints: 3,
+                message: parts.join(' — '),
+            });
+        }
+    }
+
     const totalPoints = checks.reduce((sum, c) => sum + c.points, 0);
+    const totalMaxPoints = checks.reduce((sum, c) => sum + c.maxPoints, 0);
 
     return {
         name: 'Hooks Configuration',
         points: totalPoints,
-        maxPoints: 10,
+        maxPoints: totalMaxPoints,
         checks,
     };
 }

@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { runHealthCheck } from './health-check.js';
 import { formatReport, formatFixSuggestions } from './report-formatter.js';
 import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
+import { generatePdf } from './tools/generate-pdf.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
     version: '0.2.0',
@@ -113,6 +114,36 @@ server.registerTool('generate_dashboard', {
         const message = error instanceof Error ? error.message : String(error);
         return {
             content: [{ type: 'text', text: `Dashboard generation failed: ${message}` }],
+            isError: true,
+        };
+    }
+});
+// Tool 4: generate_pdf
+server.registerTool('generate_pdf', {
+    description: 'Generate PDF report from health check dashboard. ' +
+        'Runs a full health check, renders the HTML dashboard, and converts it to PDF ' +
+        'using headless Chrome/Chromium. Requires Chrome or Chromium installed.',
+    inputSchema: {
+        project_path: z
+            .string()
+            .max(4096)
+            .refine((p) => !p.includes('\0'), 'Path must not contain null bytes')
+            .describe('Absolute path to project directory.'),
+    },
+}, async ({ project_path }) => {
+    try {
+        const pdfPath = await generatePdf(project_path);
+        return {
+            content: [{
+                type: 'text',
+                text: `PDF report saved to: ${pdfPath}`,
+            }],
+        };
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+            content: [{ type: 'text', text: `PDF generation failed: ${message}` }],
             isError: true,
         };
     }

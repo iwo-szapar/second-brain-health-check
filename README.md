@@ -24,6 +24,7 @@ Total: 245 points across 15+ individual checks with pass/warn/fail status.
 
 ```bash
 npx second-brain-health-check /path/to/your/project
+npx second-brain-health-check --pdf /path/to/your/project
 ```
 
 ### MCP Server (inside Claude Code)
@@ -45,6 +46,7 @@ Run a health check on my project
 | `check_health` | Full 3-dimension health check with text report |
 | `get_fix_suggestions` | Prioritized action plan for weakest area |
 | `generate_dashboard` | HTML dashboard with scores and grade badges |
+| `generate_pdf` | PDF report via headless Chrome (requires Chrome/Chromium) |
 
 ## What You Need
 
