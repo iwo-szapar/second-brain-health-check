@@ -1,33 +1,20 @@
 # Second Brain Health Check
 
-Score your AI workspace setup. Works with Claude Code, Codex, or any CLAUDE.md-based workflow.
+Find out if your Claude Code workspace is actually compounding — or just collecting files.
 
 ```
-SETUP QUALITY:    92/100 (A - Production-ready)
-USAGE ACTIVITY:   101/115 (Active - Brain is compounding)
-AI FLUENCY:       30/30 (Expert - Advanced AI collaboration)
+SETUP QUALITY:    92/100  (A - Production-ready)
+USAGE ACTIVITY:  101/115  (Active - Brain is compounding)
+AI FLUENCY:       30/30   (Expert - Advanced AI collaboration)
 ```
 
-## What It Checks
+245 points. 15+ individual checks. Brutalist HTML dashboard included.
 
-**Setup Quality** (100 pts) — CLAUDE.md structure, skills, hooks, memory architecture, directory organization, brain health infrastructure, personalization depth
+---
 
-**Usage Activity** (115 pts) — Session frequency, pattern recognition, memory evolution, review loops, compound evidence, cross-reference quality
+## Install as MCP Server (recommended)
 
-**AI Fluency** (30 pts) — Progressive disclosure, skill orchestration, context-aware skills
-
-Total: 245 points across 15+ individual checks with pass/warn/fail status.
-
-## Quick Start
-
-### CLI (no Claude Code needed)
-
-```bash
-npx second-brain-health-check /path/to/your/project
-npx second-brain-health-check --pdf /path/to/your/project
-```
-
-### MCP Server (inside Claude Code)
+The primary use case is inside Claude Code, so the health check runs in context and Claude can act on the results immediately.
 
 ```bash
 claude mcp add second-brain-health -- npx second-brain-health-check
@@ -39,32 +26,53 @@ Then ask Claude:
 Run a health check on my project
 ```
 
-## MCP Tools
+Claude runs the check, reads the output, and can start fixing the gaps in the same session.
+
+### MCP Tools
 
 | Tool | Description |
 |------|-------------|
 | `check_health` | Full 3-dimension health check with text report |
-| `get_fix_suggestions` | Prioritized action plan for weakest area |
-| `generate_dashboard` | HTML dashboard with scores and grade badges |
+| `get_fix_suggestions` | Prioritized action plan for your weakest area |
+| `generate_dashboard` | Self-contained HTML dashboard with scores and grade badges |
 | `generate_pdf` | PDF report via headless Chrome (requires Chrome/Chromium) |
+
+---
+
+## CLI (no Claude Code needed)
+
+```bash
+npx second-brain-health-check /path/to/your/project
+npx second-brain-health-check --pdf /path/to/your/project
+```
+
+Outputs a text report to stdout. Add `--pdf` to generate a PDF report alongside it.
+
+---
+
+## What It Checks
+
+**Setup Quality** (100 pts) — Is your brain correctly configured?
+
+CLAUDE.md structure and length, skills with valid frontmatter, hooks and lifecycle events, memory architecture, directory organization, brain health infrastructure, personalization depth.
+
+**Usage Activity** (115 pts) — Is your brain actually being used?
+
+Session frequency and recency, pattern recognition and promotion, memory evolution over time, review loops, compound evidence that the system is improving, cross-reference quality across knowledge files.
+
+**AI Fluency** (30 pts) — How effectively are you working with AI?
+
+Progressive disclosure (CLAUDE.md as routing layer, not a wall of text), skill orchestration with multiple tool types, context-aware skills that pull from knowledge directories.
+
+---
 
 ## What You Need
 
-A project directory with a `CLAUDE.md` file. The more context engineering you have (skills, hooks, memory, patterns), the higher your score.
+A project directory with a `CLAUDE.md` file. The more context engineering you have — skills, hooks, memory, patterns — the higher your score.
 
-No API key required. The health check runs entirely on your local filesystem — zero network calls, zero data collection.
+No API key. No account. Runs entirely on your local filesystem with zero network calls.
 
-## Scoring
-
-Every check has defined thresholds. Full technical reference in [SCORING.md](./SCORING.md).
-
-| Grade | Setup Score | Meaning |
-|-------|-------------|---------|
-| A | 85-100 | Production-ready |
-| B | 70-84 | Good foundation |
-| C | 50-69 | Basic setup |
-| D | 30-49 | Minimal |
-| F | 0-29 | Barely configured |
+---
 
 ## Example Output
 
@@ -81,9 +89,9 @@ AI FLUENCY:       20/30 (Intermediate - Good foundations)
 SETUP QUALITY BREAKDOWN
 ----------------------------------------------------------------
 
-CLAUDE.md Quality              |||||||||||||||.....  15/20
-  [pass] Quick Start section found
-  [pass] Role/context section found
+CLAUDE.md Foundation           ||||||||||||||||....  16/20
+  [pass] Quick Start with numbered rules
+  [pass] About Me with role context
   [warn] 1 domain pattern(s) found — aim for 3+
   [fail] No gotchas/pitfalls section
   [pass] Project structure documentation found
@@ -105,29 +113,35 @@ TOP FIXES (highest impact)
 ================================================================
 ```
 
-## Free vs Full Second Brain
+The HTML dashboard renders the same data with score visualizations and grade badges in a brutalist monospace design — same aesthetic as the PDF report.
 
-This health check is **free and open source** — runs locally, no account needed.
+---
 
-For the full experience, the [AI Second Brain](https://www.iwoszapar.com/second-brain-ai) product includes:
+## Scoring
 
-- Pre-configured repository with CLAUDE.md, skills, hooks, memory structure
-- **Remote Guide MCP** with personalized recommendations, content tools, and workflow guidance
-- 1:1 setup session (Kickstart and Done-With-You packages)
+Full technical reference in [SCORING.md](./SCORING.md).
 
-### Remote Guide MCP (included with purchase)
+| Grade | Setup Score | Meaning |
+|-------|-------------|---------|
+| A | 85–100 | Production-ready |
+| B | 70–84 | Good foundation |
+| C | 50–69 | Basic setup |
+| D | 30–49 | Minimal |
+| F | 0–29 | Barely configured |
 
-Clients receive an API token to connect the remote Guide MCP, which provides tools beyond the local health check (workflow recommendations, content queries, setup scaffolding).
+Usage Activity and AI Fluency use their own grade scales — detailed in SCORING.md.
 
-Setup after purchase:
+---
 
-```bash
-claude mcp add guide --transport http \
-  --url https://second-brain-factory.vercel.app/api/mcp \
-  --header "Authorization: Bearer YOUR_TOKEN"
-```
+## From a Diagnostic to a Working System
 
-The token is stored in `~/.claude.json` under `mcpServers`. No sensitive data leaves your machine — the remote MCP only receives tool calls, not your files.
+This health check tells you what's missing. The [AI Second Brain](https://www.iwoszapar.com/second-brain-ai) gives you the system itself — pre-configured repository, skills, hooks, memory structure, and a remote Guide MCP with personalized recommendations.
+
+Three packages: DIY ($237), Kickstart ($597), Done-With-You ($1,797).
+
+If your score is low and you want to skip the trial-and-error, that's what the paid product is for.
+
+---
 
 ## Security
 
@@ -135,7 +149,7 @@ The token is stored in `~/.claude.json` under `mcpServers`. No sensitive data le
 - Enforces home-directory boundary (cannot scan outside `$HOME`)
 - Resolves symlinks before path validation
 - No network calls, no telemetry, no data collection
-- Escapes all user content in HTML dashboard output
+- Escapes all user content in HTML output
 
 ## License
 
