@@ -197,7 +197,7 @@ export function generateDashboardHtml(report) {
 
     <!-- Title -->
     <h1 style="font-size:56px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:-0.01em;line-height:1;margin-bottom:8px;">DIAGNOSTIC REPORT</h1>
-    <a href="#" style="font-size:13px;color:#22c55e;text-decoration:underline;display:block;margin-bottom:24px;">${escapeHtml(shortPath)}</a>
+    <span style="font-size:13px;color:#22c55e;display:block;margin-bottom:24px;">${escapeHtml(shortPath)}</span>
 
     <div style="border-top:1px solid #2a2a2a;margin-bottom:32px;"></div>
 
@@ -263,11 +263,18 @@ export function generateDashboardHtml(report) {
     ${report.fluency ? renderDimension(report.fluency, 'AI Fluency') : ''}
 
     <!-- CTA -->
-    <div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:48px;margin-bottom:32px;">
+    ${overallPct >= 85
+        ? `<div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:48px;margin-bottom:32px;">
+        <div style="font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:12px;">YOUR BRAIN IS IN THE TOP TIER</div>
+        <p style="font-size:12px;color:#555;margin-bottom:24px;line-height:1.7;">Score ${overallPct}%. You're running a production-grade Second Brain.<br>Share the health check with your team.</p>
+        <a href="https://www.iwoszapar.com/second-brain-ai" style="display:inline-block;padding:12px 36px;background:#2233cc;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;text-decoration:none;">SEE WHAT&rsquo;S NEXT</a>
+    </div>`
+        : `<div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:48px;margin-bottom:32px;">
         <div style="font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:12px;">WANT A SECOND BRAIN THAT SCORES 85+?</div>
         <p style="font-size:12px;color:#555;margin-bottom:24px;line-height:1.7;">Pre-configured AI workspace with skills, hooks, memory systems,<br>and knowledge architecture built in.</p>
         <a href="https://www.iwoszapar.com/second-brain-ai" style="display:inline-block;padding:12px 36px;background:#2233cc;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;text-decoration:none;">GET YOUR SECOND BRAIN</a>
-    </div>
+    </div>`
+    }
 
     <!-- Footer -->
     <div style="text-align:center;padding-top:20px;border-top:1px solid #1a1a1a;font-size:10px;color:#444;text-transform:uppercase;letter-spacing:0.1em;">
