@@ -103,11 +103,29 @@ TOP FIXES (highest impact)
 ================================================================
 ```
 
-## Build Your Own Second Brain
+## Free vs Full Second Brain
 
-This tool checks the quality of an AI Second Brain — a structured knowledge system that makes Claude Code (or any AI assistant) dramatically more effective.
+This health check is **free and open source** — runs locally, no account needed.
 
-Get a fully configured Second Brain setup at [iwoszapar.com/second-brain-ai](https://www.iwoszapar.com/second-brain-ai).
+For the full experience, the [AI Second Brain](https://www.iwoszapar.com/second-brain-ai) product includes:
+
+- Pre-configured repository with CLAUDE.md, skills, hooks, memory structure
+- **Remote Guide MCP** with personalized recommendations, content tools, and workflow guidance
+- 1:1 setup session (Kickstart and Done-With-You packages)
+
+### Remote Guide MCP (included with purchase)
+
+Clients receive an API token to connect the remote Guide MCP, which provides tools beyond the local health check (workflow recommendations, content queries, setup scaffolding).
+
+Setup after purchase:
+
+```bash
+claude mcp add guide --transport http \
+  --url https://second-brain-factory.vercel.app/api/mcp \
+  --header "Authorization: Bearer YOUR_TOKEN"
+```
+
+The token is stored in `~/.claude.json` under `mcpServers`. No sensitive data leaves your machine — the remote MCP only receives tool calls, not your files.
 
 ## Security
 
