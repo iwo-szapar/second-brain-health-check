@@ -159,7 +159,7 @@ export async function checkMemory(rootPath) {
             points,
             maxPoints: 4,
             message: totalPopulated > 0
-                ? `${totalPopulated} populated style/voice/personal files found (>100 bytes)`
+                ? `Found ${totalPopulated} style/voice/personal file${totalPopulated === 1 ? '' : 's'} with content (>100 bytes) — need 2+`
                 : 'No style, voice, or personal files found — teach the agent your communication style',
         });
     }
