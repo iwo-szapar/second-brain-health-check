@@ -1,0 +1,42 @@
+{
+  "name": "second-brain-health-check",
+  "version": "0.2.2",
+  "description": "Health check for AI Second Brain setups. Scores your CLAUDE.md, skills, hooks, memory, and usage patterns.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "second-brain-health-check": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "SCORING.md"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.0",
+    "zod": "^3.25.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "mcp",
+    "second-brain",
+    "health-check",
+    "ai-workspace",
+    "context-engineering",
+    "model-context-protocol"
+  ],
+  "author": "Iwo Szapar <iwo@iwoszapar.com> (https://www.iwoszapar.com)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iwo-szapar/second-brain-health-check.git"
+  },
+  "homepage": "https://github.com/iwo-szapar/second-brain-health-check#readme",
+  "bugs": {
+    "url": "https://github.com/iwo-szapar/second-brain-health-check/issues"
+  }
+}
