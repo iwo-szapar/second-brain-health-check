@@ -103,9 +103,9 @@ export async function checkMcpHealth(rootPath) {
 
         let status, points, message;
         if (allServers.length === 0) {
-            status = 'pass';
-            points = 3;
-            message = 'No MCP servers to validate';
+            status = 'warn';
+            points = 0;
+            message = 'No MCP servers configured — nothing to validate';
         } else if (issues.length === 0) {
             status = 'pass';
             points = 3;
@@ -137,8 +137,8 @@ export async function checkMcpHealth(rootPath) {
 
         let status, points, message;
         if (allServers.length === 0) {
-            status = 'pass';
-            points = 2;
+            status = 'warn';
+            points = 0;
             message = 'No MCP servers — timeout not applicable';
         } else if (hasTimeout) {
             const timeoutMs = typeof timeoutValue === 'number' ? timeoutValue : parseInt(timeoutValue, 10);

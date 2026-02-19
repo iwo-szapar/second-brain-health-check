@@ -120,8 +120,8 @@ export async function checkSettingsHierarchy(rootPath) {
         let status, points, message;
         if (activeLevels.length < 2) {
             status = 'pass';
-            points = 4;
-            message = 'Only one settings level — no shadow conflicts possible';
+            points = 2;
+            message = 'Only one settings level — no shadow conflicts possible, but multi-level config recommended';
         } else if (shadowedKeys.length === 0) {
             status = 'pass';
             points = 4;

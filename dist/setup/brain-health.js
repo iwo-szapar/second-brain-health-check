@@ -34,9 +34,9 @@ export async function checkBrainHealth(rootPath) {
             points = 4;
             message = 'brain-health/ directory found';
         } else if (hasFallback) {
-            status = 'pass';
-            points = 4;
-            message = 'Brain health tracked via memory patterns directory (fallback)';
+            status = 'warn';
+            points = 2;
+            message = 'Brain health tracked via memory patterns directory (fallback) — consider adding dedicated brain-health/ directory';
         } else {
             status = 'fail';
             points = 0;

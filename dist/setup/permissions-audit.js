@@ -100,9 +100,9 @@ export async function checkPermissionsAudit(rootPath) {
 
         let status, points, message;
         if (allPermissions.length === 0) {
-            status = 'pass';
-            points = 3;
-            message = 'No permission rules to evaluate';
+            status = 'warn';
+            points = 1;
+            message = 'No permission rules configured — using defaults (consider adding explicit rules)';
         } else if (dangerousRules.length === 0) {
             status = 'pass';
             points = 3;
@@ -181,9 +181,9 @@ export async function checkPermissionsAudit(rootPath) {
 
         let status, points, message;
         if (totalPatterns === 0) {
-            status = 'pass';
-            points = 3;
-            message = 'No permission patterns to validate';
+            status = 'warn';
+            points = 1;
+            message = 'No permission patterns to validate — no allow/deny rules configured';
         } else if (invalidPatterns.length === 0) {
             status = 'pass';
             points = 3;

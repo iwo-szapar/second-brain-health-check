@@ -91,9 +91,9 @@ export async function checkSandboxConfig(rootPath) {
     {
         let status, points, message;
         if (!sandbox) {
-            status = 'pass';
-            points = 2;
-            message = 'No sandbox — no excluded commands to evaluate';
+            status = 'warn';
+            points = 0;
+            message = 'No sandbox configured — excluded commands check not applicable';
         } else {
             const excluded = Array.isArray(sandbox.excludedCommands) ? sandbox.excludedCommands : [];
             const dangerousExclusions = excluded.filter(cmd =>
@@ -125,9 +125,9 @@ export async function checkSandboxConfig(rootPath) {
     {
         let status, points, message;
         if (!sandbox) {
-            status = 'pass';
-            points = 1;
-            message = 'No sandbox configuration';
+            status = 'warn';
+            points = 0;
+            message = 'No sandbox configured — auto-allow check not applicable';
         } else if (sandbox.autoAllowBashIfSandboxed === true && sandbox.enabled === true) {
             status = 'pass';
             points = 1;

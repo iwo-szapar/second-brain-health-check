@@ -86,9 +86,9 @@ export async function checkConfigHygiene(rootPath) {
 
         let status, points, message;
         if (fileSummary.length === 0) {
-            status = 'pass';
-            points = 2;
-            message = 'No config files found — clean slate';
+            status = 'warn';
+            points = 1;
+            message = 'No config files found — Claude Code is unconfigured';
         } else if (totalLines < 500) {
             status = 'pass';
             points = 2;

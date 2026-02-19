@@ -89,14 +89,15 @@ export async function checkMcpSecurity(rootPath) {
     const checks = [];
 
     // ---------------------------------------------------------------
-    // Gather files to scan
+    // Gather files to scan (both project-level AND user-level)
     // ---------------------------------------------------------------
-    const filesToScan = []; // { path, label, json }
+    const filesToScan = []; // { path, label, json, scope: 'project' | 'user' }
+    const home = homedir();
 
     // .mcp.json (project-level MCP config)
     const mcpJsonPath = join(rootPath, '.mcp.json');
     const mcpJson = await readJson(mcpJsonPath);
-    if (mcpJson) filesToScan.push({ path: mcpJsonPath, label: '.mcp.json', json: mcpJson });
+    if (mcpJson) filesToScan.push({ path: mcpJsonPath, label: '.mcp.json', json: mcpJson, scope: 'project' });
 
     // .mcp/ directory — scan all JSON files inside
     const mcpDirPath = join(rootPath, '.mcp');
@@ -106,7 +107,7 @@ export async function checkMcpSecurity(rootPath) {
             if (!entry.endsWith('.json')) continue;
             const fullPath = join(mcpDirPath, entry);
             const parsed = await readJson(fullPath);
-            if (parsed) filesToScan.push({ path: fullPath, label: `.mcp/${entry}`, json: parsed });
+            if (parsed) filesToScan.push({ path: fullPath, label: `.mcp/${entry}`, json: parsed, scope: 'project' });
         }
     } catch {
         // directory doesn't exist — fine
@@ -115,7 +116,12 @@ export async function checkMcpSecurity(rootPath) {
     // .claude.json at project level
     const claudeJsonPath = join(rootPath, '.claude.json');
     const claudeJson = await readJson(claudeJsonPath);
-    if (claudeJson) filesToScan.push({ path: claudeJsonPath, label: '.claude.json', json: claudeJson });
+    if (claudeJson) filesToScan.push({ path: claudeJsonPath, label: '.claude.json (project)', json: claudeJson, scope: 'project' });
+
+    // ~/.claude.json (user-level — contains mcpServers for most setups)
+    const userClaudeJsonPath = join(home, '.claude.json');
+    const userClaudeJson = await readJson(userClaudeJsonPath);
+    if (userClaudeJson) filesToScan.push({ path: userClaudeJsonPath, label: '~/.claude.json', json: userClaudeJson, scope: 'user' });
 
     // ---------------------------------------------------------------
     // Check 1: Secret Detection in MCP configs (3 pts)
@@ -132,15 +138,14 @@ export async function checkMcpSecurity(rootPath) {
 
         let status, points;
         if (filesToScan.length === 0) {
-            // No MCP config files at all — not applicable, give full credit
-            status = 'pass';
-            points = 3;
+            status = 'warn';
+            points = 1;
             checks.push({
                 name: 'Secret detection in MCP configs',
                 status,
                 points,
                 maxPoints: 3,
-                message: 'No project-level MCP config files found — nothing to scan',
+                message: 'No MCP config files found at project or user level — cannot verify secret hygiene',
             });
         } else if (filesWithSecrets.length === 0) {
             status = 'pass';

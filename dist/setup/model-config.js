@@ -102,7 +102,7 @@ export async function checkModelConfig(rootPath) {
         let status, points, message;
         if (!hasAliases) {
             status = 'pass';
-            points = 3;
+            points = 2;
             message = 'No model aliases configured — using defaults';
         } else if (invalidAliases.length === 0) {
             status = 'pass';

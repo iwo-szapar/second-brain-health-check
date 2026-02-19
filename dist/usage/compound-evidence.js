@@ -149,8 +149,8 @@ export async function checkCompoundEvidence(rootPath) {
             }
 
             if (skillCount >= 2) {
-                status = 'pass'; points = 5;
-                message = `${skillCount} skill directories found (unable to determine setup date)`;
+                status = 'warn'; points = 3;
+                message = `${skillCount} skill directories found (unable to verify post-setup evolution)`;
             } else if (skillCount === 1) {
                 status = 'warn'; points = 2;
                 message = '1 skill directory found';
@@ -185,8 +185,8 @@ export async function checkCompoundEvidence(rootPath) {
             // Fallback: check existence
             const anyExists = await hasModifiedFiles([settingsPath, hooksDir], 0);
             if (anyExists) {
-                status = 'pass'; points = 5;
-                message = 'Hooks/settings files exist (unable to determine setup date)';
+                status = 'warn'; points = 3;
+                message = 'Hooks/settings files exist (unable to verify post-setup evolution)';
             } else {
                 status = 'fail'; points = 0;
                 message = 'No .claude/settings.json or .claude/hooks/ found';
