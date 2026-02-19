@@ -26,6 +26,9 @@ import { checkMcpHealth } from './setup/mcp-health.js';
 import { checkAttributionDisplay } from './setup/attribution-display.js';
 import { checkAgentQuality } from './setup/agent-quality.js';
 import { checkGitignoreHygiene } from './setup/gitignore-hygiene.js';
+import { checkTeamReadiness } from './setup/team-readiness.js';
+import { checkRulesSystem } from './setup/rules-system.js';
+import { checkInteractionConfig } from './setup/interaction-config.js';
 // Usage layers
 import { checkSessions } from './usage/sessions.js';
 import { checkPatterns } from './usage/patterns.js';
@@ -77,6 +80,9 @@ export async function runHealthCheck(path) {
             checkAttributionDisplay(rootPath),
             checkAgentQuality(rootPath),
             checkGitignoreHygiene(rootPath),
+            checkTeamReadiness(rootPath),
+            checkRulesSystem(rootPath),
+            checkInteractionConfig(rootPath),
         ]),
         Promise.all([
             checkSessions(rootPath),

@@ -1,6 +1,6 @@
 {
   "name": "second-brain-health-check",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Health check for AI Second Brain setups. Scores your CLAUDE.md, skills, hooks, memory, and usage patterns.",
   "type": "module",
   "main": "dist/index.js",

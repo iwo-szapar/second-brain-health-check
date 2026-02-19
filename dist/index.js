@@ -16,13 +16,49 @@ import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
-    version: '0.5.0',
+    version: '0.6.0',
 });
 const pathSchema = z
     .string()
     .max(4096)
     .refine((p) => !p.includes('\0'), 'Path must not contain null bytes')
     .optional();
+const SUPPORTED_LANGUAGES = [
+    'en', 'es', 'de', 'fr', 'pl', 'pt', 'ja', 'ko', 'zh', 'it', 'nl', 'ru', 'tr', 'ar',
+];
+const LANGUAGE_LABELS = {
+    en: 'English', es: 'Espa\u00f1ol', de: 'Deutsch', fr: 'Fran\u00e7ais',
+    pl: 'Polski', pt: 'Portugu\u00eas', ja: '\u65e5\u672c\u8a9e', ko: '\ud55c\uad6d\uc5b4',
+    zh: '\u4e2d\u6587', it: 'Italiano', nl: 'Nederlands', ru: '\u0420\u0443\u0441\u0441\u043a\u0438\u0439',
+    tr: 'T\u00fcrk\u00e7e', ar: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629',
+};
+const WORKSPACE_TYPES = ['solo', 'team', 'enterprise'];
+const USE_CASES = ['development', 'content', 'operations', 'research', 'mixed'];
+function buildLanguagePrompt(lang) {
+    if (!lang || lang === 'en') return '';
+    const label = LANGUAGE_LABELS[lang] || lang;
+    return `\n\nIMPORTANT: Present ALL text output in ${label} (${lang}). ` +
+        `Translate check names, messages, grades, and fix suggestions. ` +
+        `Keep technical terms (CLAUDE.md, MCP, hooks) untranslated.`;
+}
+function buildContextNote(workspaceType, useCase) {
+    const notes = [];
+    if (workspaceType === 'solo') {
+        notes.push('Scoring context: Solo workspace — team readiness checks are informational only.');
+    } else if (workspaceType === 'team' || workspaceType === 'enterprise') {
+        notes.push('Scoring context: Team workspace — team readiness and collaboration checks are weighted higher.');
+    }
+    if (useCase === 'content') {
+        notes.push('Use case: Content creation — sandbox and CI/CD checks are less critical.');
+    } else if (useCase === 'development') {
+        notes.push('Use case: Software development — all technical checks apply.');
+    } else if (useCase === 'operations') {
+        notes.push('Use case: Business operations — CRM, email, and workflow checks are key.');
+    } else if (useCase === 'research') {
+        notes.push('Use case: Research — memory evolution and pattern tracking are key.');
+    }
+    return notes.length > 0 ? '\n\n' + notes.join('\n') : '';
+}
 // Tool 1: check_health
 server.registerTool('check_health', {
     description: 'Run a full health check on your Second Brain setup. ' +
@@ -35,13 +71,32 @@ server.registerTool('check_health', {
             .describe('Path to the Second Brain root directory. ' +
             'Defaults to current working directory. ' +
             'Should contain CLAUDE.md at its root.'),
+        language: z
+            .enum(SUPPORTED_LANGUAGES)
+            .optional()
+            .describe('Language for the report output. Defaults to English (en). ' +
+            'Available: en, es, de, fr, pl, pt, ja, ko, zh, it, nl, ru, tr, ar.'),
+        workspace_type: z
+            .enum(WORKSPACE_TYPES)
+            .optional()
+            .describe("Workspace type for scoring context. 'solo' for individual use, " +
+            "'team' for small teams, 'enterprise' for large organizations. " +
+            "Affects how team readiness checks are weighted."),
+        use_case: z
+            .enum(USE_CASES)
+            .optional()
+            .describe("Primary use case. 'development' for coding, 'content' for writing, " +
+            "'operations' for business workflows, 'research' for analysis, 'mixed' for general use. " +
+            "Provides scoring context notes."),
     },
-}, async ({ path }) => {
+}, async ({ path, language, workspace_type, use_case }) => {
     try {
         const report = await runHealthCheck(path);
         const formatted = formatReport(report);
+        const langNote = buildLanguagePrompt(language);
+        const ctxNote = buildContextNote(workspace_type, use_case);
         return {
-            content: [{ type: 'text', text: formatted }],
+            content: [{ type: 'text', text: formatted + ctxNote + langNote }],
         };
     }
     catch (error) {
@@ -66,13 +121,18 @@ server.registerTool('get_fix_suggestions', {
             .describe("Which area to focus on. 'setup' for configuration quality, " +
             "'usage' for activity tracking, 'fluency' for AI collaboration depth, " +
             "'auto' picks the weaker area."),
+        language: z
+            .enum(SUPPORTED_LANGUAGES)
+            .optional()
+            .describe('Language for the output. Defaults to English (en).'),
     },
-}, async ({ path, focus }) => {
+}, async ({ path, focus, language }) => {
     try {
         const report = await runHealthCheck(path);
         const formatted = formatFixSuggestions(report, focus || 'auto');
+        const langNote = buildLanguagePrompt(language);
         return {
-            content: [{ type: 'text', text: formatted }],
+            content: [{ type: 'text', text: formatted + langNote }],
         };
     }
     catch (error) {
@@ -151,7 +211,7 @@ server.registerTool('generate_pdf', {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('Second Brain Health Check MCP server running on stdio (v0.4.0)');
+    console.error('Second Brain Health Check MCP server running on stdio (v0.6.0)');
 }
 main().catch((error) => {
     console.error('Fatal error:', error);

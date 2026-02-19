@@ -40,6 +40,9 @@ dist/
     attribution-display.js     # Layer 17: Attribution & Display (6 pts)
     agent-quality.js           # Layer 18: Agent Config Depth (8 pts)
     gitignore-hygiene.js       # Layer 19: Gitignore Hygiene (6 pts)
+    team-readiness.js          # Layer 20: Team Readiness (8 pts)
+    rules-system.js            # Layer 21: Rules System (6 pts)
+    interaction-config.js      # Layer 22: Interaction Configuration (8 pts)
   usage/
     sessions.js                # Layer 1: Sessions (25 pts)
     patterns.js                # Layer 2: Patterns (25 pts)
@@ -68,11 +71,11 @@ dist/
 
 | Dimension | Max | What it measures |
 |-----------|-----|------------------|
-| Setup Quality | ~217 | Is the brain correctly configured? (static file analysis) |
+| Setup Quality | ~239 | Is the brain correctly configured? (static file analysis) |
 | Usage Activity | ~125 | Is the brain being used? (file dates, session counts, pattern growth) |
 | AI Fluency | ~50 | How effectively does the user work with AI? (delegation, context engineering, compounding) |
 
-**Total: ~392 points** (exact total depends on dynamic maxPoints in some layers)
+**Total: ~414 points** (exact total depends on dynamic maxPoints in some layers)
 
 All dimensions are **normalized to /100** for display. The report and dashboard show `normalizedScore/100` for each dimension, calculated as `Math.round((points / maxPoints) * 100)`.
 
@@ -94,7 +97,7 @@ Runs all setup layers in parallel via `Promise.all()`, then all usage layers in 
 
 ---
 
-## Setup Quality — 19 Layers (~217 pts)
+## Setup Quality — 22 Layers (~239 pts)
 
 ### Layer 1: CLAUDE.md Foundation (23 pts) — `setup/claude-md.js`
 
@@ -143,6 +146,35 @@ Verifies sensitive local files are excluded from version control.
 |-------|-----|------|------|------|-----------|
 | Local settings protection | 3 | Protected or patterns in place (3) | No patterns (2) | Tracked in git (0) | `git ls-files` on settings.local.json, CLAUDE.local.md |
 | Environment file protection | 3 | Protected or patterns in place (3) | No patterns (1) | Tracked in git (0) | `git ls-files` on .env, .env.local, .env.production, .env.secret |
+
+### Layer 20: Team Readiness (8 pts) — `setup/team-readiness.js`
+
+Evaluates whether the workspace is configured for agent teams.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Teams feature enabled | 3 | CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 found (3) | — | Not found (1) | Checks settings env blocks and process.env |
+| Agent definitions for teamwork | 3 | 3+ agents with 2+ having tool restrictions (3) | 2+ agents (2) or 1 (1) | None (0) | Counts .md files in .claude/agents/, checks frontmatter for `tools:` |
+| Active team artifacts | 2 | Teams + tasks dirs present (2) | Partial (1) | None (1) | Checks ~/.claude/teams/ and ~/.claude/tasks/ directories |
+
+### Layer 21: Rules System (6 pts) — `setup/rules-system.js`
+
+Evaluates the modular rules system (.claude/rules/) for path-specific policy files.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Rules files present | 3 | 3+ rule files with content (3) | 1+ (2) or empty files (1) | No rules dir (1) | Counts .md/.txt files >=50 chars in .claude/rules/ and ~/.claude/rules/ |
+| Rules scope diversity | 3 | 3+ scopes or 2+ with multi-level (3) | 2 scopes or multi-level (2) | Single scope (1) | Analyzes directory depth and project vs user level |
+
+### Layer 22: Interaction Configuration (8 pts) — `setup/interaction-config.js`
+
+Evaluates terminal customization, keybindings, output styles, and thinking mode settings.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Keybindings customization | 3 | 3+ keybindings (3) | 1+ (2) | File exists but empty (1) or no file (1) | Reads ~/.claude/keybindings.json |
+| Output style and display | 3 | 3+ features configured (3) | 1+ (2) | None (1) | Checks outputStyle, spinnerVerbs, statusLine, custom output-styles dir |
+| Thinking and effort config | 2 | Both or either configured (2) | — | Defaults only (1) | Checks alwaysThinkingEnabled, effortLevel in settings |
 
 ---
 
@@ -241,12 +273,16 @@ All grade functions use **percentage** (`points / maxPoints * 100`), not raw poi
 
 ### Tool 1: `check_health`
 
-Input: `{ path?: string }` — defaults to `process.cwd()`
-Output: Full markdown report with all three dimensions + top fixes + CTA link
+Input: `{ path?, language?, workspace_type?, use_case? }` — defaults to cwd, English, no context
+- `language`: One of 14 supported languages (en, es, de, fr, pl, pt, ja, ko, zh, it, nl, ru, tr, ar). Appends translation instruction to output.
+- `workspace_type`: solo | team | enterprise — adds scoring context notes
+- `use_case`: development | content | operations | research | mixed — adds use case context
+
+Output: Full markdown report with all three dimensions + top fixes + CTA link + context notes + language instruction
 
 ### Tool 2: `get_fix_suggestions`
 
-Input: `{ path?: string, focus?: "setup" | "usage" | "fluency" | "auto" }` — `"auto"` picks weaker dimension
+Input: `{ path?, focus?, language? }` — `"auto"` picks weaker dimension
 Output: Action plan for weakest layer in chosen dimension
 
 ### Tool 3: `generate_dashboard`
