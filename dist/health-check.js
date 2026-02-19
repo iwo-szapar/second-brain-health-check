@@ -24,6 +24,8 @@ import { checkModelConfig } from './setup/model-config.js';
 import { checkEnvVars } from './setup/env-vars.js';
 import { checkMcpHealth } from './setup/mcp-health.js';
 import { checkAttributionDisplay } from './setup/attribution-display.js';
+import { checkAgentQuality } from './setup/agent-quality.js';
+import { checkGitignoreHygiene } from './setup/gitignore-hygiene.js';
 // Usage layers
 import { checkSessions } from './usage/sessions.js';
 import { checkPatterns } from './usage/patterns.js';
@@ -31,10 +33,13 @@ import { checkMemoryEvolution } from './usage/memory-evolution.js';
 import { checkReviewLoop } from './usage/review-loop.js';
 import { checkCompoundEvidence } from './usage/compound-evidence.js';
 import { checkCrossReferences } from './usage/cross-references.js';
+import { checkWorkflowMaturity } from './usage/workflow-maturity.js';
 // Fluency layers
 import { checkProgressiveDisclosure } from './fluency/progressive-disclosure.js';
 import { checkSkillOrchestration } from './fluency/skill-orchestration.js';
 import { checkContextAwareSkills } from './fluency/context-aware-skills.js';
+import { checkReferenceIntegrity } from './fluency/reference-integrity.js';
+import { checkDelegationPatterns } from './fluency/delegation-patterns.js';
 export async function runHealthCheck(path) {
     const rootPath = await realpath(resolve(path || process.cwd()));
     // Boundary check: only allow paths within user's home directory
@@ -70,6 +75,8 @@ export async function runHealthCheck(path) {
             checkEnvVars(rootPath),
             checkMcpHealth(rootPath),
             checkAttributionDisplay(rootPath),
+            checkAgentQuality(rootPath),
+            checkGitignoreHygiene(rootPath),
         ]),
         Promise.all([
             checkSessions(rootPath),
@@ -78,11 +85,14 @@ export async function runHealthCheck(path) {
             checkReviewLoop(rootPath),
             checkCompoundEvidence(rootPath),
             checkCrossReferences(rootPath),
+            checkWorkflowMaturity(rootPath),
         ]),
         Promise.all([
             checkProgressiveDisclosure(rootPath),
             checkSkillOrchestration(rootPath),
             checkContextAwareSkills(rootPath),
+            checkReferenceIntegrity(rootPath),
+            checkDelegationPatterns(rootPath),
         ]),
     ]);
     const setupTotal = setupLayers.reduce((sum, l) => sum + l.points, 0);

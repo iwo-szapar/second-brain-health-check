@@ -5,7 +5,7 @@
  * checking for quick start rules, role context, profession-specific
  * patterns, gotchas, project structure, and appropriate length.
  */
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const DOMAIN_PATTERNS = [
@@ -153,12 +153,37 @@ export async function checkClaudeMd(rootPath) {
         });
     }
 
+    // Check 7: CLAUDE.md freshness (3 pts)
+    {
+        let status, points, message;
+        try {
+            const s = await stat(join(rootPath, 'CLAUDE.md'));
+            const daysSinceModified = (Date.now() - s.mtimeMs) / (1000 * 60 * 60 * 24);
+
+            if (daysSinceModified <= 14) {
+                status = 'pass'; points = 3;
+                message = `CLAUDE.md modified ${Math.floor(daysSinceModified)} day(s) ago — actively maintained`;
+            } else if (daysSinceModified <= 30) {
+                status = 'warn'; points = 2;
+                message = `CLAUDE.md last modified ${Math.floor(daysSinceModified)} days ago — review for staleness`;
+            } else {
+                status = 'warn'; points = 1;
+                message = `CLAUDE.md last modified ${Math.floor(daysSinceModified)} days ago — likely contains outdated instructions`;
+            }
+        } catch {
+            status = 'warn'; points = 1;
+            message = 'Could not determine CLAUDE.md modification date';
+        }
+        checks.push({ name: 'CLAUDE.md freshness', status, points, maxPoints: 3, message });
+    }
+
     const totalPoints = checks.reduce((sum, c) => sum + c.points, 0);
+    const totalMaxPoints = checks.reduce((sum, c) => sum + c.maxPoints, 0);
 
     return {
         name: 'CLAUDE.md Quality',
         points: totalPoints,
-        maxPoints: 20,
+        maxPoints: totalMaxPoints,
         checks,
     };
 }

@@ -229,12 +229,60 @@ export async function checkSkills(rootPath) {
         }
     }
 
+    // Check 6: Frontmatter field depth (4 pts)
+    // Skills with name + description are basic; model, allowed-tools, context show maturity
+    {
+        if (allSkills.length === 0) {
+            checks.push({
+                name: 'Frontmatter field depth',
+                status: 'fail',
+                points: 0,
+                maxPoints: 4,
+                message: 'No skills to evaluate',
+            });
+        } else {
+            const ADVANCED_FIELDS = ['model', 'allowed-tools', 'allowedtools', 'context', 'disable-model-invocation'];
+            let advancedCount = 0;
+            let basicCount = 0;
+
+            for (const skill of allSkills) {
+                if (!skill.frontmatter) continue;
+                const fm = skill.frontmatter.toLowerCase();
+                const hasAdvanced = ADVANCED_FIELDS.some(f => fm.includes(f + ':'));
+                if (hasAdvanced) {
+                    advancedCount++;
+                } else {
+                    basicCount++;
+                }
+            }
+
+            const withFrontmatter = advancedCount + basicCount;
+            let status, points, message;
+
+            if (advancedCount >= 3) {
+                status = 'pass'; points = 4;
+                message = `${advancedCount}/${withFrontmatter} skills use advanced frontmatter (model, allowed-tools, context)`;
+            } else if (advancedCount >= 1) {
+                status = 'warn'; points = 2;
+                message = `${advancedCount}/${withFrontmatter} skills use advanced frontmatter — add model/tool restrictions to more skills`;
+            } else if (withFrontmatter > 0) {
+                status = 'warn'; points = 1;
+                message = `${withFrontmatter} skills have basic frontmatter only — add model, allowed-tools, or context fields`;
+            } else {
+                status = 'fail'; points = 0;
+                message = 'No skills have frontmatter — add YAML headers with name, description, model, allowed-tools';
+            }
+            checks.push({ name: 'Frontmatter field depth', status, points, maxPoints: 4, message });
+        }
+    }
+
     const totalPoints = checks.reduce((sum, c) => sum + c.points, 0);
+    const totalMaxPoints = checks.reduce((sum, c) => sum + c.maxPoints, 0);
 
     return {
         name: 'Skills Configuration',
         points: totalPoints,
-        maxPoints: 20,
+        maxPoints: totalMaxPoints,
         checks,
     };
 }

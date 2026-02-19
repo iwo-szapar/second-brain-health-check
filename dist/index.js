@@ -16,7 +16,7 @@ import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
-    version: '0.4.0',
+    version: '0.5.0',
 });
 const pathSchema = z
     .string()
