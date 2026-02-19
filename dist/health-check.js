@@ -2,9 +2,10 @@
  * Health Check Orchestrator
  *
  * Runs all setup, usage, and fluency checks, produces a full report.
+ * v0.8.0: Added detectBrainState() pre-scan and mapChecksToCEPatterns().
  */
 import { resolve } from 'node:path';
-import { stat, realpath } from 'node:fs/promises';
+import { stat, realpath, readFile } from 'node:fs/promises';
 import { getSetupGrade, getUsageGrade, getFluencyGrade, normalizeScore } from './types.js';
 // Setup layers
 import { checkClaudeMd } from './setup/claude-md.js';
@@ -31,6 +32,7 @@ import { checkRulesSystem } from './setup/rules-system.js';
 import { checkInteractionConfig } from './setup/interaction-config.js';
 import { checkSpecPlanning } from './setup/spec-planning.js';
 import { checkKnowledgeBase } from './setup/knowledge-base.js';
+import { checkContextPressure } from './setup/context-pressure.js';
 // Usage layers
 import { checkSessions } from './usage/sessions.js';
 import { checkPatterns } from './usage/patterns.js';
@@ -46,7 +48,170 @@ import { checkContextAwareSkills } from './fluency/context-aware-skills.js';
 import { checkReferenceIntegrity } from './fluency/reference-integrity.js';
 import { checkDelegationPatterns } from './fluency/delegation-patterns.js';
 import { checkInterviewPatterns } from './fluency/interview-patterns.js';
-export async function runHealthCheck(path) {
+
+/**
+ * Fast pre-scan (~100ms) to detect brain maturity before running full checks.
+ * Uses stat() calls only — no content reading, no heavy computation.
+ */
+export async function detectBrainState(rootPath) {
+    const has = {
+        claudeMd: false,
+        claudeDir: false,
+        memory: false,
+        skills: false,
+        hooks: false,
+        knowledge: false,
+        agents: false,
+        settings: false,
+    };
+    let claudeMdSize = 0;
+
+    const checks = await Promise.allSettled([
+        stat(resolve(rootPath, 'CLAUDE.md')).then(s => { has.claudeMd = true; claudeMdSize = s.size; }),
+        stat(resolve(rootPath, '.claude')).then(s => { if (s.isDirectory()) has.claudeDir = true; }),
+        stat(resolve(rootPath, 'memory')).then(s => { if (s.isDirectory()) has.memory = true; }),
+        stat(resolve(rootPath, '.claude/skills')).then(s => { if (s.isDirectory()) has.skills = true; }),
+        stat(resolve(rootPath, '.claude/settings.json')).then(async (s) => {
+            has.settings = true;
+            try {
+                const content = await readFile(resolve(rootPath, '.claude/settings.json'), 'utf-8');
+                const parsed = JSON.parse(content);
+                if (parsed.hooks && Object.keys(parsed.hooks).length > 0) has.hooks = true;
+            } catch { /* no hooks */ }
+        }),
+        stat(resolve(rootPath, '.claude/docs')).then(s => { if (s.isDirectory()) has.knowledge = true; })
+            .catch(() => stat(resolve(rootPath, '.claude/knowledge')).then(s => { if (s.isDirectory()) has.knowledge = true; })),
+        stat(resolve(rootPath, '.claude/agents')).then(s => { if (s.isDirectory()) has.agents = true; }),
+    ]);
+
+    // Determine maturity level
+    let maturity;
+    if (!has.claudeMd) {
+        maturity = 'empty';
+    } else if (claudeMdSize < 500 && !has.claudeDir) {
+        maturity = 'minimal';
+    } else if (!has.skills && !has.hooks && !has.memory) {
+        maturity = 'basic';
+    } else if ((has.skills || has.hooks || has.memory) && !(has.skills && has.hooks && has.memory && has.knowledge)) {
+        maturity = 'structured';
+    } else {
+        maturity = 'configured';
+    }
+
+    // Check for buyer signal and returning user
+    const isBuyer = !!(process.env.GUIDE_TOKEN);
+    let isReturning = false;
+    let previousScore = null;
+    try {
+        const historyContent = await readFile(resolve(rootPath, '.health-check.json'), 'utf-8');
+        const history = JSON.parse(historyContent);
+        isReturning = true;
+        if (history.runs && history.runs.length > 0) {
+            const lastRun = history.runs[history.runs.length - 1];
+            previousScore = lastRun.overallPct || null;
+        }
+    } catch { /* no history file */ }
+
+    return {
+        maturity,
+        has,
+        claudeMdSize,
+        isBuyer,
+        isReturning,
+        previousScore,
+    };
+}
+
+/**
+ * Maps the 37 existing layer scores to the 7 Context Engineering patterns.
+ * Pure computation — no additional filesystem scanning.
+ */
+export function mapChecksToCEPatterns(report) {
+    const patterns = [
+        {
+            id: 'progressive_disclosure',
+            name: 'Progressive Disclosure',
+            description: 'Is the entry point lean? Are details discoverable?',
+            layers: ['CLAUDE.md Quality', 'Knowledge Base Architecture', 'Settings Hierarchy'],
+        },
+        {
+            id: 'knowledge_as_ram',
+            name: 'Knowledge Files as RAM',
+            description: 'Is domain knowledge in files, not crammed into CLAUDE.md?',
+            layers: ['Knowledge Base Architecture', 'Directory Structure'],
+        },
+        {
+            id: 'hooks_as_guardrails',
+            name: 'Hooks as Guardrails',
+            description: 'Are quality requirements automated, not dependent on memory?',
+            layers: ['Hooks', 'Rules System'],
+        },
+        {
+            id: 'three_layer_memory',
+            name: 'Three-Layer Memory',
+            description: 'Are episodic/semantic/goals properly separated?',
+            layers: ['Memory Architecture', 'Sessions'],
+        },
+        {
+            id: 'compound_learning',
+            name: 'Compound Learning',
+            description: 'Does each session make the system smarter?',
+            layers: ['Review Loop', 'Compound Evidence', 'Workflow Maturity', 'Patterns'],
+        },
+        {
+            id: 'self_correction',
+            name: 'Self-Correction Protocol',
+            description: 'How does this age? What detects decay?',
+            layers: ['Brain Health Infrastructure', 'Memory Evolution', 'Cross-References'],
+        },
+        {
+            id: 'context_surfaces',
+            name: 'Context Surfaces',
+            description: 'Do agents have live data access via MCP?',
+            layers: ['MCP Server Health', 'Plugin Coverage', 'Interaction Configuration', 'Context Pressure'],
+        },
+    ];
+
+    // Build a flat map of all layers by name -> { points, maxPoints }
+    const layerMap = {};
+    const allLayers = [
+        ...(report.setup?.layers || []),
+        ...(report.usage?.layers || []),
+        ...(report.fluency?.layers || []),
+    ];
+    for (const layer of allLayers) {
+        layerMap[layer.name] = { points: layer.points, maxPoints: layer.maxPoints };
+    }
+
+    return patterns.map(pattern => {
+        let totalPoints = 0;
+        let totalMax = 0;
+        let matchedLayers = 0;
+
+        for (const layerName of pattern.layers) {
+            const layer = layerMap[layerName];
+            if (layer) {
+                totalPoints += layer.points;
+                totalMax += layer.maxPoints;
+                matchedLayers++;
+            }
+        }
+
+        const percentage = totalMax > 0 ? Math.round((totalPoints / totalMax) * 100) : 0;
+
+        return {
+            id: pattern.id,
+            name: pattern.name,
+            description: pattern.description,
+            score: totalPoints,
+            maxScore: totalMax,
+            percentage,
+            matchedLayers,
+        };
+    });
+}
+
+export async function runHealthCheck(path, options = {}) {
     const rootPath = await realpath(resolve(path || process.cwd()));
     // Boundary check: only allow paths within user's home directory
     const homeDir = process.env.HOME || process.env.USERPROFILE;
@@ -61,6 +226,24 @@ export async function runHealthCheck(path) {
     if (!s.isDirectory()) {
         throw new Error(`Path "${rootPath}" is not a directory.`);
     }
+
+    // Always run brain state detection first
+    const brainState = await detectBrainState(rootPath);
+
+    // Quick mode: return detection only, skip full checks
+    if (options.mode === 'quick') {
+        return {
+            path: rootPath,
+            timestamp: new Date().toISOString(),
+            brainState,
+            setup: { totalPoints: 0, maxPoints: 0, normalizedScore: 0, grade: 'F', gradeLabel: 'Not scanned', layers: [] },
+            usage: { totalPoints: 0, maxPoints: 0, normalizedScore: 0, grade: 'Empty', gradeLabel: 'Not scanned', layers: [] },
+            fluency: { totalPoints: 0, maxPoints: 0, normalizedScore: 0, grade: 'Novice', gradeLabel: 'Not scanned', layers: [] },
+            topFixes: [],
+            cePatterns: [],
+        };
+    }
+
     // Run all checks in parallel (setup, usage, fluency)
     const [setupLayers, usageLayers, fluencyLayers] = await Promise.all([
         Promise.all([
@@ -88,6 +271,7 @@ export async function runHealthCheck(path) {
             checkInteractionConfig(rootPath),
             checkSpecPlanning(rootPath),
             checkKnowledgeBase(rootPath),
+            checkContextPressure(rootPath),
         ]),
         Promise.all([
             checkSessions(rootPath),
@@ -141,14 +325,21 @@ export async function runHealthCheck(path) {
         layers: fluencyLayers,
     };
     const topFixes = generateTopFixes(setupLayers, usageLayers, fluencyLayers);
-    return {
+
+    const report = {
         path: rootPath,
         timestamp: new Date().toISOString(),
+        brainState,
         setup,
         usage,
         fluency,
         topFixes,
     };
+
+    // Compute CE pattern mapping
+    report.cePatterns = mapChecksToCEPatterns(report);
+
+    return report;
 }
 function generateTopFixes(setupLayers, usageLayers, fluencyLayers) {
     const allChecks = [];
@@ -188,4 +379,3 @@ function generateTopFixes(setupLayers, usageLayers, fluencyLayers) {
         category: item.category,
     }));
 }
-//# sourceMappingURL=health-check.js.map

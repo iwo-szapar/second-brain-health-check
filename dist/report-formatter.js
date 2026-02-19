@@ -2,7 +2,70 @@
  * Report Formatter
  *
  * Converts health check results into a readable markdown report.
+ * v0.8.0: Adaptive formatting based on brain maturity level,
+ * score-band CTAs, time estimates on fixes, CE pattern section.
  */
+
+/** Time estimates for common fix categories (minutes) */
+const FIX_TIME_ESTIMATES = {
+    'claude.md': 10,
+    'skills': 15,
+    'hooks': 15,
+    'memory': 10,
+    'directory': 5,
+    'brain health': 5,
+    'personalization': 10,
+    'mcp': 5,
+    'config': 5,
+    'settings': 5,
+    'permissions': 5,
+    'sandbox': 5,
+    'model': 3,
+    'env': 5,
+    'attribution': 3,
+    'agent': 15,
+    'gitignore': 3,
+    'team': 10,
+    'rules': 10,
+    'interaction': 5,
+    'spec': 10,
+    'knowledge': 15,
+    'context pressure': 10,
+    'sessions': 5,
+    'patterns': 10,
+    'memory evolution': 5,
+    'review loop': 15,
+    'compound': 10,
+    'cross-references': 10,
+    'workflow': 10,
+    'progressive': 10,
+    'orchestration': 15,
+    'context-aware': 10,
+    'reference': 5,
+    'delegation': 15,
+    'interview': 10,
+    'quality tracking': 5,
+    'growth log': 5,
+    'activity': 5,
+    'codex': 5,
+    'style': 10,
+    'tracking': 5,
+    'stale': 5,
+    'hook health': 5,
+    'pattern confidence': 5,
+    'index files': 5,
+    'getting started': 5,
+    'external doc': 10,
+};
+
+function estimateMinutes(fixTitle) {
+    const lower = fixTitle.toLowerCase();
+    for (const [key, mins] of Object.entries(FIX_TIME_ESTIMATES)) {
+        if (lower.includes(key)) return mins;
+    }
+    return 10; // default
+}
+
 function progressBar(points, maxPoints, width = 20) {
     const filled = Math.round((points / maxPoints) * width);
     const empty = width - filled;
@@ -25,7 +88,245 @@ function formatLayer(layer) {
     }
     return lines.join('\n');
 }
+
+/**
+ * Build score-band CTA based on overall percentage and buyer status.
+ */
+function buildCTA(report) {
+    const isBuyer = report.brainState?.isBuyer || false;
+    const overallPct = getOverallPct(report);
+
+    if (isBuyer) {
+        return [
+            '================================================================',
+            '  BASELINE CAPTURED',
+            `  Your brain scores ${overallPct}%.`,
+            '  Run again after setup to see your progress.',
+            '================================================================',
+        ];
+    }
+
+    if (overallPct === 0 || report.brainState?.maturity === 'empty') {
+        return [
+            '================================================================',
+            '  See what a properly configured Second Brain looks like:',
+            '  https://www.iwoszapar.com/context-engineering',
+            '================================================================',
+        ];
+    }
+
+    if (overallPct <= 30) {
+        return [
+            '================================================================',
+            '  20 min of manual work gets you started.',
+            '  Or get a pre-built brain:',
+            '  https://www.iwoszapar.com/second-brain-ai',
+            '================================================================',
+        ];
+    }
+
+    if (overallPct <= 60) {
+        return [
+            '================================================================',
+            '  You built the foundation.',
+            '  The Context Engineering Guide automates the rest:',
+            '  https://www.iwoszapar.com/context-engineering',
+            '================================================================',
+        ];
+    }
+
+    if (overallPct < 85) {
+        const gap = 85 - overallPct;
+        // Find weakest CE pattern
+        const weakestPattern = report.cePatterns
+            ?.filter(p => p.maxScore > 0)
+            ?.sort((a, b) => a.percentage - b.percentage)?.[0];
+        const patternHint = weakestPattern
+            ? ` Missing pattern: ${weakestPattern.name}.`
+            : '';
+        return [
+            '================================================================',
+            `  ${gap} points from Production-grade.${patternHint}`,
+            '  https://www.iwoszapar.com/context-engineering',
+            '================================================================',
+        ];
+    }
+
+    // 85+
+    return [
+        '================================================================',
+        '  You built something rare. Ready for Team Brain?',
+        '  https://www.iwoszapar.com/teams',
+        '================================================================',
+    ];
+}
+
+function getOverallPct(report) {
+    const totalPts = (report.setup?.totalPoints || 0) +
+        (report.usage?.totalPoints || 0) +
+        (report.fluency?.totalPoints || 0);
+    const totalMax = (report.setup?.maxPoints || 0) +
+        (report.usage?.maxPoints || 0) +
+        (report.fluency?.maxPoints || 0);
+    return totalMax > 0 ? Math.round((totalPts / totalMax) * 100) : 0;
+}
+
+/**
+ * Format report for an EMPTY brain (no CLAUDE.md).
+ * Friendly 3-step getting started guide instead of 37 failures.
+ */
+function formatEmptyReport(report) {
+    const lines = [];
+    lines.push('================================================================');
+    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push('================================================================');
+    lines.push('');
+    lines.push('STATUS: No Second Brain detected.');
+    lines.push('');
+    lines.push('That is totally fine. Here is how to get started:');
+    lines.push('');
+    lines.push('----------------------------------------------------------------');
+    lines.push('GETTING STARTED (3 steps, ~20 minutes)');
+    lines.push('----------------------------------------------------------------');
+    lines.push('');
+    lines.push('STEP 1: Create CLAUDE.md (~5 min)');
+    lines.push('  Your AI\'s instruction manual. Start with:');
+    lines.push('  - Who you are and what you do');
+    lines.push('  - Your top 3-5 rules ("always do X", "never do Y")');
+    lines.push('  - Key tools and frameworks you use');
+    lines.push('');
+    lines.push('STEP 2: Add skills (~10 min)');
+    lines.push('  Create .claude/skills/ with at least one .md file.');
+    lines.push('  A skill is a reusable prompt for a task you repeat.');
+    lines.push('  Example: a /review skill that checks your code.');
+    lines.push('');
+    lines.push('STEP 3: Set up memory (~5 min)');
+    lines.push('  Create memory/ with subdirectories:');
+    lines.push('  memory/episodic/  — session logs, decisions');
+    lines.push('  memory/semantic/  — patterns, templates, voice');
+    lines.push('');
+    lines.push('After these 3 steps, run this health check again.');
+    lines.push('You will go from 0% to ~25-35% immediately.');
+    lines.push('');
+    lines.push(...buildCTA(report));
+    return lines.join('\n');
+}
+
+/**
+ * Format report for MINIMAL/BASIC brain (score 1-40).
+ * Growth mode: celebrate what exists, show top 3 fixes only.
+ */
+function formatGrowthReport(report) {
+    const lines = [];
+    const overallPct = getOverallPct(report);
+    const has = report.brainState?.has || {};
+
+    lines.push('================================================================');
+    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push('================================================================');
+    lines.push('');
+    lines.push(`SETUP QUALITY:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
+    lines.push(`USAGE ACTIVITY:   ${report.usage.normalizedScore}/100 (${report.usage.grade} - ${report.usage.gradeLabel})`);
+    if (report.fluency) {
+        lines.push(`AI FLUENCY:       ${report.fluency.normalizedScore}/100 (${report.fluency.grade} - ${report.fluency.gradeLabel})`);
+    }
+    lines.push('');
+
+    // Celebrate what exists
+    lines.push('----------------------------------------------------------------');
+    lines.push('WHAT YOU HAVE (good start!)');
+    lines.push('----------------------------------------------------------------');
+    lines.push('');
+    if (has.claudeMd) lines.push('  [pass] CLAUDE.md exists');
+    if (has.claudeDir) lines.push('  [pass] .claude/ directory configured');
+    if (has.skills) lines.push('  [pass] Skills directory found');
+    if (has.hooks) lines.push('  [pass] Hooks configured');
+    if (has.memory) lines.push('  [pass] Memory directory found');
+    if (has.knowledge) lines.push('  [pass] Knowledge base started');
+    if (has.agents) lines.push('  [pass] Custom agents configured');
+    lines.push('');
+
+    // Top 3 fixes with time estimates
+    const fixes = report.topFixes.slice(0, 3);
+    if (fixes.length > 0) {
+        lines.push('----------------------------------------------------------------');
+        lines.push('YOUR NEXT 20-MINUTE SESSION (top 3 fixes)');
+        lines.push('----------------------------------------------------------------');
+        lines.push('');
+        let totalMinutes = 0;
+        fixes.forEach((fix, i) => {
+            const mins = estimateMinutes(fix.title);
+            totalMinutes += mins;
+            lines.push(`${i + 1}. ${fix.title} (${fix.impact}, ~${mins} min)`);
+            lines.push(`   ${fix.description}`);
+            lines.push('');
+        });
+        lines.push(`Total estimated time: ~${totalMinutes} min`);
+        lines.push('');
+    }
+
+    // CE pattern hint (just top 3 weakest)
+    if (report.cePatterns && report.cePatterns.length > 0) {
+        const weakPatterns = report.cePatterns
+            .filter(p => p.maxScore > 0)
+            .sort((a, b) => a.percentage - b.percentage)
+            .slice(0, 3);
+        if (weakPatterns.length > 0) {
+            lines.push('----------------------------------------------------------------');
+            lines.push('PATTERNS TO UNLOCK');
+            lines.push('----------------------------------------------------------------');
+            lines.push('');
+            for (const p of weakPatterns) {
+                const bar = progressBar(p.percentage, 100, 10);
+                lines.push(`  ${p.name.padEnd(25)} ${bar} ${p.percentage}%`);
+            }
+            lines.push('');
+        }
+    }
+
+    lines.push(...buildCTA(report));
+    return lines.join('\n');
+}
+
+/**
+ * Format CE patterns section for full reports.
+ */
+function formatCEPatterns(cePatterns) {
+    if (!cePatterns || cePatterns.length === 0) return [];
+    const lines = [];
+    lines.push('----------------------------------------------------------------');
+    lines.push('CONTEXT ENGINEERING PATTERNS (7 patterns)');
+    lines.push('----------------------------------------------------------------');
+    lines.push('');
+    for (const p of cePatterns) {
+        if (p.maxScore === 0) continue;
+        const bar = progressBar(p.percentage, 100, 15);
+        const status = p.percentage >= 70 ? '[pass]' : p.percentage >= 40 ? '[warn]' : '[fail]';
+        lines.push(`${status} ${p.name.padEnd(28)} ${bar} ${p.percentage}%`);
+    }
+    lines.push('');
+    return lines;
+}
+
+/**
+ * Full report — for structured+ brains (score 41+).
+ */
 export function formatReport(report) {
+    // Adaptive formatting based on brain state
+    const maturity = report.brainState?.maturity;
+    const overallPct = getOverallPct(report);
+
+    // Empty brain: getting started guide
+    if (maturity === 'empty' || (overallPct === 0 && !report.brainState?.has?.claudeMd)) {
+        return formatEmptyReport(report);
+    }
+
+    // Growth mode for low scores
+    if (overallPct <= 40 && (maturity === 'minimal' || maturity === 'basic')) {
+        return formatGrowthReport(report);
+    }
+
+    // Full report for structured+
     const lines = [];
     lines.push('================================================================');
     lines.push('  SECOND BRAIN HEALTH CHECK');
@@ -66,22 +367,23 @@ export function formatReport(report) {
             lines.push('');
         }
     }
-    // Top fixes
+    // CE Patterns section
+    lines.push(...formatCEPatterns(report.cePatterns));
+    // Top fixes with time estimates
     if (report.topFixes.length > 0) {
         lines.push('----------------------------------------------------------------');
         lines.push('TOP FIXES (highest impact)');
         lines.push('----------------------------------------------------------------');
         lines.push('');
         report.topFixes.forEach((fix, i) => {
-            lines.push(`${i + 1}. ${fix.title} (${fix.impact})`);
+            const mins = estimateMinutes(fix.title);
+            lines.push(`${i + 1}. ${fix.title} (${fix.impact}, ~${mins} min)`);
             lines.push(`   ${fix.description}`);
             lines.push('');
         });
     }
-    lines.push('================================================================');
-    lines.push('  Build a properly configured Second Brain:');
-    lines.push('  https://www.iwoszapar.com/second-brain-ai');
-    lines.push('================================================================');
+    // Score-band CTA
+    lines.push(...buildCTA(report));
     return lines.join('\n');
 }
 export function formatFixSuggestions(report, focus) {
@@ -128,7 +430,8 @@ export function formatFixSuggestions(report, focus) {
     lines.push('');
     failingChecks.forEach((check, i) => {
         const pointsToGain = check.maxPoints - check.points;
-        lines.push(`${i + 1}. ${check.name} (+${pointsToGain} pts)`);
+        const mins = estimateMinutes(check.name);
+        lines.push(`${i + 1}. ${check.name} (+${pointsToGain} pts, ~${mins} min)`);
         lines.push(`   Status: ${check.status}`);
         lines.push(`   ${check.message}`);
         lines.push('');
@@ -148,4 +451,3 @@ export function formatFixSuggestions(report, focus) {
     lines.push('================================================================');
     return lines.join('\n');
 }
-//# sourceMappingURL=report-formatter.js.map

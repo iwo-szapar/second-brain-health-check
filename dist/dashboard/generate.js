@@ -4,6 +4,9 @@
  * Generates a self-contained HTML dashboard from health check results.
  * Matches the PDF report aesthetic: monospace, dark, angular, no-nonsense.
  * Weaves narrative context between data sections for first-time readers.
+ *
+ * v0.8.0: Three-tier fix remediation (summary + why + steps),
+ * time estimates, CE pattern section.
  */
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -39,35 +42,140 @@ function statusSquare(status) {
     return `<span style="display:inline-block;width:10px;height:10px;min-width:10px;background:${c};margin-top:2px;"></span>`;
 }
 
-/** Guided remediation hints for common fix titles */
+/** Three-tier guided remediation hints for common fix titles */
 const FIX_REMEDIATION = {
-    'quality tracking active': 'Create <code style="color:#4455ee;">memory/quality-metrics.md</code> and log a dated entry after each work session.',
-    'growth log populated': 'Create <code style="color:#4455ee;">memory/growth-log.md</code> with dated entries tracking what your brain learned each week.',
-    'activity spans multiple days': 'Use your Second Brain across multiple days. Session diversity matters more than session count.',
-    'codex compatibility': 'Run <code style="color:#4455ee;">mkdir -p .codex/skills</code> and symlink or copy your Claude skills there.',
-    'style/voice files populated': 'Add files to <code style="color:#4455ee;">memory/style-voice/</code> or <code style="color:#4455ee;">memory/personal/</code> describing your writing voice, communication preferences, or company context.',
-    'memory files evolving': 'Edit existing memory files as you learn new things. A static brain is a dead brain.',
-    'auto memory populated': 'Use Claude Code regularly. Auto-memory fills itself as patterns emerge across sessions.',
-    'tracking files present': 'Create <code style="color:#4455ee;">brain-health/growth-log.md</code> and <code style="color:#4455ee;">brain-health/quality-metrics.md</code> to track your brain\'s evolution.',
-    'config size': 'Audit <code style="color:#4455ee;">~/.claude.json</code> and <code style="color:#4455ee;">.claude/settings.local.json</code> for stale entries. Remove permissions you no longer need.',
-    'stale permission patterns': 'Run <code style="color:#4455ee;">claude permissions reset</code> or manually prune unused patterns from settings files.',
-    'hook health validation': 'Add <code style="color:#4455ee;">|| true</code> after <code style="color:#4455ee;">grep</code> and <code style="color:#4455ee;">find</code> commands in hook scripts using <code style="color:#4455ee;">set -e</code>.',
-    'pattern confidence tracking': 'Add HIGH/MEDIUM/LOW confidence labels to your <code style="color:#4455ee;">_pattern-tracker.md</code> entries.',
-    'settings permission leaks': 'Remove API keys and tokens from permission allow-lists in settings files.',
-    'memory dir with subdirectories': 'Create subdirectories in <code style="color:#4455ee;">memory/</code>: semantic/, episodic/, personal/, style-voice/.',
-    'patterns directory': 'Run <code style="color:#4455ee;">mkdir -p memory/semantic/patterns</code> to store learned patterns.',
-    'index files for navigation': 'Add <code style="color:#4455ee;">index.md</code> files to your top-level knowledge directories so the agent can navigate.',
-    'brain health directory': 'Run <code style="color:#4455ee;">mkdir brain-health</code> and add tracking files for growth metrics.',
-    'getting started guide': 'Create a <code style="color:#4455ee;">README.md</code> or <code style="color:#4455ee;">ONBOARDING_SUMMARY.md</code> at your project root.',
-    'agent configuration': 'Create <code style="color:#4455ee;">.claude/agents/</code> with .md files defining specialized agent personas.',
-    'external doc references': 'Add "Read X before working on Y" tables in CLAUDE.md pointing to docs/ files.',
-    'skills reference knowledge dirs': 'Update skill instructions to reference <code style="color:#4455ee;">memory/</code>, <code style="color:#4455ee;">docs/</code>, or <code style="color:#4455ee;">patterns/</code> directories.',
+    'quality tracking active': {
+        hint: 'Create <code style="color:#4455ee;">memory/quality-metrics.md</code> and log a dated entry after each work session.',
+        minutes: 5,
+        why: 'Tracking quality metrics over time shows the brain is improving, not just existing.',
+        steps: ['Create memory/quality-metrics.md', 'Add a dated entry: "## 2026-02-19\\n- Sessions: 3\\n- Patterns learned: 1"', 'Update after each work session'],
+    },
+    'growth log populated': {
+        hint: 'Create <code style="color:#4455ee;">memory/growth-log.md</code> with dated entries tracking what your brain learned each week.',
+        minutes: 5,
+        why: 'A growth log creates a compound learning record — you can see what your brain learned over weeks and months.',
+        steps: ['Create memory/growth-log.md', 'Add weekly entries: "## Week of Feb 17\\n- Learned: hook patterns for safety\\n- Added: 2 new skills"', 'Review monthly for patterns'],
+    },
+    'activity spans multiple days': {
+        hint: 'Use your Second Brain across multiple days. Session diversity matters more than session count.',
+        minutes: 5,
+        why: 'A brain used once is an experiment. A brain used daily is a system. Multi-day activity proves compounding.',
+        steps: ['Use your brain for at least one task today', 'Come back tomorrow and use it again', 'After 3+ days, this check passes automatically'],
+    },
+    'codex compatibility': {
+        hint: 'Run <code style="color:#4455ee;">mkdir -p .codex/skills</code> and symlink or copy your Claude skills there.',
+        minutes: 5,
+        why: 'Codex compatibility means your skills work across multiple AI coding tools, not just Claude.',
+        steps: ['Run: mkdir -p .codex/skills', 'Copy or symlink your .claude/skills/ files to .codex/skills/', 'Verify with: ls .codex/skills/'],
+    },
+    'style/voice files populated': {
+        hint: 'Add files to <code style="color:#4455ee;">memory/style-voice/</code> or <code style="color:#4455ee;">memory/personal/</code> describing your writing voice, communication preferences, or company context.',
+        minutes: 10,
+        why: 'Voice files let the AI match your communication style — emails, docs, and messages sound like you.',
+        steps: ['Create memory/style-voice/ directory', 'Add a voice.md describing your writing style (tone, vocabulary, pet peeves)', 'Add examples of your best writing as reference'],
+    },
+    'memory files evolving': {
+        hint: 'Edit existing memory files as you learn new things. A static brain is a dead brain.',
+        minutes: 5,
+        why: 'Memory evolution is the signal that compound learning is working. Static memory means no learning.',
+        steps: ['Open any memory file that has not been updated recently', 'Add or update entries based on recent work', 'The system detects file modification dates — just saving counts'],
+    },
+    'auto memory populated': {
+        hint: 'Use Claude Code regularly. Auto-memory fills itself as patterns emerge across sessions.',
+        minutes: 5,
+        why: 'Auto-memory captures patterns you would otherwise forget. It builds itself through regular use.',
+        steps: ['Use Claude Code for a few tasks', 'Check ~/.claude/ for auto-generated memory files', 'Review and curate the auto-captured patterns periodically'],
+    },
+    'tracking files present': {
+        hint: 'Create <code style="color:#4455ee;">brain-health/growth-log.md</code> and <code style="color:#4455ee;">brain-health/quality-metrics.md</code> to track your brain\'s evolution.',
+        minutes: 5,
+        why: 'Without tracking files, you cannot measure improvement. What gets measured gets managed.',
+        steps: ['Run: mkdir -p brain-health', 'Create brain-health/growth-log.md with a dated first entry', 'Create brain-health/quality-metrics.md with baseline metrics'],
+    },
+    'config size': {
+        hint: 'Audit <code style="color:#4455ee;">~/.claude.json</code> and <code style="color:#4455ee;">.claude/settings.local.json</code> for stale entries. Remove permissions you no longer need.',
+        minutes: 5,
+        why: 'Bloated config files slow down session startup and can contain stale permissions.',
+        steps: ['Open ~/.claude.json and review each entry', 'Remove permissions for tools or paths you no longer use', 'Check .claude/settings.local.json for duplicates'],
+    },
+    'stale permission patterns': {
+        hint: 'Run <code style="color:#4455ee;">claude permissions reset</code> or manually prune unused patterns from settings files.',
+        minutes: 5,
+        why: 'Stale permissions create security surface area for no benefit.',
+        steps: ['Run: claude permissions reset', 'Or manually edit .claude/settings.json to remove old Allow patterns', 'Keep only permissions you actively use'],
+    },
+    'hook health validation': {
+        hint: 'Add <code style="color:#4455ee;">|| true</code> after <code style="color:#4455ee;">grep</code> and <code style="color:#4455ee;">find</code> commands in hook scripts using <code style="color:#4455ee;">set -e</code>.',
+        minutes: 5,
+        why: 'Hooks with set -e that call grep/find will crash on no-match. Adding || true prevents false failures.',
+        steps: ['Find all hook scripts in .claude/hooks/', 'Search for grep or find commands', 'Add || true after each to prevent exit on no-match'],
+    },
+    'pattern confidence tracking': {
+        hint: 'Add HIGH/MEDIUM/LOW confidence labels to your <code style="color:#4455ee;">_pattern-tracker.md</code> entries.',
+        minutes: 5,
+        why: 'Confidence tracking separates proven patterns from hunches. It prevents acting on unverified assumptions.',
+        steps: ['Open your pattern tracker file', 'Add confidence: HIGH/MEDIUM/LOW to each pattern', 'Promote patterns from LOW to HIGH as they prove themselves'],
+    },
+    'settings permission leaks': {
+        hint: 'Remove API keys and tokens from permission allow-lists in settings files.',
+        minutes: 5,
+        why: 'API keys in permission lists are a security risk — they can be exposed in git history.',
+        steps: ['Search settings files for patterns containing api_key, token, secret', 'Remove any that appear in Allow lists', 'Move secrets to .env files (which should be gitignored)'],
+    },
+    'memory dir with subdirectories': {
+        hint: 'Create subdirectories in <code style="color:#4455ee;">memory/</code>: semantic/, episodic/, personal/, style-voice/.',
+        minutes: 10,
+        why: 'A flat memory directory becomes unsearchable. Subdirectories give the AI structured retrieval paths.',
+        steps: ['Run: mkdir -p memory/semantic/patterns memory/episodic/sessions memory/personal', 'Move existing files into appropriate subdirectories', 'Add index.md to each directory explaining its purpose'],
+    },
+    'patterns directory': {
+        hint: 'Run <code style="color:#4455ee;">mkdir -p memory/semantic/patterns</code> to store learned patterns.',
+        minutes: 5,
+        why: 'Patterns are the highest-value memory type — reusable knowledge that compounds across sessions.',
+        steps: ['Run: mkdir -p memory/semantic/patterns', 'Create your first pattern file based on a recent lesson learned', 'Reference patterns from CLAUDE.md or skills'],
+    },
+    'index files for navigation': {
+        hint: 'Add <code style="color:#4455ee;">index.md</code> files to your top-level knowledge directories so the agent can navigate.',
+        minutes: 5,
+        why: 'Index files are progressive disclosure for AI — they tell the agent what is in each directory without loading everything.',
+        steps: ['Add index.md to memory/, .claude/docs/, and any knowledge directories', 'List the contents and purpose of each file in the directory', 'Reference these indexes from CLAUDE.md'],
+    },
+    'brain health directory': {
+        hint: 'Run <code style="color:#4455ee;">mkdir brain-health</code> and add tracking files for growth metrics.',
+        minutes: 5,
+        why: 'A brain-health directory enables self-monitoring — the brain can track its own improvement.',
+        steps: ['Run: mkdir brain-health', 'Create growth-log.md and quality-metrics.md', 'Run health check periodically and log the scores'],
+    },
+    'getting started guide': {
+        hint: 'Create a <code style="color:#4455ee;">README.md</code> or <code style="color:#4455ee;">ONBOARDING_SUMMARY.md</code> at your project root.',
+        minutes: 5,
+        why: 'A getting started guide helps teammates (and future-you) understand the brain quickly.',
+        steps: ['Create README.md at your project root', 'Explain what this brain does and who it is for', 'List the key commands and skills available'],
+    },
+    'agent configuration': {
+        hint: 'Create <code style="color:#4455ee;">.claude/agents/</code> with .md files defining specialized agent personas.',
+        minutes: 15,
+        why: 'Custom agents let you delegate complex tasks to specialized AI personas with focused instructions.',
+        steps: ['Run: mkdir -p .claude/agents', 'Create a .md file for each agent role (e.g., reviewer.md, researcher.md)', 'Define each agent\'s purpose, tools, and constraints in the file'],
+    },
+    'external doc references': {
+        hint: 'Add "Read X before working on Y" tables in CLAUDE.md pointing to docs/ files.',
+        minutes: 10,
+        why: 'External doc references implement progressive disclosure — CLAUDE.md stays lean while deep context is discoverable.',
+        steps: ['Create a table in CLAUDE.md: | Area | Read This File |', 'Add rows mapping work areas to .claude/docs/ files', 'Move detailed context from CLAUDE.md into those doc files'],
+    },
+    'skills reference knowledge dirs': {
+        hint: 'Update skill instructions to reference <code style="color:#4455ee;">memory/</code>, <code style="color:#4455ee;">docs/</code>, or <code style="color:#4455ee;">patterns/</code> directories.',
+        minutes: 10,
+        why: 'Context-aware skills pull from your knowledge base instead of relying on inline instructions.',
+        steps: ['Open each skill in .claude/skills/', 'Add instructions like "Read memory/semantic/patterns/ before executing"', 'Reference specific knowledge files relevant to the skill\'s domain'],
+    },
 };
 
 function getRemediation(title) {
     const key = title.toLowerCase();
-    for (const [pattern, hint] of Object.entries(FIX_REMEDIATION)) {
-        if (key.includes(pattern)) return hint;
+    for (const [pattern, data] of Object.entries(FIX_REMEDIATION)) {
+        if (key.includes(pattern)) return data;
     }
     return null;
 }
@@ -170,9 +278,19 @@ function renderTopFixes(fixes) {
         const badgeColor = catColors[fix.category] || '#4455ee';
 
         const remediation = getRemediation(fix.title);
-        const remediationHtml = remediation
-            ? `<div style="font-size:11px;color:#4455ee;margin-top:6px;padding:6px 10px;background:#0d0d1a;border-left:2px solid #2233cc;line-height:1.6;">${remediation}</div>`
-            : '';
+        let remediationHtml = '';
+        if (remediation) {
+            const timeHtml = remediation.minutes
+                ? `<span style="color:#22c55e;font-size:10px;margin-left:8px;">~${remediation.minutes} min</span>`
+                : '';
+            const whyHtml = remediation.why
+                ? `<div style="font-size:11px;color:#888;margin-top:4px;font-style:italic;">${escapeHtml(remediation.why)}</div>`
+                : '';
+            const stepsHtml = remediation.steps
+                ? `<details style="margin-top:6px;"><summary style="font-size:10px;color:#4455ee;cursor:pointer;text-transform:uppercase;letter-spacing:0.08em;">Step-by-step guide</summary><ol style="font-size:11px;color:#777;margin:6px 0 0 16px;line-height:1.8;">${remediation.steps.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol></details>`
+                : '';
+            remediationHtml = `<div style="font-size:11px;color:#4455ee;margin-top:6px;padding:8px 10px;background:#0d0d1a;border-left:2px solid #2233cc;line-height:1.6;">${remediation.hint}${timeHtml}${whyHtml}${stepsHtml}</div>`;
+        }
 
         rowsHtml += `
         <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #1a1a1a;">
@@ -192,6 +310,33 @@ function renderTopFixes(fixes) {
     <div style="border:1px solid #2a2a2a;margin-top:32px;">
         <div style="background:#0d0d40;padding:13px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;">TOP FIXES &mdash; HIGHEST IMPACT</div>
         ${rowsHtml}
+    </div>`;
+}
+
+function renderCEPatterns(cePatterns) {
+    if (!cePatterns || cePatterns.length === 0) return '';
+
+    let patternsHtml = '';
+    for (const p of cePatterns) {
+        if (p.maxScore === 0) continue;
+        const barColor = p.percentage >= 70 ? '#22c55e' : p.percentage >= 40 ? '#eab308' : '#ef4444';
+        patternsHtml += `
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
+            <span style="font-size:11px;color:#aaa;flex:1;min-width:0;">${escapeHtml(p.name)}</span>
+            <div style="width:120px;height:4px;background:#1a1a1a;flex-shrink:0;">
+                <div style="height:100%;width:${p.percentage}%;background:${barColor};"></div>
+            </div>
+            <span style="font-size:12px;color:${barColor};width:40px;text-align:right;flex-shrink:0;">${p.percentage}%</span>
+        </div>`;
+    }
+
+    return `
+    <div style="border:1px solid #2a2a2a;margin-top:32px;">
+        <div style="background:#0d0d40;padding:13px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;">CONTEXT ENGINEERING PATTERNS</div>
+        <div style="padding:12px 20px;">
+            <div style="font-size:11px;color:#666;margin-bottom:12px;">How well your brain implements the 7 Context Engineering patterns.</div>
+            ${patternsHtml}
+        </div>
     </div>`;
 }
 
@@ -296,6 +441,8 @@ export function generateDashboardHtml(report) {
   a { color: #22c55e; text-decoration: none; }
   a:hover { text-decoration: underline; }
   code { font-family: inherit; }
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
   @media (max-width: 680px) {
     body { padding: 24px 20px; }
     .score-panel { grid-template-columns: 1fr !important; }
@@ -310,7 +457,7 @@ export function generateDashboardHtml(report) {
 
     <!-- Nav header -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.1em;">
-        <span>SECOND BRAIN // HEALTH CHECK</span>
+        <span>SECOND BRAIN // HEALTH CHECK v0.8.0</span>
         <span style="text-align:right;">${dateStr}<br>${timeStr}</span>
     </div>
 
@@ -399,6 +546,9 @@ export function generateDashboardHtml(report) {
     <!-- Top Fixes -->
     ${renderTopFixes(report.topFixes)}
 
+    <!-- CE Patterns -->
+    ${renderCEPatterns(report.cePatterns)}
+
     <!-- Setup -->
     ${getDimensionIntro(report.setup, 'Setup Quality')}
     ${renderDimension(report.setup, 'Setup Quality')}
@@ -430,7 +580,7 @@ export function generateDashboardHtml(report) {
 
     <!-- Footer -->
     <div style="text-align:center;padding-top:20px;border-top:1px solid #1a1a1a;font-size:10px;color:#444;text-transform:uppercase;letter-spacing:0.1em;">
-        GENERATED BY <a href="https://www.iwoszapar.com/second-brain-ai" style="color:#22c55e;">SECOND BRAIN HEALTH CHECK</a> &middot; ${ts.toISOString()}
+        GENERATED BY <a href="https://www.iwoszapar.com/second-brain-ai" style="color:#22c55e;">SECOND BRAIN HEALTH CHECK</a> v0.8.0 &middot; ${ts.toISOString()}
     </div>
 
 </div>

@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-19 (v0.7.1)
+> Last verified against code: 2026-02-19 (v0.8.0)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -15,11 +15,11 @@ Only compiled JS is distributed:
 
 ```
 dist/
-  index.js                     # MCP server entry point (4 tools)
+  index.js                     # MCP server entry point (4 tools, v0.8.0)
   cli.js                       # CLI entry point
   types.js                     # Grade functions + normalizeScore
-  health-check.js              # Orchestrator
-  report-formatter.js          # Markdown output
+  health-check.js              # Orchestrator + detectBrainState() + mapChecksToCEPatterns()
+  report-formatter.js          # Adaptive markdown output (empty/growth/full formats)
   setup/
     claude-md.js               # Layer 1: CLAUDE.md (23 pts)
     skills.js                  # Layer 2: Skills (24 pts)
@@ -45,6 +45,7 @@ dist/
     interaction-config.js      # Layer 22: Interaction Configuration (8 pts)
     spec-planning.js           # Layer 23: Spec & Planning Artifacts (10 pts)
     knowledge-base.js          # Layer 24: Knowledge Base Architecture (10 pts)
+    context-pressure.js        # Layer 25: Context Pressure (10 pts) — NEW in v0.8.0
   usage/
     sessions.js                # Layer 1: Sessions (25 pts)
     patterns.js                # Layer 2: Patterns (25 pts)
@@ -74,17 +75,22 @@ dist/
 
 | Dimension | Max | What it measures |
 |-----------|-----|------------------|
-| Setup Quality | ~269 | Is the brain correctly configured? (static file analysis) |
+| Setup Quality | ~249 | Is the brain correctly configured? (static file analysis) |
 | Usage Activity | ~125 | Is the brain being used? (file dates, session counts, pattern growth) |
 | AI Fluency | ~60 | How effectively does the user work with AI? (delegation, context engineering, compounding) |
 
-**Total: ~454 points** (exact total depends on dynamic maxPoints in some layers)
+**Total: ~424 points** (exact total depends on dynamic maxPoints in some layers)
 
 All dimensions are **normalized to /100** for display. The report and dashboard show `normalizedScore/100` for each dimension, calculated as `Math.round((points / maxPoints) * 100)`.
 
 ### Orchestrator (`health-check.js`)
 
-Runs all setup layers in parallel via `Promise.all()`, then all usage layers in parallel, then all fluency layers in parallel. Sums points per dimension. Generates top 5 fixes sorted by normalized deficit (highest potential improvement first).
+1. Runs `detectBrainState()` for fast pre-scan (~100ms) — returns maturity level and what exists
+2. If `mode: 'quick'`, returns brain state only (no full checks)
+3. Runs all setup layers (including context pressure) in parallel via `Promise.all()`, then usage, then fluency
+4. Sums points per dimension. Generates top 5 fixes sorted by normalized deficit
+5. Runs `mapChecksToCEPatterns()` to map 38 layers to 7 CE patterns
+6. Attaches `brainState` and `cePatterns` to report for adaptive formatting
 
 ### Security Hardening
 
@@ -100,9 +106,69 @@ Runs all setup layers in parallel via `Promise.all()`, then all usage layers in 
 
 ---
 
-## Setup Quality — 24 Layers (~269 pts)
+## Brain State Detection (v0.8.0)
 
-### Layer 1: CLAUDE.md Foundation (26 pts) — `setup/claude-md.js`
+### `detectBrainState()` — `health-check.js`
+
+Fast pre-scan using `fs.stat()` calls. Returns:
+
+```js
+{
+  maturity: 'empty' | 'minimal' | 'basic' | 'structured' | 'configured',
+  has: { claudeMd, claudeDir, memory, skills, hooks, knowledge, agents, settings },
+  isBuyer: boolean,       // GUIDE_TOKEN env var present
+  isReturning: boolean    // .health-check.json exists
+}
+```
+
+| Maturity | Condition |
+|----------|-----------|
+| empty | No CLAUDE.md |
+| minimal | CLAUDE.md <500 chars, no .claude/ dir |
+| basic | CLAUDE.md + .claude/ but no skills or hooks |
+| structured | Has skills OR hooks OR memory |
+| configured | Has skills AND hooks AND memory AND knowledge |
+
+### Adaptive Report Formatting — `report-formatter.js`
+
+| Brain State | Report Style |
+|-------------|-------------|
+| Empty | 3-step getting-started guide (~20 min). Not 37 failures. |
+| Minimal/Basic (score 1-40) | Growth mode: celebrate what exists, top 3 fixes with time estimates, patterns to unlock |
+| Structured+ (score 41+) | Full report with all dimensions, CE pattern section, time estimates |
+
+### Score-Band CTAs
+
+| Score Range | CTA |
+|-------------|-----|
+| 0 (empty) | → iwoszapar.com/context-engineering |
+| 1-30 | → iwoszapar.com/second-brain-ai |
+| 31-60 | → iwoszapar.com/context-engineering |
+| 61-84 | "N points from Production-grade. Missing: [pattern]" |
+| 85+ | → iwoszapar.com/teams |
+| Buyer | "BASELINE CAPTURED. Run again after setup." |
+
+### CE Pattern Mapping — `health-check.js:mapChecksToCEPatterns()`
+
+Maps 38 layer scores to 7 Context Engineering patterns:
+
+| Pattern | Mapped Layers |
+|---------|--------------|
+| Progressive Disclosure | claude-md, knowledge-base, settings-hierarchy |
+| Knowledge Files as RAM | knowledge-base, structure |
+| Hooks as Guardrails | hooks, rules-system |
+| Three-Layer Memory | memory, sessions |
+| Compound Learning | review-loop, compound-evidence, workflow-maturity, patterns |
+| Self-Correction | brain-health, memory-evolution, cross-references |
+| Context Surfaces | mcp, plugin, interaction, context-pressure |
+
+Output: `{ pattern, name, score, maxScore, percentage }` per pattern. Displayed in full reports after dimension breakdown.
+
+---
+
+## Setup Quality — 25 Layers (~249 pts)
+
+### Layer 1: CLAUDE.md Foundation (23 pts) — `setup/claude-md.js`
 
 | Check | Max | Pass | Warn | Fail | Detection |
 |-------|-----|------|------|------|-----------|
@@ -113,9 +179,8 @@ Runs all setup layers in parallel via `Promise.all()`, then all usage layers in 
 | Project structure with folder tree | 2 | Tree chars or file path table found (2) | — | Not found (0) | `[├└│─]` in code blocks, or markdown tables with `src/\|lib/\|api/` paths, or 3+ indented file paths |
 | Appropriate length (2K-6K chars) | 2 | In range (2) | Outside range (1) | — | `content.length` |
 | CLAUDE.md freshness | 3 | Modified within 14 days (3) | Within 30 days (2) | >30 days (1) | `stat.mtimeMs` compared to current date |
-| Hierarchical context files | 3 | 3+ subdirectory CLAUDE.md/TODO.md files (3) | 1+ (2) | None (0) | Recursive scan, depth ≤ 4, skips node_modules/dist/build/.git — subdirectory files only (root doesn't count) |
 
-### Layer 2: Skills & Commands (28 pts) — `setup/skills.js`
+### Layer 2: Skills & Commands (24 pts) — `setup/skills.js`
 
 Scans both `.claude/skills/` and `.codex/skills/`.
 
@@ -127,20 +192,10 @@ Scans both `.claude/skills/` and `.codex/skills/`.
 | Profession-relevant skills | 4 | 80%+ non-generic (4) | 50%+ (2) | <50% (0) | Filters against: test, hello, example, demo, sample, template |
 | Clear instructions (200+ chars) | 4 | 80%+ have 200+ chars (4) | 50%+ (2) | <50% (0) | `content.trim().length >= 200` |
 | Frontmatter field depth | 4 | 3+ skills with advanced fields (4) | 1+ (2) | Basic only (1) or none (0) | Checks for model, allowed-tools, context, disable-model-invocation fields |
-| Non-coding domain coverage | 4 | 3+ domains covered (4) | 1–2 domains (2) | Dev-only (0) | Skill name matches for: content/newsletter/blog, marketing/sales/crm, research/audit/report, legal/contract/compliance, operations/calendar/finance, design/visual/pdf |
 
-### Layer 3–5, 7–17: (unchanged from v0.4.0)
+### Layer 3–17: (unchanged from v0.4.0)
 
 See previous layers documentation — these remain unchanged.
-
-### Layer 6: Hooks (22 pts) — `setup/hooks.js`
-
-Checks 1–6 are unchanged from v0.4.0. Check 7 was added in v0.7.0:
-
-| Check | Max | Pass | Warn | Fail | Detection |
-|-------|-----|------|------|------|-----------|
-| (Checks 1–6 — see v0.4.0 docs) | 19 | — | — | — | PreToolUse/PostToolUse/Stop hooks, matcher quality, hook scripts |
-| Session initialization hook | 3 | `SessionStart` event configured (3) | — | Not found (0) | Scans hooks config for `SessionStart` event key — primary signal for "context primed before session starts" |
 
 ### Layer 18: Agent Configuration Depth (8 pts) — `setup/agent-quality.js`
 
@@ -209,6 +264,23 @@ Evaluates whether pre-engineered domain context exists in .claude/docs/ or .clau
 | Knowledge base directory | 4 | 10+ files (4) | 5+ (3) or 2+ (2) or 1+ (1) | No directory (0) | Scans .claude/docs/, .claude/knowledge/, .claude/context/, .claude/reference/ recursively |
 | CLAUDE.md references knowledge files | 3 | Explicit path reference (3) | "Read when" pattern or file table (2) | CLAUDE.md exists but no ref (1) | Checks if knowledge dir path appears in CLAUDE.md content |
 | Knowledge domain breadth | 3 | 5+ dirs or 15+ files (3) | 2+ dirs or 5+ files (2) | Small (1) | Recursive count with max depth 2 |
+
+Also adds **Check 7: Session initialization hook (3 pts)** to Layer 6 (Hooks). Detects `SessionStart` event in hooks config — the primary signal for "context engineered before the session starts, not during."
+
+Also adds **Check 8: Hierarchical context files (3 pts)** to Layer 1 (CLAUDE.md). Detects CLAUDE.md or TODO.md files in subdirectories beyond root — per-project context layering.
+
+Also adds **Check 7: Non-coding domain coverage (4 pts)** to Layer 2 (Skills). Detects skills covering non-dev workflows: content, marketing, research, legal, operations, design.
+
+### Layer 25: Context Pressure (10 pts) — `setup/context-pressure.js` — NEW in v0.8.0
+
+Measures whether the brain is causing context bloat. Traffic light zones: GREEN (<30KB), YELLOW (30-75KB), RED (75KB+).
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| CLAUDE.md not bloated | 3 | <6000 chars (3) | 6000-10000 chars (2) | >10000 chars (1) | `stat(CLAUDE.md).size` |
+| Knowledge files exist | 3 | .claude/docs/ or .claude/knowledge/ has files (3) | — | No knowledge dir (0) | Directory scan |
+| Context surface area | 2 | <30KB total (2) | 30-75KB (1) | >75KB (0) | Sum all .claude/ text files |
+| Progressive disclosure evidence | 2 | CLAUDE.md references external docs (2) | — | No references (0) | Regex for file paths, "Read when", doc table patterns |
 
 ---
 
@@ -316,12 +388,13 @@ All grade functions use **percentage** (`points / maxPoints * 100`), not raw poi
 
 ### Tool 1: `check_health`
 
-Input: `{ path?, language?, workspace_type?, use_case? }` — defaults to cwd, English, no context
+Input: `{ path?, language?, workspace_type?, use_case?, mode? }` — defaults to cwd, English, no context, full mode
 - `language`: One of 14 supported languages (en, es, de, fr, pl, pt, ja, ko, zh, it, nl, ru, tr, ar). Appends translation instruction to output.
 - `workspace_type`: solo | team | enterprise — adds scoring context notes
 - `use_case`: development | content | operations | research | mixed — adds use case context
+- `mode`: `full` (default, all 38 checks) | `quick` (detection only, ~100ms — returns brain maturity and what exists)
 
-Output: Full markdown report with all three dimensions + top fixes + CTA link + context notes + language instruction
+Output: Adaptive markdown report based on brain maturity. Full report includes CE pattern section, time estimates on fixes, and score-band CTA.
 
 ### Tool 2: `get_fix_suggestions`
 
@@ -364,7 +437,9 @@ All git commands run locally. The MCP server has zero network imports (`fetch`, 
 
 ## Report Format (`report-formatter.js`)
 
-All dimensions display as **normalized/100** regardless of raw max points:
+v0.8.0 uses adaptive formatting based on brain maturity. All dimensions display as **normalized/100**.
+
+### Full Report (structured+ brains, score 41+)
 
 ```
 ================================================================
@@ -375,29 +450,33 @@ SETUP QUALITY:    84/100 (B - Good foundation)
 USAGE ACTIVITY:   89/100 (Active - Brain is compounding)
 AI FLUENCY:       92/100 (Expert - Advanced AI collaboration)
 
+[... dimension breakdowns ...]
+
 ----------------------------------------------------------------
-SETUP QUALITY BREAKDOWN
+CONTEXT ENGINEERING PATTERNS (7 patterns)
 ----------------------------------------------------------------
 
-CLAUDE.md Foundation          ||||||||||||||||....  22/23
-  [pass] Quick Start with 5 rules
-  [pass] About Me with role context
-  ...
-
-[... all layers ...]
+[pass] Progressive Disclosure       |||||||||||||.. 87%
+[pass] Knowledge Files as RAM       ||||||||||||||. 93%
+[warn] Hooks as Guardrails          |||||.......... 33%
+...
 
 ----------------------------------------------------------------
 TOP FIXES (highest impact)
 ----------------------------------------------------------------
 
-1. TITLE (+N pts category)
+1. TITLE (+N pts category, ~10 min)
    Description
 
 ================================================================
-  Build a properly configured Second Brain:
-  https://www.iwoszapar.com/second-brain-ai
+  2 points from Production-grade. Missing pattern: Hooks as Guardrails.
+  https://www.iwoszapar.com/context-engineering
 ================================================================
 ```
+
+### Time Estimates
+
+Every fix includes `~N min` based on `FIX_TIME_ESTIMATES` mapping in report-formatter.js. Categories range from 3 min (model config, attribution) to 15 min (skills, hooks, agents, knowledge, orchestration).
 
 Progress bar: `|` for filled, `.` for empty, 20 chars wide.
 Status icons: `[pass]`, `[warn]`, `[fail]`.

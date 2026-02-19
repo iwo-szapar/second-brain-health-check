@@ -6,17 +6,20 @@
  * Checks setup quality, usage activity, and AI fluency.
  *
  * Install: claude mcp add second-brain-health -- npx second-brain-health-check
+ *
+ * v0.8.0: Adaptive reports, CE pattern mapping, context pressure check,
+ * score-band CTAs, time estimates, mode parameter.
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { runHealthCheck } from './health-check.js';
+import { runHealthCheck, detectBrainState } from './health-check.js';
 import { formatReport, formatFixSuggestions } from './report-formatter.js';
 import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
-    version: '0.6.0',
+    version: '0.8.0',
 });
 const pathSchema = z
     .string()
@@ -65,7 +68,8 @@ server.registerTool('check_health', {
         'Validates configuration quality (CLAUDE.md, skills, hooks, memory structure), ' +
         'checks usage activity (session history, pattern growth, compound learning), ' +
         'and measures AI fluency (progressive disclosure, skill orchestration, context-awareness). ' +
-        'Returns a detailed report with three scores and actionable fix suggestions.',
+        'Returns a detailed report with three scores, CE pattern coverage, and actionable fix suggestions with time estimates. ' +
+        'Adapts report format based on brain maturity — beginners get a getting-started guide, not a wall of failures.',
     inputSchema: {
         path: pathSchema
             .describe('Path to the Second Brain root directory. ' +
@@ -88,10 +92,16 @@ server.registerTool('check_health', {
             .describe("Primary use case. 'development' for coding, 'content' for writing, " +
             "'operations' for business workflows, 'research' for analysis, 'mixed' for general use. " +
             "Provides scoring context notes."),
+        mode: z
+            .enum(['full', 'quick'])
+            .optional()
+            .describe("Scan mode. 'full' (default) runs all 38 check layers. " +
+            "'quick' runs detection only (~100ms) — returns brain maturity level and what exists, " +
+            "without running full checks. Use 'quick' to decide whether to run a full scan."),
     },
-}, async ({ path, language, workspace_type, use_case }) => {
+}, async ({ path, language, workspace_type, use_case, mode }) => {
     try {
-        const report = await runHealthCheck(path);
+        const report = await runHealthCheck(path, { mode: mode || 'full' });
         const formatted = formatReport(report);
         const langNote = buildLanguagePrompt(language);
         const ctxNote = buildContextNote(workspace_type, use_case);
@@ -111,7 +121,7 @@ server.registerTool('check_health', {
 server.registerTool('get_fix_suggestions', {
     description: 'Get specific fix suggestions for the lowest-performing area of your Second Brain setup. ' +
         'Runs a health check and then generates a prioritized action plan ' +
-        'for the highest-impact improvements.',
+        'for the highest-impact improvements. Each fix includes a time estimate.',
     inputSchema: {
         path: pathSchema
             .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
@@ -147,7 +157,8 @@ server.registerTool('get_fix_suggestions', {
 server.registerTool('generate_dashboard', {
     description: 'Generate a beautiful HTML dashboard from health check results. ' +
         'Creates a self-contained HTML file with dark mode, score visualizations, ' +
-        'grade badges, and actionable fix suggestions. ' +
+        'grade badges, CE pattern coverage, three-tier fix suggestions with step-by-step guides, ' +
+        'and actionable fix suggestions. ' +
         'Perfect for sharing results or taking screenshots.',
     inputSchema: {
         path: pathSchema
@@ -211,10 +222,9 @@ server.registerTool('generate_pdf', {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('Second Brain Health Check MCP server running on stdio (v0.6.0)');
+    console.error('Second Brain Health Check MCP server running on stdio (v0.8.0)');
 }
 main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
 });
-//# sourceMappingURL=index.js.map
