@@ -2,7 +2,7 @@
  * Health Check Orchestrator
  *
  * Runs all setup, usage, and fluency checks, produces a full report.
- * v0.8.0: Added detectBrainState() pre-scan and mapChecksToCEPatterns().
+ * v0.8.1: Added detectBrainState() pre-scan and mapChecksToCEPatterns().
  */
 import { resolve } from 'node:path';
 import { stat, realpath, readFile } from 'node:fs/promises';

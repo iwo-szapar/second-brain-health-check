@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Second Brain Dashboard — 5 Alternatives</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --fg: #e0e0e0;
+  --accent: #4455ee;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== TAB BAR ===== */
+.tab-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  gap: 2px;
+  padding: 8px 12px;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #222;
+}
+.tab-bar button {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #333;
+  background: transparent;
+  color: #888;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 6px;
+}
+.tab-bar button:hover { color: #ccc; border-color: #555; }
+.tab-bar button.active { color: #fff; background: #1a1a2e; border-color: var(--accent); }
+
+.dashboard { display: none; min-height: calc(100vh - 60px); }
+.dashboard.active { display: block; }
+
+/* ===== PROMPT OUTPUT ===== */
+.prompt-output {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: rgba(15,15,25,0.97);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid #333;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.prompt-output code {
+  flex: 1;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prompt-output button {
+  padding: 6px 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.prompt-output button:hover { opacity: 0.85; }
+
+/* =========================================================
+   1. MISSION CONTROL
+   ========================================================= */
+#mission-control {
+  background: #050510;
+  padding: 40px 30px 80px;
+  position: relative;
+  overflow: hidden;
+}
+#mission-control::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(34,51,238,0.04) 50px),
+              repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(34,51,238,0.04) 50px);
+  pointer-events: none;
+}
+#mission-control .scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(34,51,238,0.3), transparent);
+  animation: scanDown 4s linear infinite;
+  pointer-events: none;
+}
+@keyframes scanDown { 0% { top: 0; } 100% { top: 100%; } }
+
+.mc-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+.mc-header h1 {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #556;
+  text-transform: uppercase;
+}
+.mc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 8px 24px;
+  border: 1px solid var(--green);
+  border-radius: 4px;
+  background: rgba(34,197,94,0.06);
+}
+.mc-status .dot {
+  width: 8px; height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.mc-status span {
+  font-family: 'SF Mono', monospace;
+  font-size: 13px;
+  color: var(--green);
+  letter-spacing: 2px;
+}
+
+.mc-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 30px;
+  max-width: 1300px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Gauges */
+.mc-gauges {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.mc-gauge {
+  background: rgba(10,10,30,0.8);
+  border: 1px solid #1a1a3a;
+  border-radius: 8px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.mc-gauge::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(34,51,238,0.5), transparent);
+}
+.mc-gauge-label {
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #556;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.mc-gauge-value {
+  font-family: 'SF Mono', monospace;
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+}
+.mc-gauge-value small { font-size: 14px; color: #556; }
+.mc-gauge-bar {
+  margin-top: 10px;
+  height: 3px;
+  background: #1a1a3a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.mc-gauge-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1.5s ease;
+}
+.mc-gauge-grade {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+/* Radar */
+.mc-radar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.mc-radar-wrap canvas { max-width: 100%; }
+.mc-score-overlay {
+  position: absolute;
+  text-align: center;
+}
+.mc-score-overlay .score-num {
+  font-family: 'SF Mono', monospace;
+  font-size: 56px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+.mc-score-overlay .score-label {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #556;
+  margin-top: 4px;
+}
+
+/* Objectives */
+.mc-objectives h3 {
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #556;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1a1a3a;
+}
+.mc-objective {
+  background: rgba(10,10,30,0.6);
+  border: 1px solid #1a1a3a;
+  border-left: 3px solid;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mc-objective:hover {
+  background: rgba(20,20,50,0.8);
+  transform: translateX(4px);
+}
+.mc-objective .obj-title {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+.mc-objective .obj-meta {
+  display: flex;
+  gap: 10px;
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  color: #556;
+}
+.mc-objective .obj-meta .impact { color: var(--green); }
+.mc-objective .obj-meta .time { color: var(--yellow); }
+
+/* =========================================================
+   2. HEALTH SCAN
+   ========================================================= */
+#health-scan {
+  background: linear-gradient(180deg, #0a1a12 0%, #0a0f1a 100%);
+  padding: 40px 30px 80px;
+  min-height: 100vh;
+}
+
+.hs-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hs-header {
+  text-align: center;
+  margin-bottom: 30px;
+  grid-column: 1 / -1;
+}
+.hs-header h1 {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: #3a7a5a;
+  text-transform: uppercase;
+  font-family: 'SF Mono', monospace;
+}
+.hs-header .patient-id {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  color: #445;
+  margin-top: 6px;
+}
+
+/* Body diagram */
+.hs-body-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.hs-body {
+  position: relative;
+  width: 240px;
+  height: 420px;
+}
+.hs-body svg { width: 100%; height: 100%; }
+
+.hs-organ {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.hs-organ:hover { filter: brightness(1.3); }
+.hs-organ-label {
+  position: absolute;
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  color: #8a8;
+  white-space: nowrap;
+}
+.hs-organ-score {
+  position: absolute;
+  font-family: 'SF Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* EKG monitor */
+.hs-monitor {
+  background: rgba(5,15,10,0.8);
+  border: 1px solid #1a3a2a;
+  border-radius: 12px;
+  padding: 20px;
+}
+.hs-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.hs-monitor-header h3 {
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #3a7a5a;
+  text-transform: uppercase;
+}
+.hs-monitor-header .bpm {
+  font-family: 'SF Mono', monospace;
+  font-size: 24px;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.hs-ekg {
+  width: 100%;
+  height: 80px;
+  margin-bottom: 20px;
+}
+
+.hs-vitals {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hs-vital {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(10,25,18,0.6);
+  border-radius: 6px;
+  border-left: 3px solid;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hs-vital:hover { background: rgba(15,35,25,0.8); transform: translateX(3px); }
+.hs-vital-name {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  color: #9ab;
+}
+.hs-vital-value {
+  font-family: 'SF Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Prescriptions */
+.hs-prescriptions {
+  grid-column: 1 / -1;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+.hs-prescriptions h3 {
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #3a7a5a;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.hs-rx-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+.hs-rx {
+  background: rgba(5,15,10,0.6);
+  border: 1px solid #1a3a2a;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.hs-rx:hover { border-color: var(--green); transform: translateY(-2px); }
+.hs-rx .rx-symbol {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--green);
+  opacity: 0.3;
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-family: serif;
+}
+.hs-rx .rx-title {
+  font-family: 'SF Mono', monospace;
+  font-size: 12px;
+  color: #cdc;
+  margin-bottom: 8px;
+}
+.hs-rx .rx-meta {
+  display: flex;
+  gap: 12px;
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+}
+.hs-rx .rx-meta .dosage { color: var(--green); }
+.hs-rx .rx-meta .frequency { color: #667; }
+
+/* =========================================================
+   3. CITY BUILDER
+   ========================================================= */
+#city-builder {
+  background: linear-gradient(180deg, #1a1520 0%, #0d1117 50%, #0a0e14 100%);
+  padding: 40px 30px 80px;
+  min-height: 100vh;
+}
+
+.cb-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.cb-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f6d365, #fda085);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+.cb-header .subtitle {
+  font-size: 11px;
+  color: #556;
+  letter-spacing: 1px;
+}
+
+.cb-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* City canvas */
+.cb-city {
+  background: rgba(10,14,20,0.5);
+  border: 1px solid #1a2030;
+  border-radius: 12px;
+  padding: 30px;
+  position: relative;
+  min-height: 500px;
+}
+
+.cb-skyline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  height: 350px;
+  padding: 0 20px;
+}
+
+.cb-building {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+.cb-building:hover { transform: translateY(-8px); }
+.cb-building:hover .cb-bldg-label { opacity: 1; }
+
+.cb-bldg-block {
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  transition: all 0.5s;
+  min-width: 50px;
+}
+.cb-bldg-block .windows {
+  position: absolute;
+  inset: 8px 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.cb-bldg-block .window {
+  background: rgba(255,255,200,0.15);
+  border-radius: 1px;
+  animation: windowFlicker 3s ease-in-out infinite;
+}
+@keyframes windowFlicker {
+  0%,100% { opacity: 0.15; }
+  50% { opacity: 0.6; }
+}
+
+.cb-bldg-label {
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  color: #667;
+  margin-top: 8px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  max-width: 70px;
+}
+.cb-bldg-score {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  color: #fff;
+  margin-top: 2px;
+  opacity: 0.7;
+}
+
+.cb-ground {
+  height: 20px;
+  background: linear-gradient(180deg, #1a2636, #0d1520);
+  border-radius: 0 0 8px 8px;
+  margin-top: -1px;
+}
+
+/* Districts */
+.cb-sidebar h3 {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #556;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.cb-population {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(15,20,30,0.5);
+  border: 1px solid #1a2030;
+  border-radius: 10px;
+}
+.cb-population .pop-num {
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f6d365, #fda085);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.cb-population .pop-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #556;
+  text-transform: uppercase;
+}
+.cb-population .pop-grade {
+  font-size: 12px;
+  color: #fda085;
+  margin-top: 4px;
+}
+
+.cb-districts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 30px;
+}
+.cb-district {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(15,20,30,0.4);
+  border: 1px solid #1a2030;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cb-district:hover { border-color: #fda085; transform: translateX(3px); }
+.cb-district-bar {
+  flex: 1;
+  height: 6px;
+  background: #1a2030;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cb-district-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #f6d365, #fda085);
+  transition: width 1s ease;
+}
+.cb-district-name {
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+  color: #889;
+  width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cb-district-pct {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  color: #fda085;
+  width: 35px;
+  text-align: right;
+}
+
+/* Construction projects */
+.cb-projects h3 { margin-top: 0; }
+.cb-project {
+  background: rgba(15,20,30,0.4);
+  border: 1px solid #1a2030;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cb-project:hover { border-color: #f6d365; }
+.cb-project-title {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+.cb-project-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'SF Mono', monospace;
+  font-size: 9px;
+}
+.cb-project-meta .impact { color: #fda085; }
+.cb-project-meta .time { color: #667; }
+
+/* =========================================================
+   4. TERMINAL HACKER
+   ========================================================= */
+#terminal-hacker {
+  background: #000;
+  padding: 0 0 80px;
+  font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+  min-height: 100vh;
+}
+
+.th-screen {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 40px;
+  position: relative;
+}
+.th-screen::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0,255,0,0.015) 0px, transparent 1px, transparent 2px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.th-prompt {
+  color: #0a0;
+  font-size: 12px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.th-prompt .cmd { color: #0f0; }
+.th-prompt .dim { color: #050; }
+.th-prompt .bright { color: #0f0; font-weight: bold; }
+.th-prompt .warn { color: #aa0; }
+.th-prompt .err { color: #a00; }
+.th-prompt .comment { color: #060; }
+
+.th-ascii-score {
+  color: #0f0;
+  font-size: 10px;
+  line-height: 1.2;
+  margin: 16px 0;
+}
+
+.th-tree {
+  margin: 8px 0 8px 20px;
+}
+.th-tree-item {
+  color: #0a0;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 1px 0;
+  transition: color 0.1s;
+}
+.th-tree-item:hover { color: #0f0; }
+.th-tree-item .pass { color: #0f0; }
+.th-tree-item .warn { color: #aa0; }
+.th-tree-item .fail { color: #a00; }
+
+.th-sparkline {
+  display: inline;
+  color: #0a0;
+  letter-spacing: 1px;
+}
+
+.th-diff {
+  margin: 4px 0 4px 20px;
+  font-size: 11px;
+}
+.th-diff .add { color: #0f0; }
+.th-diff .remove { color: #a00; }
+.th-diff .context { color: #060; }
+.th-diff .header { color: #08a; }
+
+.th-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: #0f0;
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* =========================================================
+   5. BENTO GRID
+   ========================================================= */
+#bento-grid {
+  background: #faf9f6;
+  color: #1a1a1a;
+  padding: 40px 30px 100px;
+  min-height: 100vh;
+}
+
+.bn-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.bn-header {
+  margin-bottom: 32px;
+}
+.bn-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+.bn-header p {
+  font-size: 14px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.bn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(140px, auto);
+  gap: 12px;
+}
+
+.bn-card {
+  background: #fff;
+  border: 1px solid #e8e6e1;
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.25s;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+.bn-card:hover {
+  border-color: #d0cec9;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  transform: translateY(-2px);
+}
+
+/* Hero card — spans 2x2 */
+.bn-hero {
+  grid-column: span 2;
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a3a);
+  color: white;
+  border: none;
+}
+.bn-hero .hero-score {
+  font-size: 96px;
+  font-weight: 800;
+  letter-spacing: -4px;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff, #a0a0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.bn-hero .hero-grade {
+  font-size: 14px;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+.bn-hero .hero-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 4px;
+}
+
+/* Dimension ring card */
+.bn-dim-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.bn-ring-wrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 12px;
+}
+.bn-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.bn-ring-wrap .ring-bg { fill: none; stroke: #f0eeea; stroke-width: 4; }
+.bn-ring-wrap .ring-fg { fill: none; stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1.5s ease; }
+.bn-ring-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+.bn-dim-label {
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+}
+.bn-dim-grade {
+  font-size: 10px;
+  color: #bbb;
+  margin-top: 2px;
+}
+
+/* CE pattern mini card */
+.bn-pattern {
+  padding: 18px;
+}
+.bn-pattern-name {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+.bn-pattern-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.bn-pattern-bar {
+  height: 4px;
+  background: #f0eeea;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bn-pattern-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+/* Fix card */
+.bn-fix-card {
+  grid-column: span 2;
+}
+.bn-fix-card h3 {
+  font-size: 11px;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+.bn-fix-list { list-style: none; }
+.bn-fix-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0eeea;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.bn-fix-item:last-child { border: none; }
+.bn-fix-item:hover { padding-left: 6px; }
+.bn-fix-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f5f3f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #999;
+  flex-shrink: 0;
+}
+.bn-fix-title {
+  flex: 1;
+  font-size: 13px;
+  color: #333;
+}
+.bn-fix-impact {
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 600;
+}
+.bn-fix-time {
+  font-size: 10px;
+  color: #bbb;
+}
+
+/* Journey card */
+.bn-journey {
+  grid-column: span 2;
+  background: linear-gradient(135deg, #f8f7f4, #f0eeea);
+  border-color: #e0ddd8;
+}
+.bn-journey-stage {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #999;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.bn-journey-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.bn-journey-desc {
+  font-size: 13px;
+  color: #777;
+  line-height: 1.6;
+}
+.bn-journey-dots {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.bn-journey-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ddd;
+}
+.bn-journey-dot.active { background: #1a1a1a; }
+.bn-journey-dot.current { background: var(--accent); width: 24px; border-radius: 4px; }
+
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <button class="active" onclick="showTab('mission-control', this)">1. Mission Control</button>
+  <button onclick="showTab('health-scan', this)">2. Health Scan</button>
+  <button onclick="showTab('city-builder', this)">3. City Builder</button>
+  <button onclick="showTab('terminal-hacker', this)">4. Terminal Hacker</button>
+  <button onclick="showTab('bento-grid', this)">5. Bento Grid</button>
+</div>
+
+<!-- ===== 1. MISSION CONTROL ===== -->
+<div id="mission-control" class="dashboard active">
+  <div class="scanline"></div>
+  <div class="mc-header">
+    <h1>Second Brain — Mission Control</h1>
+    <div class="mc-status">
+      <div class="dot"></div>
+      <span>SYSTEMS NOMINAL</span>
+    </div>
+  </div>
+  <div class="mc-grid">
+    <div class="mc-gauges">
+      <div class="mc-gauge">
+        <div class="mc-gauge-label">Setup Quality</div>
+        <div class="mc-gauge-value">81<small>/100</small></div>
+        <div class="mc-gauge-grade" style="color: var(--green); border-color: var(--green);">A</div>
+        <div class="mc-gauge-bar"><div class="mc-gauge-bar-fill" style="width:81%; background: var(--green);"></div></div>
+      </div>
+      <div class="mc-gauge">
+        <div class="mc-gauge-label">Usage Activity</div>
+        <div class="mc-gauge-value">88<small>/100</small></div>
+        <div class="mc-gauge-grade" style="color: var(--green); border-color: var(--green);">Active</div>
+        <div class="mc-gauge-bar"><div class="mc-gauge-bar-fill" style="width:88%; background: var(--green);"></div></div>
+      </div>
+      <div class="mc-gauge">
+        <div class="mc-gauge-label">AI Fluency</div>
+        <div class="mc-gauge-value">79<small>/100</small></div>
+        <div class="mc-gauge-grade" style="color: var(--yellow); border-color: var(--yellow);">Proficient</div>
+        <div class="mc-gauge-bar"><div class="mc-gauge-bar-fill" style="width:79%; background: var(--yellow);"></div></div>
+      </div>
+    </div>
+
+    <div class="mc-radar-wrap">
+      <canvas id="radar-canvas" width="500" height="500"></canvas>
+      <div class="mc-score-overlay">
+        <div class="score-num">85</div>
+        <div class="score-label">OVERALL SCORE</div>
+      </div>
+    </div>
+
+    <div class="mc-objectives">
+      <h3>Mission Objectives</h3>
+      <div class="mc-objective" style="border-left-color: var(--orange);">
+        <div class="obj-title">Configure MCP server connections</div>
+        <div class="obj-meta"><span class="impact">+6% usage</span><span class="time">~20 min</span></div>
+      </div>
+      <div class="mc-objective" style="border-left-color: var(--yellow);">
+        <div class="obj-title">Add pre-commit hook for linting</div>
+        <div class="obj-meta"><span class="impact">+5% usage</span><span class="time">~15 min</span></div>
+      </div>
+      <div class="mc-objective" style="border-left-color: var(--yellow);">
+        <div class="obj-title">Add cross-references between skills</div>
+        <div class="obj-meta"><span class="impact">+4% fluency</span><span class="time">~10 min</span></div>
+      </div>
+      <div class="mc-objective" style="border-left-color: var(--green);">
+        <div class="obj-title">Create quality-metrics.md in memory</div>
+        <div class="obj-meta"><span class="impact">+3% fluency</span><span class="time">~5 min</span></div>
+      </div>
+      <div class="mc-objective" style="border-left-color: var(--green);">
+        <div class="obj-title">Enable session logging</div>
+        <div class="obj-meta"><span class="impact">+2% usage</span><span class="time">~5 min</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2. HEALTH SCAN ===== -->
+<div id="health-scan" class="dashboard">
+  <div class="hs-header">
+    <h1>Neural Diagnostic System</h1>
+    <div class="patient-id">Patient: ~/.claude/ • Scan: 2026-02-19T14:32:00Z</div>
+  </div>
+  <div class="hs-grid">
+    <div class="hs-body-wrap">
+      <div class="hs-body">
+        <svg viewBox="0 0 240 420" fill="none">
+          <!-- Head/Brain = Fluency -->
+          <ellipse cx="120" cy="50" rx="40" ry="45" fill="rgba(234,179,8,0.15)" stroke="#eab308" stroke-width="1.5" class="hs-organ" data-dim="fluency"/>
+          <text x="120" y="54" text-anchor="middle" fill="#eab308" font-family="SF Mono, monospace" font-size="22" font-weight="700">79</text>
+          <text x="120" y="70" text-anchor="middle" fill="#eab30888" font-family="SF Mono, monospace" font-size="8" letter-spacing="1">FLUENCY</text>
+
+          <!-- Torso/Heart = Usage -->
+          <path d="M80,100 Q60,100 55,140 Q50,200 80,250 L160,250 Q190,200 185,140 Q180,100 160,100 Z" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="1.5" class="hs-organ" data-dim="usage"/>
+          <text x="120" y="170" text-anchor="middle" fill="#22c55e" font-family="SF Mono, monospace" font-size="26" font-weight="700">88</text>
+          <text x="120" y="190" text-anchor="middle" fill="#22c55e88" font-family="SF Mono, monospace" font-size="8" letter-spacing="1">USAGE</text>
+          <!-- Heart icon -->
+          <path d="M108,135 C108,128 100,125 100,132 C100,140 112,148 112,148 C112,148 124,140 124,132 C124,125 116,128 116,135" fill="none" stroke="#22c55e" stroke-width="1" opacity="0.5"/>
+
+          <!-- Arms/Hands = Setup -->
+          <path d="M55,120 Q20,150 30,210 L40,210 Q35,160 60,135" fill="rgba(34,197,94,0.08)" stroke="#22c55e" stroke-width="1" class="hs-organ" data-dim="setup" opacity="0.7"/>
+          <path d="M185,120 Q220,150 210,210 L200,210 Q205,160 180,135" fill="rgba(34,197,94,0.08)" stroke="#22c55e" stroke-width="1" class="hs-organ" data-dim="setup" opacity="0.7"/>
+          <text x="25" y="175" fill="#22c55e" font-family="SF Mono, monospace" font-size="14" font-weight="700">81</text>
+          <text x="200" y="175" fill="#22c55e" font-family="SF Mono, monospace" font-size="14" font-weight="700">81</text>
+
+          <!-- Legs -->
+          <path d="M85,250 L75,380 L65,380 L80,250" fill="rgba(255,255,255,0.03)" stroke="#334" stroke-width="1"/>
+          <path d="M155,250 L165,380 L175,380 L160,250" fill="rgba(255,255,255,0.03)" stroke="#334" stroke-width="1"/>
+
+          <!-- Spine / nervous system -->
+          <line x1="120" y1="95" x2="120" y2="250" stroke="#22c55e" stroke-width="0.5" opacity="0.3" stroke-dasharray="3,3"/>
+        </svg>
+        <div class="hs-organ-label" style="top: 5px; left: 170px;">BRAIN → Fluency</div>
+        <div class="hs-organ-label" style="top: 120px; right: -10px;">HEART → Usage</div>
+        <div class="hs-organ-label" style="top: 170px; left: -5px;">HANDS → Setup</div>
+      </div>
+
+      <!-- Overall health -->
+      <div style="text-align:center;">
+        <div style="font-family:'SF Mono',monospace; font-size:48px; font-weight:800; color:var(--green);">85<span style="font-size:18px;color:#3a7a5a">/100</span></div>
+        <div style="font-family:'SF Mono',monospace; font-size:9px; letter-spacing:3px; color:#3a7a5a;">OVERALL HEALTH INDEX</div>
+      </div>
+    </div>
+
+    <div class="hs-monitor">
+      <div class="hs-monitor-header">
+        <h3>Vital Signs — CE Patterns</h3>
+        <div class="bpm">85</div>
+      </div>
+      <canvas class="hs-ekg" id="ekg-canvas"></canvas>
+      <div class="hs-vitals">
+        <div class="hs-vital" style="border-left-color: var(--green);"><span class="hs-vital-name">Progressive Disclosure</span><span class="hs-vital-value">92%</span></div>
+        <div class="hs-vital" style="border-left-color: var(--green);"><span class="hs-vital-name">Compound Learning</span><span class="hs-vital-value">91%</span></div>
+        <div class="hs-vital" style="border-left-color: var(--green);"><span class="hs-vital-name">Knowledge as RAM</span><span class="hs-vital-value">87%</span></div>
+        <div class="hs-vital" style="border-left-color: var(--green);"><span class="hs-vital-name">Context Surfaces</span><span class="hs-vital-value">83%</span></div>
+        <div class="hs-vital" style="border-left-color: var(--yellow);"><span class="hs-vital-name">Three-Layer Memory</span><span class="hs-vital-value">78%</span></div>
+        <div class="hs-vital" style="border-left-color: var(--yellow);"><span class="hs-vital-name">Self-Correction</span><span class="hs-vital-value">72%</span></div>
+        <div class="hs-vital" style="border-left-color: var(--orange);"><span class="hs-vital-name">Hooks as Guardrails</span><span class="hs-vital-value">65%</span></div>
+      </div>
+    </div>
+
+    <div class="hs-prescriptions">
+      <h3>Prescriptions</h3>
+      <div class="hs-rx-list">
+        <div class="hs-rx"><div class="rx-symbol">℞</div><div class="rx-title">Configure MCP server connections</div><div class="rx-meta"><span class="dosage">+6% usage</span><span class="frequency">~20 min treatment</span></div></div>
+        <div class="hs-rx"><div class="rx-symbol">℞</div><div class="rx-title">Add pre-commit hook for linting</div><div class="rx-meta"><span class="dosage">+5% usage</span><span class="frequency">~15 min treatment</span></div></div>
+        <div class="hs-rx"><div class="rx-symbol">℞</div><div class="rx-title">Add cross-references between skills</div><div class="rx-meta"><span class="dosage">+4% fluency</span><span class="frequency">~10 min treatment</span></div></div>
+        <div class="hs-rx"><div class="rx-symbol">℞</div><div class="rx-title">Create quality-metrics.md in memory</div><div class="rx-meta"><span class="dosage">+3% fluency</span><span class="frequency">~5 min treatment</span></div></div>
+        <div class="hs-rx"><div class="rx-symbol">℞</div><div class="rx-title">Enable session logging</div><div class="rx-meta"><span class="dosage">+2% usage</span><span class="frequency">~5 min treatment</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3. CITY BUILDER ===== -->
+<div id="city-builder" class="dashboard">
+  <div class="cb-header">
+    <h1>BrainCity</h1>
+    <div class="subtitle">Your second brain, visualized as a growing metropolis</div>
+  </div>
+  <div class="cb-layout">
+    <div class="cb-city">
+      <div class="cb-skyline" id="cb-skyline"></div>
+      <div class="cb-ground"></div>
+    </div>
+    <div class="cb-sidebar">
+      <div class="cb-population">
+        <div class="pop-num">289</div>
+        <div class="pop-label">Total Points (Population)</div>
+        <div class="pop-grade">Grade A • Production-Grade</div>
+      </div>
+
+      <h3>Districts (CE Patterns)</h3>
+      <div class="cb-districts" id="cb-districts"></div>
+
+      <div class="cb-projects">
+        <h3>Construction Projects</h3>
+        <div class="cb-project"><div class="cb-project-title">Configure MCP server connections</div><div class="cb-project-meta"><span class="impact">+6% usage</span><span class="time">~20 min build</span></div></div>
+        <div class="cb-project"><div class="cb-project-title">Add pre-commit hook for linting</div><div class="cb-project-meta"><span class="impact">+5% usage</span><span class="time">~15 min build</span></div></div>
+        <div class="cb-project"><div class="cb-project-title">Add cross-references between skills</div><div class="cb-project-meta"><span class="impact">+4% fluency</span><span class="time">~10 min build</span></div></div>
+        <div class="cb-project"><div class="cb-project-title">Create quality-metrics.md</div><div class="cb-project-meta"><span class="impact">+3% fluency</span><span class="time">~5 min build</span></div></div>
+        <div class="cb-project"><div class="cb-project-title">Enable session logging</div><div class="cb-project-meta"><span class="impact">+2% usage</span><span class="time">~5 min build</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 4. TERMINAL HACKER ===== -->
+<div id="terminal-hacker" class="dashboard">
+  <div class="th-screen">
+    <div class="th-prompt" id="th-output"></div>
+  </div>
+</div>
+
+<!-- ===== 5. BENTO GRID ===== -->
+<div id="bento-grid" class="dashboard">
+  <div class="bn-container">
+    <div class="bn-header">
+      <h1>Second Brain</h1>
+      <p>Health check report • Feb 19, 2026 • 289 of 341 points</p>
+    </div>
+    <div class="bn-grid">
+      <!-- Hero -->
+      <div class="bn-card bn-hero">
+        <div class="hero-score">85</div>
+        <div class="hero-grade">Production-Grade</div>
+        <div class="hero-label">289 / 341 points</div>
+      </div>
+
+      <!-- 3 dimension rings -->
+      <div class="bn-card bn-dim-card">
+        <div class="bn-ring-wrap">
+          <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" cx="40" cy="40" r="34" stroke="#1a1a1a" stroke-dasharray="213.6" stroke-dashoffset="40.6"/></svg>
+          <div class="bn-ring-value">81</div>
+        </div>
+        <div class="bn-dim-label">Setup</div>
+        <div class="bn-dim-grade">Grade A</div>
+      </div>
+      <div class="bn-card bn-dim-card">
+        <div class="bn-ring-wrap">
+          <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" cx="40" cy="40" r="34" stroke="#1a1a1a" stroke-dasharray="213.6" stroke-dashoffset="25.6"/></svg>
+          <div class="bn-ring-value">88</div>
+        </div>
+        <div class="bn-dim-label">Usage</div>
+        <div class="bn-dim-grade">Active</div>
+      </div>
+
+      <!-- CE Patterns (7 small cards) -->
+      <div class="bn-card bn-pattern">
+        <div class="bn-pattern-name">Progressive Disclosure</div>
+        <div class="bn-pattern-value">92%</div>
+        <div class="bn-pattern-bar"><div class="bn-pattern-bar-fill" style="width:92%;background:#1a1a1a;"></div></div>
+      </div>
+      <div class="bn-card bn-pattern">
+        <div class="bn-pattern-name">Compound Learning</div>
+        <div class="bn-pattern-value">91%</div>
+        <div class="bn-pattern-bar"><div class="bn-pattern-bar-fill" style="width:91%;background:#1a1a1a;"></div></div>
+      </div>
+      <div class="bn-card bn-pattern">
+        <div class="bn-pattern-name">Knowledge as RAM</div>
+        <div class="bn-pattern-value">87%</div>
+        <div class="bn-pattern-bar"><div class="bn-pattern-bar-fill" style="width:87%;background:#1a1a1a;"></div></div>
+      </div>
+      <div class="bn-card bn-pattern">
+        <div class="bn-pattern-name">Context Surfaces</div>
+        <div class="bn-pattern-value">83%</div>
+        <div class="bn-pattern-bar"><div class="bn-pattern-bar-fill" style="width:83%;background:#1a1a1a;"></div></div>
+      </div>
+
+      <!-- Fluency ring -->
+      <div class="bn-card bn-dim-card">
+        <div class="bn-ring-wrap">
+          <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="34"/><circle class="ring-fg" cx="40" cy="40" r="34" stroke="#eab308" stroke-dasharray="213.6" stroke-dashoffset="44.9"/></svg>
+          <div class="bn-ring-value">79</div>
+        </div>
+        <div class="bn-dim-label">Fluency</div>
+        <div class="bn-dim-grade">Proficient</div>
+      </div>
+
+      <div class="bn-card bn-pattern">
+        <div class="bn-pattern-name">Three-Layer Memory</div>
+        <div class="bn-pattern-value">78%</div>
+        <div class="bn-pattern-bar"><div class="bn-pattern-bar-fill" style="width:78%;background:#eab308;"></div></div>
+      </div>
+      <div class="bn-card bn-pattern">
+        <div class="bn-pattern-name">Self-Correction</div>
+        <div class="bn-pattern-value">72%</div>
+        <div class="bn-pattern-bar"><div class="bn-pattern-bar-fill" style="width:72%;background:#eab308;"></div></div>
+      </div>
+      <div class="bn-card bn-pattern">
+        <div class="bn-pattern-name">Hooks as Guardrails</div>
+        <div class="bn-pattern-value">65%</div>
+        <div class="bn-pattern-bar"><div class="bn-pattern-bar-fill" style="width:65%;background:#f97316;"></div></div>
+      </div>
+
+      <!-- Fixes -->
+      <div class="bn-card bn-fix-card">
+        <h3>Recommended Fixes</h3>
+        <ul class="bn-fix-list">
+          <li class="bn-fix-item"><span class="bn-fix-num">1</span><span class="bn-fix-title">Configure MCP server connections</span><span class="bn-fix-impact">+6%</span><span class="bn-fix-time">20m</span></li>
+          <li class="bn-fix-item"><span class="bn-fix-num">2</span><span class="bn-fix-title">Add pre-commit hook for linting</span><span class="bn-fix-impact">+5%</span><span class="bn-fix-time">15m</span></li>
+          <li class="bn-fix-item"><span class="bn-fix-num">3</span><span class="bn-fix-title">Add cross-references between skills</span><span class="bn-fix-impact">+4%</span><span class="bn-fix-time">10m</span></li>
+          <li class="bn-fix-item"><span class="bn-fix-num">4</span><span class="bn-fix-title">Create quality-metrics.md in memory</span><span class="bn-fix-impact">+3%</span><span class="bn-fix-time">5m</span></li>
+          <li class="bn-fix-item"><span class="bn-fix-num">5</span><span class="bn-fix-title">Enable session logging</span><span class="bn-fix-impact">+2%</span><span class="bn-fix-time">5m</span></li>
+        </ul>
+      </div>
+
+      <!-- Journey -->
+      <div class="bn-card bn-journey">
+        <div class="bn-journey-stage">Journey Stage</div>
+        <div class="bn-journey-title">Compounding</div>
+        <div class="bn-journey-desc">Your second brain is actively learning and building on itself. Patterns are reinforcing each other. Focus on closing the remaining gaps in hooks and self-correction.</div>
+        <div class="bn-journey-dots">
+          <div class="bn-journey-dot active"></div>
+          <div class="bn-journey-dot active"></div>
+          <div class="bn-journey-dot active"></div>
+          <div class="bn-journey-dot current"></div>
+          <div class="bn-journey-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Prompt output -->
+<div class="prompt-output">
+  <code id="prompt-text">Viewing: Mission Control — NASA-style dashboard with radar chart, gauges, and mission objectives</code>
+  <button onclick="copyPrompt()">Copy prompt</button>
+</div>
+
+<script>
+// ===== DATA =====
+const data = {
+  overall: 85, grade: 'A', label: 'Production-Grade',
+  raw: 289, maxRaw: 341,
+  setup: { score: 81, grade: 'A' },
+  usage: { score: 88, grade: 'Active' },
+  fluency: { score: 79, grade: 'Proficient' },
+  patterns: [
+    { name: 'Progressive Disclosure', pct: 92 },
+    { name: 'Knowledge Files as RAM', pct: 87 },
+    { name: 'Hooks as Guardrails', pct: 65 },
+    { name: 'Three-Layer Memory', pct: 78 },
+    { name: 'Compound Learning', pct: 91 },
+    { name: 'Self-Correction', pct: 72 },
+    { name: 'Context Surfaces', pct: 83 },
+  ],
+  fixes: [
+    { title: 'Add pre-commit hook for linting', impact: '+5% usage', min: 15 },
+    { title: 'Create quality-metrics.md in memory', impact: '+3% fluency', min: 5 },
+    { title: 'Add cross-references between skills', impact: '+4% fluency', min: 10 },
+    { title: 'Configure MCP server connections', impact: '+6% usage', min: 20 },
+    { title: 'Enable session logging', impact: '+2% usage', min: 5 },
+  ],
+  layers: [
+    { name: 'claude-md', score: 18, max: 20, status: 'pass' },
+    { name: 'knowledge-base', score: 15, max: 20, status: 'pass' },
+    { name: 'structure', score: 12, max: 15, status: 'warn' },
+    { name: 'settings-hierarchy', score: 8, max: 10, status: 'pass' },
+    { name: 'hooks', score: 5, max: 15, status: 'warn' },
+  ]
+};
+
+const descriptions = {
+  'mission-control': 'Mission Control — NASA-style dashboard with radar chart, gauges, and mission objectives. Dark space theme with animated scan lines and pulsing indicators.',
+  'health-scan': 'Health Scan — Medical diagnostic metaphor with body silhouette, EKG vital signs, and prescriptions. Brain=fluency, heart=usage, hands=setup.',
+  'city-builder': 'City Builder — SimCity-inspired view where buildings represent layers and districts represent CE patterns. Isometric skyline grows with score.',
+  'terminal-hacker': 'Terminal Hacker — Matrix-style green-on-black CLI with ASCII art score, tree structure, git-diff fixes, and sparkline patterns.',
+  'bento-grid': 'Bento Grid — Clean editorial layout with varied-size cards, progress rings, micro-visualizations. Linear/Vercel-style premium SaaS aesthetic.',
+};
+
+// ===== TAB SWITCHING =====
+function showTab(id, btn) {
+  document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('prompt-text').textContent = 'Viewing: ' + descriptions[id];
+
+  if (id === 'mission-control') drawRadar();
+  if (id === 'health-scan') startEKG();
+  if (id === 'terminal-hacker') runTerminal();
+}
+
+function copyPrompt() {
+  const text = `I want the dashboard to use this style: ${document.getElementById('prompt-text').textContent.replace('Viewing: ', '')}`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.prompt-output button');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy prompt', 1500);
+  });
+}
+
+// ===== 1. RADAR CHART =====
+function drawRadar() {
+  const canvas = document.getElementById('radar-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W/2, cy = H/2, R = 190;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const labels = data.patterns.map(p => p.name);
+  const values = data.patterns.map(p => p.pct / 100);
+  const n = labels.length;
+
+  // Grid rings
+  for (let ring = 1; ring <= 4; ring++) {
+    ctx.beginPath();
+    const r = R * ring / 4;
+    for (let i = 0; i <= n; i++) {
+      const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = 'rgba(34,51,238,0.12)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Spokes
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + R * Math.cos(angle), cy + R * Math.sin(angle));
+    ctx.strokeStyle = 'rgba(34,51,238,0.08)';
+    ctx.stroke();
+  }
+
+  // Data polygon
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const idx = i % n;
+    const angle = (Math.PI * 2 * idx / n) - Math.PI / 2;
+    const r = R * values[idx];
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(34,51,238,0.12)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(68,85,238,0.7)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Data points + labels
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    const r = R * values[i];
+    const x = cx + r * Math.cos(angle);
+    const y = cy + r * Math.sin(angle);
+
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#4455ee';
+    ctx.fill();
+
+    // Label
+    const lx = cx + (R + 30) * Math.cos(angle);
+    const ly = cy + (R + 30) * Math.sin(angle);
+    ctx.font = '10px "SF Mono", monospace';
+    ctx.fillStyle = '#556';
+    ctx.textAlign = Math.cos(angle) > 0.1 ? 'left' : Math.cos(angle) < -0.1 ? 'right' : 'center';
+    ctx.textBaseline = 'middle';
+
+    const shortName = labels[i].length > 18 ? labels[i].slice(0,16) + '…' : labels[i];
+    ctx.fillText(shortName, lx, ly);
+    ctx.fillStyle = '#889';
+    ctx.fillText(Math.round(values[i]*100) + '%', lx, ly + 14);
+  }
+}
+
+// ===== 2. EKG ANIMATION =====
+let ekgAnim;
+function startEKG() {
+  if (ekgAnim) cancelAnimationFrame(ekgAnim);
+  const canvas = document.getElementById('ekg-canvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = canvas.offsetHeight * 2;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  let offset = 0;
+
+  function drawEKG() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.beginPath();
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 2;
+
+    for (let x = 0; x < W; x++) {
+      const t = (x + offset) * 0.02;
+      const cycle = t % (Math.PI * 2);
+      let y = H / 2;
+
+      if (cycle > 1.5 && cycle < 1.8) y = H * 0.15;
+      else if (cycle > 1.8 && cycle < 2.1) y = H * 0.85;
+      else if (cycle > 2.1 && cycle < 2.4) y = H * 0.3;
+      else y = H / 2 + Math.sin(t * 0.5) * 3;
+
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Glow at leading edge
+    ctx.beginPath();
+    ctx.arc(W - 2, H/2, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#22c55e';
+    ctx.fill();
+
+    offset += 2;
+    ekgAnim = requestAnimationFrame(drawEKG);
+  }
+  drawEKG();
+}
+
+// ===== 3. CITY BUILDER =====
+function buildCity() {
+  const skyline = document.getElementById('cb-skyline');
+  if (!skyline) return;
+
+  const buildings = [
+    { name: 'CLAUDE.MD', score: 18, max: 20, color: '#4a6fa5' },
+    { name: 'KNOWLEDGE', score: 15, max: 20, color: '#5a7fb5' },
+    { name: 'STRUCTURE', score: 12, max: 15, color: '#8a6f45' },
+    { name: 'SETTINGS', score: 8, max: 10, color: '#6a8fa5' },
+    { name: 'HOOKS', score: 5, max: 15, color: '#a56f45' },
+    { name: 'SKILLS', score: 16, max: 20, color: '#5a9f85' },
+    { name: 'MEMORY', score: 14, max: 18, color: '#7a6fb5' },
+    { name: 'SESSIONS', score: 10, max: 12, color: '#5a8f95' },
+  ];
+
+  skyline.innerHTML = '';
+  buildings.forEach((b, i) => {
+    const pct = b.score / b.max;
+    const height = 40 + pct * 260;
+    const width = 50 + Math.random() * 20;
+
+    const div = document.createElement('div');
+    div.className = 'cb-building';
+    div.style.animationDelay = `${i * 0.1}s`;
+
+    const block = document.createElement('div');
+    block.className = 'cb-bldg-block';
+    block.style.height = height + 'px';
+    block.style.width = width + 'px';
+    block.style.background = `linear-gradient(180deg, ${b.color}, ${b.color}88)`;
+
+    const windows = document.createElement('div');
+    windows.className = 'windows';
+    const numWindows = Math.floor(height / 20) * 3;
+    for (let w = 0; w < numWindows; w++) {
+      const win = document.createElement('div');
+      win.className = 'window';
+      win.style.animationDelay = `${Math.random() * 5}s`;
+      windows.appendChild(win);
+    }
+    block.appendChild(windows);
+
+    const label = document.createElement('div');
+    label.className = 'cb-bldg-label';
+    label.textContent = b.name;
+
+    const score = document.createElement('div');
+    score.className = 'cb-bldg-score';
+    score.textContent = `${b.score}/${b.max}`;
+
+    div.appendChild(block);
+    div.appendChild(label);
+    div.appendChild(score);
+    skyline.appendChild(div);
+  });
+
+  // Districts
+  const districts = document.getElementById('cb-districts');
+  if (!districts) return;
+  districts.innerHTML = '';
+  data.patterns.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'cb-district';
+    d.innerHTML = `<span class="cb-district-name">${p.name}</span><div class="cb-district-bar"><div class="cb-district-bar-fill" style="width:${p.pct}%"></div></div><span class="cb-district-pct">${p.pct}%</span>`;
+    districts.appendChild(d);
+  });
+}
+
+// ===== 4. TERMINAL =====
+function runTerminal() {
+  const out = document.getElementById('th-output');
+  if (!out) return;
+
+  const sparkline = data.patterns.map(p => {
+    if (p.pct >= 90) return '█';
+    if (p.pct >= 80) return '▇';
+    if (p.pct >= 70) return '▆';
+    if (p.pct >= 60) return '▄';
+    if (p.pct >= 50) return '▃';
+    return '▂';
+  }).join('');
+
+  const ascii85 = `
+ ████████╗ ████████╗
+ ██╔═══██║ ██╔════╝
+ ████████║ ██████╗
+ ╚═══██╔╝ ╚════██║
+ ████████║ ████████║
+ ╚═══════╝ ╚═══════╝`;
+
+  const lines = [
+    '<span class="dim">$ second-brain-health-check --format=raw</span>',
+    '',
+    '<span class="comment">// initializing scan...</span>',
+    '<span class="comment">// target: ~/.claude/</span>',
+    '<span class="comment">// scanning 37 layers across 3 dimensions...</span>',
+    '',
+    '<span class="bright">═══════════════════════════════════════════════════</span>',
+    '<span class="bright">  SECOND BRAIN HEALTH CHECK v0.8.1</span>',
+    '<span class="bright">═══════════════════════════════════════════════════</span>',
+    '',
+    `<span class="cmd">${ascii85}</span>`,
+    '',
+    `  <span class="bright">SCORE: 85/100</span>  <span class="dim">│</span>  <span class="cmd">GRADE: A</span>  <span class="dim">│</span>  <span class="dim">289/341 pts</span>`,
+    `  <span class="dim">Stage: COMPOUNDING │ Maturity: configured</span>`,
+    '',
+    '<span class="bright">─── DIMENSIONS ───────────────────────────────────</span>',
+    '',
+    `  <span class="cmd">Setup    </span> <span class="bright">81</span>/100  ${'█'.repeat(16)}${'░'.repeat(4)}  <span class="dim">Grade A</span>`,
+    `  <span class="cmd">Usage    </span> <span class="bright">88</span>/100  ${'█'.repeat(18)}${'░'.repeat(2)}  <span class="dim">Active</span>`,
+    `  <span class="cmd">Fluency  </span> <span class="warn">79</span>/100  ${'█'.repeat(16)}${'░'.repeat(4)}  <span class="warn">Proficient</span>`,
+    '',
+    '<span class="bright">─── LAYERS (Setup) ───────────────────────────────</span>',
+    '',
+    `  <span class="dim">├──</span> <span class="pass">✓</span> claude-md ··········· 18/20`,
+    `  <span class="dim">├──</span> <span class="pass">✓</span> knowledge-base ····· 15/20`,
+    `  <span class="dim">├──</span> <span class="warn">⚠</span> structure ·········· 12/15  <span class="warn">missing agents/</span>`,
+    `  <span class="dim">├──</span> <span class="pass">✓</span> settings-hierarchy · 8/10`,
+    `  <span class="dim">└──</span> <span class="warn">⚠</span> hooks ·············· 5/15   <span class="warn">no pre-commit</span>`,
+    '',
+    '<span class="bright">─── CE PATTERNS ──────────────────────────────────</span>',
+    '',
+    `  <span class="dim">${sparkline}</span>  <span class="cmd">${data.patterns.map(p=>p.pct+'%').join(' ')}</span>`,
+    '',
+  ];
+
+  data.patterns.forEach(p => {
+    const bar = '▓'.repeat(Math.round(p.pct/5)) + '░'.repeat(20 - Math.round(p.pct/5));
+    const col = p.pct >= 80 ? 'cmd' : p.pct >= 70 ? 'warn' : 'err';
+    lines.push(`  <span class="${col}">${String(p.pct).padStart(3)}%</span> ${bar} <span class="dim">${p.name}</span>`);
+  });
+
+  lines.push('');
+  lines.push('<span class="bright">─── RECOMMENDED FIXES ────────────────────────────</span>');
+  lines.push('');
+
+  data.fixes.forEach((f, i) => {
+    lines.push(`<span class="header">@@ fix ${i+1}: ${f.title} @@</span>`);
+    lines.push(`<span class="add">+ ${f.impact}</span>  <span class="dim">~${f.min} min</span>`);
+    lines.push('');
+  });
+
+  lines.push('<span class="dim">$ </span><span class="th-cursor"></span>');
+
+  // Typewriter effect
+  out.innerHTML = '';
+  let lineIdx = 0;
+  let charIdx = 0;
+  let currentLineEl = null;
+
+  function typeChar() {
+    if (lineIdx >= lines.length) return;
+
+    if (charIdx === 0) {
+      currentLineEl = document.createElement('div');
+      out.appendChild(currentLineEl);
+    }
+
+    const line = lines[lineIdx];
+    // For simplicity with HTML tags, render line at once
+    if (charIdx === 0) {
+      currentLineEl.innerHTML = line;
+      lineIdx++;
+      charIdx = 0;
+      const delay = line === '' ? 30 : line.includes('═') ? 80 : 20;
+      setTimeout(typeChar, delay);
+      out.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      return;
+    }
+  }
+  typeChar();
+}
+
+// ===== INIT =====
+drawRadar();
+buildCity();
+
+// Resize handlers
+window.addEventListener('resize', () => {
+  const active = document.querySelector('.dashboard.active');
+  if (active?.id === 'mission-control') drawRadar();
+  if (active?.id === 'health-scan') startEKG();
+});
+</script>
+</body>
+</html>

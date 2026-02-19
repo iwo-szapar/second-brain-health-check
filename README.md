@@ -33,7 +33,7 @@ Returns a normalized score per dimension, a grade, a prioritized fix list with t
 
 ---
 
-## v0.8.0 — Adaptive Reports
+## v0.8.1 — Adaptive Reports
 
 Reports now adapt to your brain's maturity level:
 
@@ -43,7 +43,7 @@ Reports now adapt to your brain's maturity level:
 | **Minimal/Basic** (score 1-40) | Growth mode: celebrates what exists, shows top 3 fixes only. |
 | **Structured+** (score 41+) | Full report with all dimensions, CE patterns, and complete breakdown. |
 
-New in v0.8.0:
+New in v0.8.1:
 - **Brain state detection** — fast pre-scan (~100ms) classifies maturity before running checks
 - **CE pattern mapping** — maps 38 layers to 7 Context Engineering patterns with percentage scores
 - **Time estimates** — every fix shows `~N min` so you can plan your session
@@ -56,7 +56,7 @@ New in v0.8.0:
 
 ## Context Engineering Patterns
 
-v0.8.0 maps your 38 check layers to 7 CE patterns:
+v0.8.1 maps your 38 check layers to 7 CE patterns:
 
 | Pattern | What It Measures |
 |---------|-----------------|

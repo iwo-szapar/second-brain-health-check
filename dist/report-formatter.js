@@ -2,7 +2,7 @@
  * Report Formatter
  *
  * Converts health check results into a readable markdown report.
- * v0.8.0: Adaptive formatting based on brain maturity level,
+ * v0.8.1: Adaptive formatting based on brain maturity level,
  * score-band CTAs, time estimates on fixes, CE pattern section.
  */
 

@@ -7,7 +7,7 @@
  *
  * Install: claude mcp add second-brain-health -- npx second-brain-health-check
  *
- * v0.8.0: Adaptive reports, CE pattern mapping, context pressure check,
+ * v0.8.1: Adaptive reports, CE pattern mapping, context pressure check,
  * score-band CTAs, time estimates, mode parameter.
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -19,7 +19,7 @@ import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
-    version: '0.8.0',
+    version: '0.8.1',
 });
 const pathSchema = z
     .string()
@@ -222,7 +222,7 @@ server.registerTool('generate_pdf', {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('Second Brain Health Check MCP server running on stdio (v0.8.0)');
+    console.error('Second Brain Health Check MCP server running on stdio (v0.8.1)');
 }
 main().catch((error) => {
     console.error('Fatal error:', error);

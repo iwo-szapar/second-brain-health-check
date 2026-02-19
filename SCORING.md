@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-19 (v0.8.0)
+> Last verified against code: 2026-02-19 (v0.8.1)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -15,7 +15,7 @@ Only compiled JS is distributed:
 
 ```
 dist/
-  index.js                     # MCP server entry point (4 tools, v0.8.0)
+  index.js                     # MCP server entry point (4 tools, v0.8.1)
   cli.js                       # CLI entry point
   types.js                     # Grade functions + normalizeScore
   health-check.js              # Orchestrator + detectBrainState() + mapChecksToCEPatterns()
@@ -106,7 +106,7 @@ All dimensions are **normalized to /100** for display. The report and dashboard 
 
 ---
 
-## Brain State Detection (v0.8.0)
+## Brain State Detection (v0.8.1)
 
 ### `detectBrainState()` — `health-check.js`
 
@@ -437,7 +437,7 @@ All git commands run locally. The MCP server has zero network imports (`fetch`, 
 
 ## Report Format (`report-formatter.js`)
 
-v0.8.0 uses adaptive formatting based on brain maturity. All dimensions display as **normalized/100**.
+v0.8.1 uses adaptive formatting based on brain maturity. All dimensions display as **normalized/100**.
 
 ### Full Report (structured+ brains, score 41+)
 
