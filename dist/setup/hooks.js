@@ -42,6 +42,7 @@ function collectAllHooks(hooks, rootPath) {
                     collected.push({
                         event,
                         matcher: entry.matcher || null,
+                        type: h.type || 'command',
                         command,
                         scriptPaths,
                         resolvedPaths: scriptPaths.map(p => resolvePath(p, rootPath)),
@@ -55,6 +56,7 @@ function collectAllHooks(hooks, rootPath) {
                 collected.push({
                     event,
                     matcher: entry.matcher || null,
+                    type: entry.type || 'command',
                     command: directCommand,
                     scriptPaths,
                     resolvedPaths: scriptPaths.map(p => resolvePath(p, rootPath)),
@@ -486,6 +488,98 @@ export async function checkHooks(rootPath) {
                 message: parts.join(' — '),
             });
         }
+    }
+
+    // Check 5: Hook Type Distribution (3 pts)
+    {
+        const types = { command: 0, prompt: 0, agent: 0, unknown: 0 };
+
+        for (const entry of allHookEntries) {
+            // Determine hook type from the entry
+            // In the hooks config, entries can have a "type" field
+            // Default to "command" if not specified
+            const hookType = entry.type || 'command';
+            if (hookType === 'command' || hookType === 'cmd') types.command++;
+            else if (hookType === 'prompt') types.prompt++;
+            else if (hookType === 'agent') types.agent++;
+            else types.command++; // default
+        }
+
+        const totalHooks = allHookEntries.length;
+        const typeList = [];
+        if (types.command > 0) typeList.push(`${types.command} command`);
+        if (types.prompt > 0) typeList.push(`${types.prompt} prompt`);
+        if (types.agent > 0) typeList.push(`${types.agent} agent`);
+
+        let status, points, message;
+        if (totalHooks === 0) {
+            status = 'fail';
+            points = 0;
+            message = 'No hooks to evaluate';
+        } else if (types.prompt > 0 || types.agent > 0) {
+            status = 'pass';
+            points = 3;
+            message = `Advanced hook types in use: ${typeList.join(', ')}`;
+        } else if (types.command >= 3) {
+            status = 'pass';
+            points = 2;
+            message = `${types.command} command hook(s) — consider adding prompt/agent hooks for smarter decisions`;
+        } else {
+            status = 'warn';
+            points = 1;
+            message = `Only ${types.command} command hook(s) — hook system underutilized`;
+        }
+        checks.push({ name: 'Hook type distribution', status, points, maxPoints: 3, message });
+    }
+
+    // Check 6: Matcher Quality (3 pts)
+    {
+        let matcherCount = 0;
+        let unmatchedCount = 0;
+        const broadMatchers = [];
+
+        for (const entry of allHookEntries) {
+            if (entry.matcher) {
+                matcherCount++;
+                // Check if matcher is overly broad (matches everything)
+                if (entry.matcher === '*' || entry.matcher === '.*') {
+                    broadMatchers.push(entry.event);
+                }
+            } else {
+                // PreToolUse/PostToolUse without matcher runs on EVERY tool call
+                if (entry.event === 'PreToolUse' || entry.event === 'PostToolUse') {
+                    unmatchedCount++;
+                }
+            }
+        }
+
+        const toolHookCount = allHookEntries.filter(e =>
+            e.event === 'PreToolUse' || e.event === 'PostToolUse'
+        ).length;
+
+        let status, points, message;
+        if (toolHookCount === 0) {
+            status = 'pass';
+            points = 3;
+            message = 'No tool lifecycle hooks — matchers not applicable';
+        } else if (unmatchedCount > 2) {
+            status = 'warn';
+            points = 1;
+            message = `${unmatchedCount} tool hook(s) without matchers — run on every tool call, may impact performance`;
+        } else if (broadMatchers.length > 0) {
+            status = 'warn';
+            points = 1;
+            message = `${broadMatchers.length} hook(s) with wildcard matcher — consider scoping to specific tools`;
+        } else if (matcherCount > 0) {
+            status = 'pass';
+            points = 3;
+            message = `${matcherCount} hook(s) use matchers for targeted execution`;
+        } else {
+            status = 'pass';
+            points = 2;
+            message = 'Tool hooks configured without matchers — acceptable for simple setups';
+        }
+        checks.push({ name: 'Matcher quality', status, points, maxPoints: 3, message });
     }
 
     const totalPoints = checks.reduce((sum, c) => sum + c.points, 0);

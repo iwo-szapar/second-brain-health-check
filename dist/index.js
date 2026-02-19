@@ -16,7 +16,7 @@ import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
-    version: '0.2.0',
+    version: '0.4.0',
 });
 const pathSchema = z
     .string()
@@ -151,7 +151,7 @@ server.registerTool('generate_pdf', {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('Second Brain Health Check MCP server running on stdio (v0.2.0)');
+    console.error('Second Brain Health Check MCP server running on stdio (v0.4.0)');
 }
 main().catch((error) => {
     console.error('Fatal error:', error);

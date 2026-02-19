@@ -17,6 +17,13 @@ import { checkPersonalization } from './setup/personalization.js';
 import { checkMcpSecurity } from './setup/mcp-security.js';
 import { checkConfigHygiene } from './setup/config-hygiene.js';
 import { checkPlugins } from './setup/plugins.js';
+import { checkSettingsHierarchy } from './setup/settings-hierarchy.js';
+import { checkPermissionsAudit } from './setup/permissions-audit.js';
+import { checkSandboxConfig } from './setup/sandbox-config.js';
+import { checkModelConfig } from './setup/model-config.js';
+import { checkEnvVars } from './setup/env-vars.js';
+import { checkMcpHealth } from './setup/mcp-health.js';
+import { checkAttributionDisplay } from './setup/attribution-display.js';
 // Usage layers
 import { checkSessions } from './usage/sessions.js';
 import { checkPatterns } from './usage/patterns.js';
@@ -56,6 +63,13 @@ export async function runHealthCheck(path) {
             checkMcpSecurity(rootPath),
             checkConfigHygiene(rootPath),
             checkPlugins(rootPath),
+            checkSettingsHierarchy(rootPath),
+            checkPermissionsAudit(rootPath),
+            checkSandboxConfig(rootPath),
+            checkModelConfig(rootPath),
+            checkEnvVars(rootPath),
+            checkMcpHealth(rootPath),
+            checkAttributionDisplay(rootPath),
         ]),
         Promise.all([
             checkSessions(rootPath),

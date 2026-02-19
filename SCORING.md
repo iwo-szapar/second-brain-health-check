@@ -31,6 +31,13 @@ dist/
     mcp-security.js            # Layer 8: MCP Security (8 pts)
     config-hygiene.js          # Layer 9: Config Hygiene (7 pts)
     plugins.js                 # Layer 10: Plugin Coverage (6 pts)
+    settings-hierarchy.js      # Layer 11: Settings Hierarchy (12 pts)
+    permissions-audit.js       # Layer 12: Permissions Audit (12 pts)
+    sandbox-config.js          # Layer 13: Sandbox Config (8 pts)
+    model-config.js            # Layer 14: Model Config (8 pts)
+    env-vars.js                # Layer 15: Environment Variables (10 pts)
+    mcp-health.js              # Layer 16: MCP Server Health (10 pts)
+    attribution-display.js     # Layer 17: Attribution & Display (6 pts)
   usage/
     sessions.js                # Layer 1: Sessions (25 pts)
     patterns.js                # Layer 2: Patterns (25 pts)
@@ -56,11 +63,11 @@ dist/
 
 | Dimension | Max | What it measures |
 |-----------|-----|------------------|
-| Setup Quality | 124 | Is the brain correctly configured? (static file analysis) |
+| Setup Quality | 202 | Is the brain correctly configured? (static file analysis) |
 | Usage Activity | 115 | Is the brain being used? (file dates, session counts, pattern growth) |
 | AI Fluency | 30 | How effectively does the user work with AI? (delegation, context engineering, compounding) |
 
-**Total: 269 points**
+**Total: 347 points**
 
 All dimensions are **normalized to /100** for display. The report and dashboard show `normalizedScore/100` for each dimension, calculated as `Math.round((points / maxPoints) * 100)`.
 
@@ -82,7 +89,7 @@ Runs all setup layers in parallel via `Promise.all()`, then all usage layers in 
 
 ---
 
-## Setup Quality — 10 Layers (124 pts)
+## Setup Quality — 17 Layers (202 pts)
 
 ### Layer 1: CLAUDE.md Foundation (20 pts) — `setup/claude-md.js`
 
@@ -132,7 +139,7 @@ Scans both `.claude/skills/` and `.codex/skills/`. Uses `gray-matter` to parse Y
 | Tracking files present | 3 | 2+ found (3) | 1 (1) | 0 (0) | Checks: growth-log.md, quality-metrics.md, pattern-confidence.md in brain-health/ or alternative locations |
 | Getting started guide | 3 | Found (3) | — | Not found (0) | Checks: ONBOARDING_SUMMARY.md, README.md, GETTING_STARTED.md, agent_docs/README.md |
 
-### Layer 6: Automation & Hooks (13 pts) — `setup/hooks.js`
+### Layer 6: Automation & Hooks (19 pts) — `setup/hooks.js`
 
 | Check | Max | Pass | Warn | Fail | Detection |
 |-------|-----|------|------|------|-----------|
@@ -140,6 +147,8 @@ Scans both `.claude/skills/` and `.codex/skills/`. Uses `gray-matter` to parse Y
 | Tool lifecycle hooks | 3 | Has PreToolUse or PostToolUse (3) | Has other hooks (1) | None (0) | `hookEvents.some(e => e === 'PreToolUse' \|\| e === 'PostToolUse')` |
 | Hook scripts valid | 3 | All executable (3) or inline hooks (3) | Some executable (1) | None executable (0) | Extracts `.sh/.py/.js/.ts` paths from hook commands, checks `access(path, X_OK)` |
 | Hook health validation | 3 | All pass (3) | Fragile patterns or no-op issues (1) | Syntax errors (0) | Validates bash syntax (`bash -n`), detects fragile patterns (unguarded find/grep with `set -e`, unguarded positional params with `set -u`), tests no-op safety (non-matching stdin should exit 0) |
+| Hook type distribution | 3 | Uses prompt/agent hooks (3) | 3+ command hooks (2) | Few hooks (1) or none (0) | Categorizes hooks by type (command, prompt, agent) — advanced types indicate AI-native automation |
+| Matcher quality | 3 | Uses targeted matchers (3) | Acceptable (2) | Too many unmatched tool hooks (1) or broad wildcards (1) | Checks PreToolUse/PostToolUse hooks for matcher presence, flags wildcard matchers |
 
 ### Layer 7: Personalization Quality (10 pts) — `setup/personalization.js`
 
@@ -180,6 +189,79 @@ Evaluates installed Claude Code plugins.
 | Plugins installed | 3 | 3+ active plugins (3) | 1-2 plugins (1) | 0 plugins (0) | Counts installed plugins |
 | Plugin recommendations | 2 | 50%+ of recommended (2) | <50% (1) | 0% (0) | Checks against 6 recommended: Context7, Feature Dev, Security Guidance, Playground, Canvas, Claude HUD |
 | Third-party plugins | 1 | Any community plugins (1) | — | None (0) | Bonus point for community/third-party plugins |
+
+### Layer 11: Settings Hierarchy (12 pts) — `setup/settings-hierarchy.js`
+
+Validates the 5-level settings override chain and scope appropriateness.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Settings layer coverage | 4 | 2+ levels configured (4) | 1 level (2) | 0 levels (0) | Reads `.claude/settings.json`, `.claude/settings.local.json`, `~/.claude.json` |
+| Shadow settings detection | 4 | No shadows (4) | 1-3 shadows (2) | 4+ shadows (0) | Flattens all levels to dot-notation, compares values across levels (skips merged keys like permissions/hooks) |
+| Scope appropriateness | 4 | Correct scopes (4) | 1-2 misplaced (2) | 3+ misplaced (0) | Flags: hooks in user-global, personal prefs (model, language) in project-shared |
+
+### Layer 12: Permissions Audit (12 pts) — `setup/permissions-audit.js`
+
+Validates permission modes, dangerous rules, deny conflicts, and syntax.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Permission mode | 3 | Mode configured (3) | No config (1) | bypassPermissions active (0) | Checks `defaultMode` across all levels |
+| Over-permissive rules | 3 | No dangerous patterns (3) | 1-2 risky (1) | 3+ risky (0) | Regex: `Bash(*)`, `Bash(rm `, `Bash(sudo `, `Write(*)`, `Edit(*)` |
+| Deny rules review | 3 | All scoped (3) | Blocks entire tool types (1) | — | Flags deny rules that match bare tool names (e.g., "Bash" blocks ALL bash) |
+| Permission syntax validity | 3 | All valid prefixes (3) | Few invalid (1) | Many invalid (0) | Validates against known tool prefixes: Bash, Read, Write, Edit, Glob, Grep, mcp__, etc. |
+
+### Layer 13: Sandbox Configuration (8 pts) — `setup/sandbox-config.js`
+
+Checks sandbox security posture.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Sandbox enabled | 3 | Enabled (3) | Not configured or disabled (1) | — | Reads `sandbox.enabled` from settings |
+| Network controls | 2 | Configured with domains (2) | Sandbox disabled (0) | — | Checks `allowedDomains`, `allowUnixSockets`, `additionalProxyPorts` |
+| Excluded commands | 2 | None or safe (2) | Many exclusions (1) | Dangerous commands excluded (0) | Flags: rm, sudo, chmod, kill, dd, mkfs, fdisk |
+| Auto-allow bash | 1 | Consistent config (1) | autoAllow without sandbox (0) | — | `autoAllowBashIfSandboxed` alignment with `sandbox.enabled` |
+
+### Layer 14: Model Configuration (8 pts) — `setup/model-config.js`
+
+Validates model aliases, effort levels, and configuration correctness.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Model configuration | 3 | Explicit config (3) | Defaults (2) | — | Reads `model`, `modelAliases` from settings + env vars |
+| Model alias validity | 3 | All valid (3) | Unknown aliases (1) | — | Validates alias keys (default, sonnet, opus, haiku) and model IDs against known models |
+| Effort level | 2 | Valid level (2) | — | Invalid level (0) | Checks `effortLevel` against: high, medium, low |
+
+### Layer 15: Environment Variables (10 pts) — `setup/env-vars.js`
+
+Checks for secret leaks, API key conflicts, and performance tuning.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Git-tracked env files | 4 | Clean (4) | Env files without gitignore (2) | Tracked in git (0) | `git ls-files --error-unmatch` on .env, .env.local, .env.production, .env.secret |
+| API key conflicts | 3 | No conflicts (3) | — | Multiple keys or backends (0) | Checks ANTHROPIC_API_KEY vs CLAUDE_API_KEY, BEDROCK vs VERTEX |
+| Performance tuning | 3 | Valid or defaults (3) | Restrictive settings (1) | — | MAX_TOOL_OUTPUT_SIZE, CLAUDE_CODE_MAX_TURNS, CLAUDE_CODE_MAX_TOKENS |
+
+### Layer 16: MCP Server Health (10 pts) — `setup/mcp-health.js`
+
+Evaluates MCP server configuration quality and scope correctness.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| MCP server count | 3 | 3+ servers (3) | 1-2 (1) | 0 (0) | Counts unique servers across `.mcp.json` and `~/.claude.json` |
+| Server configuration quality | 3 | All valid (3) | Minor issues (1) | Many issues (0) | Checks for missing command/URL, empty env blocks, disabled servers |
+| Timeout configuration | 2 | Valid timeout (2) | Too low/high (1) | — | `mcpTimeout` value sanity check (5s-120s range) |
+| Scope correctness | 2 | Clean (2) | Auth in project-level (1) | — | Flags project-level servers with auth env vars |
+
+### Layer 17: Attribution & Display (6 pts) — `setup/attribution-display.js`
+
+Checks attribution settings, display configuration, and plans directory.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Attribution settings | 2 | Configured (2) | Deprecated `includeCoAuthoredBy` (1) | — | Reads `attribution.commit`, `attribution.pr` |
+| Display configuration | 2 | Clean (2) | `showGitIgnoredFiles=true` (1) | — | Flags security-sensitive display settings |
+| Plans directory | 2 | Configured and exists (2) | Dir exists but not configured (1) | Configured but missing (1) | Checks `plansDirectory` setting vs common plan dirs on disk |
 
 ---
 
