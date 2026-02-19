@@ -21,6 +21,11 @@ async function readJson(filePath) {
 const VALID_TOOL_PREFIXES = [
     'Bash', 'Read', 'Write', 'Edit', 'MultiEdit', 'Glob', 'Grep',
     'WebFetch', 'WebSearch', 'Task', 'NotebookEdit', 'mcp__',
+    'Skill', 'AskUserQuestion', 'EnterPlanMode', 'ExitPlanMode',
+    'ToolSearch', 'SendMessage', 'TodoWrite',
+    'TaskCreate', 'TaskUpdate', 'TaskList', 'TaskGet', 'TaskOutput', 'TaskStop',
+    'TeamCreate', 'TeamDelete',
+    'ReadMcpResourceTool', 'ListMcpResourcesTool',
 ];
 
 // Dangerous permission patterns that grant overly broad access
