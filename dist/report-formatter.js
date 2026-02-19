@@ -161,6 +161,16 @@ function buildCTA(report) {
     ];
 }
 
+function formatDelta(report) {
+    const prev = report.brainState?.previousScore;
+    if (prev === null || prev === undefined) return '';
+    const current = getOverallPct(report);
+    const diff = current - prev;
+    if (diff === 0) return '  (no change since last scan)';
+    const sign = diff > 0 ? '+' : '';
+    return `  (${sign}${diff}% since last scan)`;
+}
+
 function getOverallPct(report) {
     const totalPts = (report.setup?.totalPoints || 0) +
         (report.usage?.totalPoints || 0) +
@@ -328,9 +338,12 @@ export function formatReport(report) {
 
     // Full report for structured+
     const lines = [];
+    const delta = formatDelta(report);
     lines.push('================================================================');
     lines.push('  SECOND BRAIN HEALTH CHECK');
     lines.push('================================================================');
+    lines.push('');
+    lines.push(`OVERALL:          ${getOverallPct(report)}%${delta}`);
     lines.push('');
     lines.push(`SETUP QUALITY:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
     lines.push(`USAGE ACTIVITY:   ${report.usage.normalizedScore}/100 (${report.usage.grade} - ${report.usage.gradeLabel})`);

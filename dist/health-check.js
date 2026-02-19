@@ -5,7 +5,7 @@
  * v0.8.1: Added detectBrainState() pre-scan and mapChecksToCEPatterns().
  */
 import { resolve } from 'node:path';
-import { stat, realpath, readFile } from 'node:fs/promises';
+import { stat, realpath, readFile, writeFile } from 'node:fs/promises';
 import { getSetupGrade, getUsageGrade, getFluencyGrade, normalizeScore } from './types.js';
 // Setup layers
 import { checkClaudeMd } from './setup/claude-md.js';
@@ -339,7 +339,50 @@ export async function runHealthCheck(path, options = {}) {
     // Compute CE pattern mapping
     report.cePatterns = mapChecksToCEPatterns(report);
 
+    // Persist state for delta tracking on next run
+    await saveHealthCheckState(rootPath, report);
+
     return report;
+}
+
+/**
+ * Save health check results to .health-check.json for delta tracking.
+ * Appends to a runs array (max 20 entries to avoid bloat).
+ */
+async function saveHealthCheckState(rootPath, report) {
+    const filePath = resolve(rootPath, '.health-check.json');
+    const overallPct = report.setup.maxPoints + report.usage.maxPoints + report.fluency.maxPoints > 0
+        ? Math.round(((report.setup.totalPoints + report.usage.totalPoints + report.fluency.totalPoints) /
+            (report.setup.maxPoints + report.usage.maxPoints + report.fluency.maxPoints)) * 100)
+        : 0;
+
+    const runEntry = {
+        timestamp: report.timestamp,
+        version: '0.8.3',
+        overallPct,
+        setup: report.setup.normalizedScore,
+        usage: report.usage.normalizedScore,
+        fluency: report.fluency.normalizedScore,
+        maturity: report.brainState?.maturity || 'unknown',
+        cePatterns: (report.cePatterns || []).map(p => ({ name: p.name, pct: p.percentage })),
+    };
+
+    let state = { runs: [] };
+    try {
+        const existing = await readFile(filePath, 'utf-8');
+        state = JSON.parse(existing);
+        if (!Array.isArray(state.runs)) state.runs = [];
+    } catch { /* no existing file, start fresh */ }
+
+    state.runs.push(runEntry);
+    // Keep max 20 runs to avoid file bloat
+    if (state.runs.length > 20) {
+        state.runs = state.runs.slice(-20);
+    }
+
+    try {
+        await writeFile(filePath, JSON.stringify(state, null, 2) + '\n', 'utf-8');
+    } catch { /* silently fail — read-only filesystem or permission issues shouldn't block the scan */ }
 }
 function generateTopFixes(setupLayers, usageLayers, fluencyLayers) {
     const allChecks = [];

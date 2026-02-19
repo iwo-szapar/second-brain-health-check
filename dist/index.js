@@ -7,8 +7,8 @@
  *
  * Install: claude mcp add second-brain-health -- npx second-brain-health-check
  *
- * v0.8.1: Adaptive reports, CE pattern mapping, context pressure check,
- * score-band CTAs, time estimates, mode parameter.
+ * v0.8.3: State persistence, buyer CTA suppression, brain manifest YAML,
+ * CE radar chart, adaptive reports, CE pattern mapping, time estimates.
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -17,9 +17,10 @@ import { runHealthCheck, detectBrainState } from './health-check.js';
 import { formatReport, formatFixSuggestions } from './report-formatter.js';
 import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
+import { generateManifestYaml, saveManifest } from './brain-manifest.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
-    version: '0.8.1',
+    version: '0.8.3',
 });
 const pathSchema = z
     .string()
@@ -93,20 +94,29 @@ server.registerTool('check_health', {
             "'operations' for business workflows, 'research' for analysis, 'mixed' for general use. " +
             "Provides scoring context notes."),
         mode: z
-            .enum(['full', 'quick'])
+            .enum(['full', 'quick', 'manifest'])
             .optional()
             .describe("Scan mode. 'full' (default) runs all 38 check layers. " +
             "'quick' runs detection only (~100ms) — returns brain maturity level and what exists, " +
-            "without running full checks. Use 'quick' to decide whether to run a full scan."),
+            "without running full checks. Use 'quick' to decide whether to run a full scan. " +
+            "'manifest' runs full check + writes brain-manifest.yaml to project root."),
     },
 }, async ({ path, language, workspace_type, use_case, mode }) => {
     try {
-        const report = await runHealthCheck(path, { mode: mode || 'full' });
+        const effectiveMode = mode === 'manifest' ? 'full' : (mode || 'full');
+        const report = await runHealthCheck(path, { mode: effectiveMode });
         const formatted = formatReport(report);
         const langNote = buildLanguagePrompt(language);
         const ctxNote = buildContextNote(workspace_type, use_case);
+
+        let manifestNote = '';
+        if (mode === 'manifest') {
+            const manifestPath = await saveManifest(report, path ? `${path}/brain-manifest.yaml` : undefined);
+            manifestNote = `\n\nBrain manifest saved to: ${manifestPath}`;
+        }
+
         return {
-            content: [{ type: 'text', text: formatted + ctxNote + langNote }],
+            content: [{ type: 'text', text: formatted + ctxNote + langNote + manifestNote }],
         };
     }
     catch (error) {
@@ -222,7 +232,7 @@ server.registerTool('generate_pdf', {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('Second Brain Health Check MCP server running on stdio (v0.8.1)');
+    console.error('Second Brain Health Check MCP server running on stdio (v0.8.3)');
 }
 main().catch((error) => {
     console.error('Fatal error:', error);

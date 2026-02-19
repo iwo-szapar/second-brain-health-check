@@ -5,7 +5,7 @@
  * Matches the PDF report aesthetic: monospace, dark, angular, no-nonsense.
  * Weaves narrative context between data sections for first-time readers.
  *
- * v0.8.1: Three-tier fix remediation (summary + why + steps),
+ * v0.8.3: Three-tier fix remediation (summary + why + steps),
  * time estimates, CE pattern section.
  */
 import { writeFile } from 'node:fs/promises';
@@ -313,8 +313,62 @@ function renderTopFixes(fixes) {
     </div>`;
 }
 
+function renderRadarChart(cePatterns) {
+    const cx = 140, cy = 140, r = 110;
+    const n = cePatterns.length;
+    if (n < 3) return '';
+
+    const angleStep = (2 * Math.PI) / n;
+    const startAngle = -Math.PI / 2; // top
+
+    function polarToXY(pct, i) {
+        const angle = startAngle + i * angleStep;
+        const dist = (pct / 100) * r;
+        return [cx + dist * Math.cos(angle), cy + dist * Math.sin(angle)];
+    }
+
+    // Grid rings at 25%, 50%, 75%, 100%
+    let gridLines = '';
+    for (const ring of [25, 50, 75, 100]) {
+        const pts = [];
+        for (let i = 0; i < n; i++) pts.push(polarToXY(ring, i).join(','));
+        gridLines += `<polygon points="${pts.join(' ')}" fill="none" stroke="#1a1a1a" stroke-width="1"/>`;
+    }
+
+    // Axis lines
+    let axes = '';
+    for (let i = 0; i < n; i++) {
+        const [x, y] = polarToXY(100, i);
+        axes += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#1a1a1a" stroke-width="1"/>`;
+    }
+
+    // Data polygon
+    const dataPts = cePatterns.map((p, i) => polarToXY(Math.max(p.percentage, 2), i).join(',')).join(' ');
+
+    // Labels
+    let labels = '';
+    const labelR = r + 22;
+    for (let i = 0; i < n; i++) {
+        const angle = startAngle + i * angleStep;
+        const lx = cx + labelR * Math.cos(angle);
+        const ly = cy + labelR * Math.sin(angle);
+        const anchor = Math.abs(Math.cos(angle)) < 0.1 ? 'middle' : Math.cos(angle) > 0 ? 'start' : 'end';
+        const shortName = cePatterns[i].name.replace('Three-Layer ', '').replace(' Protocol', '').replace(' as ', ' ');
+        const color = cePatterns[i].percentage >= 70 ? '#22c55e' : cePatterns[i].percentage >= 40 ? '#eab308' : '#ef4444';
+        labels += `<text x="${lx}" y="${ly}" fill="${color}" font-size="9" text-anchor="${anchor}" dominant-baseline="middle" font-family="monospace">${escapeHtml(shortName)}</text>`;
+    }
+
+    return `<svg viewBox="0 0 280 280" width="280" height="280" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 16px;">
+        ${gridLines}${axes}
+        <polygon points="${dataPts}" fill="rgba(34,51,204,0.2)" stroke="#2233cc" stroke-width="2"/>
+        ${labels}
+    </svg>`;
+}
+
 function renderCEPatterns(cePatterns) {
     if (!cePatterns || cePatterns.length === 0) return '';
+
+    const radarSvg = renderRadarChart(cePatterns);
 
     let patternsHtml = '';
     for (const p of cePatterns) {
@@ -335,6 +389,7 @@ function renderCEPatterns(cePatterns) {
         <div style="background:#0d0d40;padding:13px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;">CONTEXT ENGINEERING PATTERNS</div>
         <div style="padding:12px 20px;">
             <div style="font-size:11px;color:#666;margin-bottom:12px;">How well your brain implements the 7 Context Engineering patterns.</div>
+            ${radarSvg}
             ${patternsHtml}
         </div>
     </div>`;
@@ -457,7 +512,7 @@ export function generateDashboardHtml(report) {
 
     <!-- Nav header -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.1em;">
-        <span>SECOND BRAIN // HEALTH CHECK v0.8.1</span>
+        <span>SECOND BRAIN // HEALTH CHECK v0.8.3</span>
         <span style="text-align:right;">${dateStr}<br>${timeStr}</span>
     </div>
 
@@ -565,7 +620,12 @@ export function generateDashboardHtml(report) {
     ${renderJourneyStage(overallPct)}
 
     <!-- CTA -->
-    ${overallPct >= 85
+    ${report.brainState?.isBuyer
+        ? `<div style="border:1px solid #22c55e;padding:44px 40px;text-align:center;margin-top:32px;margin-bottom:32px;">
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#22c55e;margin-bottom:16px;">BASELINE CAPTURED</div>
+        <p style="font-size:12px;color:#888;margin-bottom:8px;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto;">Score: ${overallPct}%. Run again after setup to see your progress.</p>
+    </div>`
+        : overallPct >= 85
         ? `<div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:32px;margin-bottom:32px;">
         <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:16px;">YOU BUILT SOMETHING RARE</div>
         <p style="font-size:12px;color:#888;margin-bottom:24px;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto;">Score ${overallPct}%. Most people never get past Scaffolded. Your brain is compounding. If you want to help your team get here too, the Team Brain add-on gives everyone a personal brain with shared context.</p>
@@ -580,7 +640,7 @@ export function generateDashboardHtml(report) {
 
     <!-- Footer -->
     <div style="text-align:center;padding-top:20px;border-top:1px solid #1a1a1a;font-size:10px;color:#444;text-transform:uppercase;letter-spacing:0.1em;">
-        GENERATED BY <a href="https://www.iwoszapar.com/second-brain-ai" style="color:#22c55e;">SECOND BRAIN HEALTH CHECK</a> v0.8.1 &middot; ${ts.toISOString()}
+        GENERATED BY <a href="https://www.iwoszapar.com/second-brain-ai" style="color:#22c55e;">SECOND BRAIN HEALTH CHECK</a> v0.8.3 &middot; ${ts.toISOString()}
     </div>
 
 </div>
