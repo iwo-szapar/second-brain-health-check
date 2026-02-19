@@ -1,6 +1,6 @@
 # Second Brain Health Check
 
-Context engineering quality scanner for Claude Code. Scores your workspace configuration across 34 check layers in 3 dimensions — then tells you exactly what to fix.
+Context engineering quality scanner for Claude Code. Scores your workspace configuration across 37 check layers in 3 dimensions — then tells you exactly what to fix.
 
 ```bash
 npm install -g second-brain-health-check
@@ -16,13 +16,13 @@ Run health check on current project
 
 ## What It Measures
 
-Three dimensions, ~414 points total (all normalized to /100 for display):
+Three dimensions, ~454 points total (all normalized to /100 for display):
 
 | Dimension | Raw Max | Layers | What It Checks |
 |-----------|---------|--------|----------------|
-| **Setup Quality** | ~239 pts | 22 layers | CLAUDE.md structure, skills, hooks, memory architecture, MCP security, permissions, sandbox, model config, team readiness, rules system |
+| **Setup Quality** | ~269 pts | 24 layers | CLAUDE.md structure, skills, hooks, memory architecture, MCP security, permissions, sandbox, model config, team readiness, rules system, spec/planning artifacts, knowledge base |
 | **Usage Activity** | ~125 pts | 7 layers | Session frequency, pattern growth, memory evolution, review loops, compound evidence, cross-references, workflow maturity |
-| **AI Fluency** | ~50 pts | 5 layers | Progressive disclosure, skill orchestration, context-aware skills, reference integrity, delegation patterns |
+| **AI Fluency** | ~60 pts | 6 layers | Progressive disclosure, skill orchestration, context-aware skills, reference integrity, delegation patterns, interview & spec patterns |
 
 Returns a normalized score per dimension, a grade, and a prioritized fix list (top 5 fixes sorted by highest impact on the /100 score).
 
@@ -35,16 +35,16 @@ Returns a normalized score per dimension, a grade, and a prioritized fix list (t
 
 ## What Gets Checked
 
-The 22 setup layers cover:
+The 24 setup layers cover:
 
 | Layer | Points | Key Check |
 |-------|--------|-----------|
-| CLAUDE.md Foundation | 23 | Quick Start section, About Me, profession-specific rules, gotchas, length (2K–6K chars), freshness (14 days) |
-| Skills & Commands | 24 | 2+ skills, YAML frontmatter, profession-relevant naming, 200+ char instructions |
+| CLAUDE.md Foundation | 26 | Quick Start section, About Me, profession-specific rules, gotchas, length (2K–6K chars), freshness, hierarchical context files |
+| Skills & Commands | 28 | 2+ skills, YAML frontmatter, profession-relevant naming, 200+ char instructions, non-coding domain coverage |
 | Directory Structure | 15 | Organized folders, separation of concerns |
 | Memory Architecture | 15 | Episodic/semantic separation, not a single blob |
 | Brain Health Infra | 10 | Health monitoring setup |
-| Hooks | 19 | PreToolUse/PostToolUse hooks, coverage |
+| Hooks | 22 | PreToolUse/PostToolUse hooks, coverage, SessionStart initialization |
 | Personalization | 10 | User-specific config |
 | MCP Security | 8 | Server configuration safety |
 | Config Hygiene | 7 | Clean settings, no stale config |
@@ -61,10 +61,12 @@ The 22 setup layers cover:
 | Team Readiness | 8 | Agent teams enabled, team artifacts |
 | Rules System | 6 | .claude/rules/ with scoped rule files |
 | Interaction Config | 8 | Keybindings, output style, thinking mode |
+| Spec & Planning Artifacts | 10 | plans/specs/ directory, structured headings, recent activity |
+| Knowledge Base Architecture | 10 | .claude/docs/.claude/knowledge/, cross-references in CLAUDE.md, domain breadth |
 
 The 7 usage layers check: session logs, pattern files, memory file dates, review loop evidence, compound learning artifacts, cross-references between memory files, and workflow diversity across skill categories.
 
-The 5 fluency layers check: progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware skill design, file reference integrity (do paths in CLAUDE.md actually resolve?), and multi-tier orchestration with model routing.
+The 6 fluency layers check: progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware skill design, file reference integrity (do paths in CLAUDE.md actually resolve?), multi-tier orchestration with model routing, and interview & spec patterns (AskUserQuestion usage, spec-first workflow).
 
 ---
 
@@ -116,10 +118,28 @@ TOP FIXES (highest impact)
 
 | Tool | Description |
 |------|-------------|
-| `check_health` | Full 34-layer health check across 3 dimensions. Supports 14 languages, workspace type (solo/team/enterprise), and use case context (development/content/operations/research). |
+| `check_health` | Full 37-layer health check across 3 dimensions. Supports 14 languages, workspace type (solo/team/enterprise), and use case context (development/content/operations/research). |
 | `get_fix_suggestions` | Focus on weakest dimension, prioritized action plan |
 | `generate_dashboard` | Self-contained HTML dashboard — dark mode, mobile-responsive, grade badges, layer breakdown |
 | `generate_pdf` | PDF report via headless Chrome |
+
+---
+
+## CLI Usage
+
+```bash
+npx second-brain-health-check [path]           # Text report + open dashboard (default)
+npx second-brain-health-check --no-open [path] # Text report only, skip browser
+npx second-brain-health-check --pdf [path]     # PDF report via headless Chrome
+npx second-brain-health-check --yes [path]     # Skip privacy consent (CI/automation)
+npx second-brain-health-check --help           # Show usage
+```
+
+Path defaults to current directory.
+
+**Privacy consent:** On first run, the CLI shows a privacy section and prompts for confirmation before reading any files. In a real terminal, this is an interactive arrow-key selector (← → to toggle, Enter to confirm). In non-interactive contexts (pipes, CI), it falls back to a plain `[Y/n]` readline prompt.
+
+Use `--yes` to skip the prompt entirely — recommended when running from CI pipelines, MCP servers, or automation scripts.
 
 ---
 

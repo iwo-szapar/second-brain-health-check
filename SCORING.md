@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-19 (v0.7.0)
+> Last verified against code: 2026-02-19 (v0.7.1)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -74,11 +74,11 @@ dist/
 
 | Dimension | Max | What it measures |
 |-----------|-----|------------------|
-| Setup Quality | ~239 | Is the brain correctly configured? (static file analysis) |
+| Setup Quality | ~269 | Is the brain correctly configured? (static file analysis) |
 | Usage Activity | ~125 | Is the brain being used? (file dates, session counts, pattern growth) |
-| AI Fluency | ~50 | How effectively does the user work with AI? (delegation, context engineering, compounding) |
+| AI Fluency | ~60 | How effectively does the user work with AI? (delegation, context engineering, compounding) |
 
-**Total: ~414 points** (exact total depends on dynamic maxPoints in some layers)
+**Total: ~454 points** (exact total depends on dynamic maxPoints in some layers)
 
 All dimensions are **normalized to /100** for display. The report and dashboard show `normalizedScore/100` for each dimension, calculated as `Math.round((points / maxPoints) * 100)`.
 
@@ -100,9 +100,9 @@ Runs all setup layers in parallel via `Promise.all()`, then all usage layers in 
 
 ---
 
-## Setup Quality — 22 Layers (~239 pts)
+## Setup Quality — 24 Layers (~269 pts)
 
-### Layer 1: CLAUDE.md Foundation (23 pts) — `setup/claude-md.js`
+### Layer 1: CLAUDE.md Foundation (26 pts) — `setup/claude-md.js`
 
 | Check | Max | Pass | Warn | Fail | Detection |
 |-------|-----|------|------|------|-----------|
@@ -113,8 +113,9 @@ Runs all setup layers in parallel via `Promise.all()`, then all usage layers in 
 | Project structure with folder tree | 2 | Tree chars or file path table found (2) | — | Not found (0) | `[├└│─]` in code blocks, or markdown tables with `src/\|lib/\|api/` paths, or 3+ indented file paths |
 | Appropriate length (2K-6K chars) | 2 | In range (2) | Outside range (1) | — | `content.length` |
 | CLAUDE.md freshness | 3 | Modified within 14 days (3) | Within 30 days (2) | >30 days (1) | `stat.mtimeMs` compared to current date |
+| Hierarchical context files | 3 | 3+ subdirectory CLAUDE.md/TODO.md files (3) | 1+ (2) | None (0) | Recursive scan, depth ≤ 4, skips node_modules/dist/build/.git — subdirectory files only (root doesn't count) |
 
-### Layer 2: Skills & Commands (24 pts) — `setup/skills.js`
+### Layer 2: Skills & Commands (28 pts) — `setup/skills.js`
 
 Scans both `.claude/skills/` and `.codex/skills/`.
 
@@ -126,10 +127,20 @@ Scans both `.claude/skills/` and `.codex/skills/`.
 | Profession-relevant skills | 4 | 80%+ non-generic (4) | 50%+ (2) | <50% (0) | Filters against: test, hello, example, demo, sample, template |
 | Clear instructions (200+ chars) | 4 | 80%+ have 200+ chars (4) | 50%+ (2) | <50% (0) | `content.trim().length >= 200` |
 | Frontmatter field depth | 4 | 3+ skills with advanced fields (4) | 1+ (2) | Basic only (1) or none (0) | Checks for model, allowed-tools, context, disable-model-invocation fields |
+| Non-coding domain coverage | 4 | 3+ domains covered (4) | 1–2 domains (2) | Dev-only (0) | Skill name matches for: content/newsletter/blog, marketing/sales/crm, research/audit/report, legal/contract/compliance, operations/calendar/finance, design/visual/pdf |
 
-### Layer 3–17: (unchanged from v0.4.0)
+### Layer 3–5, 7–17: (unchanged from v0.4.0)
 
 See previous layers documentation — these remain unchanged.
+
+### Layer 6: Hooks (22 pts) — `setup/hooks.js`
+
+Checks 1–6 are unchanged from v0.4.0. Check 7 was added in v0.7.0:
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| (Checks 1–6 — see v0.4.0 docs) | 19 | — | — | — | PreToolUse/PostToolUse/Stop hooks, matcher quality, hook scripts |
+| Session initialization hook | 3 | `SessionStart` event configured (3) | — | Not found (0) | Scans hooks config for `SessionStart` event key — primary signal for "context primed before session starts" |
 
 ### Layer 18: Agent Configuration Depth (8 pts) — `setup/agent-quality.js`
 
@@ -198,12 +209,6 @@ Evaluates whether pre-engineered domain context exists in .claude/docs/ or .clau
 | Knowledge base directory | 4 | 10+ files (4) | 5+ (3) or 2+ (2) or 1+ (1) | No directory (0) | Scans .claude/docs/, .claude/knowledge/, .claude/context/, .claude/reference/ recursively |
 | CLAUDE.md references knowledge files | 3 | Explicit path reference (3) | "Read when" pattern or file table (2) | CLAUDE.md exists but no ref (1) | Checks if knowledge dir path appears in CLAUDE.md content |
 | Knowledge domain breadth | 3 | 5+ dirs or 15+ files (3) | 2+ dirs or 5+ files (2) | Small (1) | Recursive count with max depth 2 |
-
-Also adds **Check 7: Session initialization hook (3 pts)** to Layer 6 (Hooks). Detects `SessionStart` event in hooks config — the primary signal for "context engineered before the session starts, not during."
-
-Also adds **Check 8: Hierarchical context files (3 pts)** to Layer 1 (CLAUDE.md). Detects CLAUDE.md or TODO.md files in subdirectories beyond root — per-project context layering.
-
-Also adds **Check 7: Non-coding domain coverage (4 pts)** to Layer 2 (Skills). Detects skills covering non-dev workflows: content, marketing, research, legal, operations, design.
 
 ---
 
