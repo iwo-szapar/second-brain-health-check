@@ -5,7 +5,7 @@
  * checking for quick start rules, role context, profession-specific
  * patterns, gotchas, project structure, and appropriate length.
  */
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const DOMAIN_PATTERNS = [
@@ -175,6 +175,48 @@ export async function checkClaudeMd(rootPath) {
             message = 'Could not determine CLAUDE.md modification date';
         }
         checks.push({ name: 'CLAUDE.md freshness', status, points, maxPoints: 3, message });
+    }
+
+    // Check 8: Hierarchical context files (3 pts)
+    // Subdirectory CLAUDE.md or TODO.md files = advanced layered context architecture
+    {
+        const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '.next', '.nuxt', 'coverage', '__pycache__']);
+        const rootClaudeMd = join(rootPath, 'CLAUDE.md');
+        const subContextFiles = [];
+
+        async function findSubContextFiles(dir, depth) {
+            if (depth > 4) return;
+            let entries;
+            try { entries = await readdir(dir); } catch { return; }
+            for (const entry of entries) {
+                if (entry.startsWith('.') && entry !== '.claude') continue;
+                if (SKIP_DIRS.has(entry)) continue;
+                const fullPath = join(dir, entry);
+                try {
+                    const s = await stat(fullPath);
+                    if (s.isFile() && (entry === 'CLAUDE.md' || entry === 'TODO.md') && fullPath !== rootClaudeMd) {
+                        subContextFiles.push(fullPath);
+                    } else if (s.isDirectory()) {
+                        await findSubContextFiles(fullPath, depth + 1);
+                    }
+                } catch { continue; }
+            }
+        }
+
+        await findSubContextFiles(rootPath, 0);
+
+        let status, points, message;
+        if (subContextFiles.length >= 3) {
+            status = 'pass'; points = 3;
+            message = `${subContextFiles.length} subdirectory CLAUDE.md/TODO.md files — hierarchical per-project context layering`;
+        } else if (subContextFiles.length >= 1) {
+            status = 'warn'; points = 2;
+            message = `${subContextFiles.length} subdirectory context file(s) — consider adding CLAUDE.md files in each major project subfolder`;
+        } else {
+            status = 'fail'; points = 0;
+            message = 'Only root CLAUDE.md — consider per-directory CLAUDE.md or TODO.md files for project-specific context';
+        }
+        checks.push({ name: 'Hierarchical context files', status, points, maxPoints: 3, message });
     }
 
     const totalPoints = checks.reduce((sum, c) => sum + c.points, 0);

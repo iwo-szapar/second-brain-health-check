@@ -582,6 +582,26 @@ export async function checkHooks(rootPath) {
         checks.push({ name: 'Matcher quality', status, points, maxPoints: 3, message });
     }
 
+    // Check 7: Session initialization hook (3 pts)
+    // The SessionStart event is the primary mechanism for "context engineered before the session starts"
+    {
+        const hasSessionStart = hookEvents.includes('SessionStart');
+        const sessionStartHooks = allHookEntries.filter(e => e.event === 'SessionStart');
+
+        let status, points, message;
+        if (hasSessionStart && sessionStartHooks.length >= 2) {
+            status = 'pass'; points = 3;
+            message = `${sessionStartHooks.length} SessionStart hook(s) — pre-session context engineering active`;
+        } else if (hasSessionStart) {
+            status = 'pass'; points = 3;
+            message = 'SessionStart hook configured — context is primed automatically before each session begins';
+        } else {
+            status = 'fail'; points = 0;
+            message = 'No SessionStart hook — add one to automatically load priorities, enforce branch hygiene, or prime task context at session start';
+        }
+        checks.push({ name: 'Session initialization hook', status, points, maxPoints: 3, message });
+    }
+
     const totalPoints = checks.reduce((sum, c) => sum + c.points, 0);
     const totalMaxPoints = checks.reduce((sum, c) => sum + c.maxPoints, 0);
 

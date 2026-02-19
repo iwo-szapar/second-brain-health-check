@@ -29,6 +29,8 @@ import { checkGitignoreHygiene } from './setup/gitignore-hygiene.js';
 import { checkTeamReadiness } from './setup/team-readiness.js';
 import { checkRulesSystem } from './setup/rules-system.js';
 import { checkInteractionConfig } from './setup/interaction-config.js';
+import { checkSpecPlanning } from './setup/spec-planning.js';
+import { checkKnowledgeBase } from './setup/knowledge-base.js';
 // Usage layers
 import { checkSessions } from './usage/sessions.js';
 import { checkPatterns } from './usage/patterns.js';
@@ -43,6 +45,7 @@ import { checkSkillOrchestration } from './fluency/skill-orchestration.js';
 import { checkContextAwareSkills } from './fluency/context-aware-skills.js';
 import { checkReferenceIntegrity } from './fluency/reference-integrity.js';
 import { checkDelegationPatterns } from './fluency/delegation-patterns.js';
+import { checkInterviewPatterns } from './fluency/interview-patterns.js';
 export async function runHealthCheck(path) {
     const rootPath = await realpath(resolve(path || process.cwd()));
     // Boundary check: only allow paths within user's home directory
@@ -83,6 +86,8 @@ export async function runHealthCheck(path) {
             checkTeamReadiness(rootPath),
             checkRulesSystem(rootPath),
             checkInteractionConfig(rootPath),
+            checkSpecPlanning(rootPath),
+            checkKnowledgeBase(rootPath),
         ]),
         Promise.all([
             checkSessions(rootPath),
@@ -99,6 +104,7 @@ export async function runHealthCheck(path) {
             checkContextAwareSkills(rootPath),
             checkReferenceIntegrity(rootPath),
             checkDelegationPatterns(rootPath),
+            checkInterviewPatterns(rootPath),
         ]),
     ]);
     const setupTotal = setupLayers.reduce((sum, l) => sum + l.points, 0);

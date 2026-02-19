@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-19
+> Last verified against code: 2026-02-19 (v0.7.0)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -43,6 +43,8 @@ dist/
     team-readiness.js          # Layer 20: Team Readiness (8 pts)
     rules-system.js            # Layer 21: Rules System (6 pts)
     interaction-config.js      # Layer 22: Interaction Configuration (8 pts)
+    spec-planning.js           # Layer 23: Spec & Planning Artifacts (10 pts)
+    knowledge-base.js          # Layer 24: Knowledge Base Architecture (10 pts)
   usage/
     sessions.js                # Layer 1: Sessions (25 pts)
     patterns.js                # Layer 2: Patterns (25 pts)
@@ -57,6 +59,7 @@ dist/
     context-aware-skills.js    # Layer 3: Context-Aware Skills (10 pts)
     reference-integrity.js     # Layer 4: Reference Integrity (10 pts)
     delegation-patterns.js     # Layer 5: Delegation Patterns (10 pts)
+    interview-patterns.js      # Layer 6: Interview & Spec Patterns (10 pts)
   dashboard/
     generate.js                # HTML dashboard generator
   tools/
@@ -176,6 +179,32 @@ Evaluates terminal customization, keybindings, output styles, and thinking mode 
 | Output style and display | 3 | 3+ features configured (3) | 1+ (2) | None (1) | Checks outputStyle, spinnerVerbs, statusLine, custom output-styles dir |
 | Thinking and effort config | 2 | Both or either configured (2) | — | Defaults only (1) | Checks alwaysThinkingEnabled, effortLevel in settings |
 
+### Layer 23: Spec & Planning Artifacts (10 pts) — `setup/spec-planning.js`
+
+Detects the "spec-first" workflow pattern: plans/, specs/, or planning/ directories with structured requirement files. Maps to the two-session "interview → spec → execute" pattern (highest-engagement trend across all platforms).
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Spec/planning directory | 4 | 5+ .md files (4) | 2+ files (3) or 1 file (2) | No directory (0) | Checks plans/, specs/, planning/, requirements/, docs/specs/, docs/plans/ |
+| Structured requirement headings | 3 | 3+ files with headings (3) | 1+ (1) | None (0) | `/^#{1,3}\s.*(goal\|objective\|overview\|requirement\|acceptance\|problem\|solution\|spec\|feature)/im` |
+| Recent planning activity | 3 | Updated ≤7 days (3) | ≤30 days (2) | Older (1) | `stat().mtimeMs` on most recently modified planning file |
+
+### Layer 24: Knowledge Base Architecture (10 pts) — `setup/knowledge-base.js`
+
+Evaluates whether pre-engineered domain context exists in .claude/docs/ or .claude/knowledge/ — reference files written FOR Claude, not for the user. Maps to "domain-specific plugin/skill bundles" trend.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Knowledge base directory | 4 | 10+ files (4) | 5+ (3) or 2+ (2) or 1+ (1) | No directory (0) | Scans .claude/docs/, .claude/knowledge/, .claude/context/, .claude/reference/ recursively |
+| CLAUDE.md references knowledge files | 3 | Explicit path reference (3) | "Read when" pattern or file table (2) | CLAUDE.md exists but no ref (1) | Checks if knowledge dir path appears in CLAUDE.md content |
+| Knowledge domain breadth | 3 | 5+ dirs or 15+ files (3) | 2+ dirs or 5+ files (2) | Small (1) | Recursive count with max depth 2 |
+
+Also adds **Check 7: Session initialization hook (3 pts)** to Layer 6 (Hooks). Detects `SessionStart` event in hooks config — the primary signal for "context engineered before the session starts, not during."
+
+Also adds **Check 8: Hierarchical context files (3 pts)** to Layer 1 (CLAUDE.md). Detects CLAUDE.md or TODO.md files in subdirectories beyond root — per-project context layering.
+
+Also adds **Check 7: Non-coding domain coverage (4 pts)** to Layer 2 (Skills). Detects skills covering non-dev workflows: content, marketing, research, legal, operations, design.
+
 ---
 
 ## Usage Activity — 7 Layers (~125 pts)
@@ -194,7 +223,7 @@ Measures workflow sophistication: invocation tracking, command definitions, and 
 
 ---
 
-## AI Fluency — 5 Layers (~50 pts)
+## AI Fluency — 6 Layers (~60 pts)
 
 ### Layers 1–3: (unchanged from v0.4.0)
 
@@ -216,6 +245,15 @@ Measures multi-tier orchestration: skills delegating to agents, agents with scop
 | Multi-tier orchestration | 4 | 3+ delegating files, 2+ delegation types (4) | 1+ (2) | None (0) | Detects Task tool usage, agent references, slash command chaining |
 | Tool scoping discipline | 3 | 50%+ agents scope tools (3) | 1+ (2) | None (1) or no agents (0) | Checks `tools:` and `allowed-tools:` in agent frontmatter |
 | Model routing | 3 | 2+ different models (3) | All same model (2) | No model selection (1) | Checks `model:` in frontmatter across all skills/agents/commands |
+
+### Layer 6: Interview & Spec Patterns (10 pts) — `fluency/interview-patterns.js`
+
+Detects the highest-signal fluency indicator: skills that gather requirements before executing, and workflows that generate spec files before execution sessions. Maps to the "interview first, spec file, clean session" pattern (2.18M views signal).
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Interactive requirement gathering | 5 | 3+ skills with AskUserQuestion/interview (5) | 1+ (3) | None (0) | Scans .claude/skills/ and .claude/commands/ for `AskUserQuestion`, interview patterns, requirement-gathering phrases |
+| Spec-first workflow pattern | 5 | 2+ spec-gen skills + planning dir (5) | 1 spec-gen skill + dir (4) or skill only (3) or dir only (2) | None (0) | Detects spec/plan generation patterns in skill content + checks plans/, specs/, planning/ existence |
 
 ---
 

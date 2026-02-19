@@ -276,6 +276,46 @@ export async function checkSkills(rootPath) {
         }
     }
 
+    // Check 7: Non-coding domain coverage (4 pts)
+    // Advanced brains cover content, operations, research, design — not just dev
+    {
+        const NONCODING_DOMAINS = {
+            content: /content|newsletter|essay|blog|post|linkedin|copy|draft|publish|writ/i,
+            marketing: /marketing|campaign|sales|outreach|prospect|lead|crm/i,
+            research: /research|analyz|audit|evaluat|investigat|report|analytic/i,
+            legal: /legal|contract|brief|clause|litigation|compliance|regulation/i,
+            operations: /operations|schedule|meeting|calendar|decision|budget|finance|accounting/i,
+            design: /design|image|generator|pdf|carousel|visual|brand|presentation|slide/i,
+        };
+
+        if (allSkills.length === 0) {
+            checks.push({
+                name: 'Non-coding domain coverage',
+                status: 'fail', points: 0, maxPoints: 4,
+                message: 'No skills to evaluate',
+            });
+        } else {
+            const foundDomains = new Set();
+            for (const skill of allSkills) {
+                for (const [domain, pattern] of Object.entries(NONCODING_DOMAINS)) {
+                    if (pattern.test(skill.name)) foundDomains.add(domain);
+                }
+            }
+            let status, points, message;
+            if (foundDomains.size >= 3) {
+                status = 'pass'; points = 4;
+                message = `${foundDomains.size} non-coding workflow domains: ${[...foundDomains].join(', ')} — well-rounded brain beyond dev`;
+            } else if (foundDomains.size >= 1) {
+                status = 'warn'; points = 2;
+                message = `${foundDomains.size} non-coding domain(s): ${[...foundDomains].join(', ')} — add skills for more work types (content, legal, ops, research)`;
+            } else {
+                status = 'fail'; points = 0;
+                message = 'Skills appear dev-only — add skills for non-coding workflows (content creation, operations, research, presentations)';
+            }
+            checks.push({ name: 'Non-coding domain coverage', status, points, maxPoints: 4, message });
+        }
+    }
+
     const totalPoints = checks.reduce((sum, c) => sum + c.points, 0);
     const totalMaxPoints = checks.reduce((sum, c) => sum + c.maxPoints, 0);
 

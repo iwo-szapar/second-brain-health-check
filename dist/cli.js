@@ -41,6 +41,12 @@ const noOpenFlag = args.includes('--no-open');
 const pathArgs = args.filter((a) => !flags.includes(a));
 const path = pathArgs[0] || process.cwd();
 
+// Privacy notice — printed once before analysis begins
+process.stderr.write(
+    '\nRuns locally. Zero network calls. Zero telemetry.\n' +
+    'Reads: CLAUDE.md, .claude/ config files, memory/ structure — not your code, emails, or documents.\n\n'
+);
+
 try {
     if (pdfFlag) {
         const pdfPath = await generatePdf(path);
