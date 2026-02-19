@@ -1,156 +1,139 @@
 # Second Brain Health Check
 
-Find out if your Claude Code workspace is actually compounding — or just collecting files.
-
-```
-SETUP QUALITY:    92/100  (A - Production-ready)
-USAGE ACTIVITY:  101/115  (Active - Brain is compounding)
-AI FLUENCY:       30/30   (Expert - Advanced AI collaboration)
-```
-
-245 points. 15+ individual checks. Brutalist HTML dashboard included.
-
----
-
-## Install as MCP Server (recommended)
-
-The primary use case is inside Claude Code, so the health check runs in context and Claude can act on the results immediately.
+**Context engineering quality scanner for Claude Code** — scores your CLAUDE.md, skills, hooks, and memory architecture against 7 CE patterns. Get your Brain Health Score in 60 seconds.
 
 ```bash
+npm install -g second-brain-health-check
 claude mcp add second-brain-health -- npx second-brain-health-check
 ```
 
-Then ask Claude:
+Then from Claude Code:
+```
+Run health check on current project
+```
+
+---
+
+## The Problem
+
+Most Claude Code setups are broken in ways that aren't obvious:
+
+- CLAUDE.md is 800 lines but Claude only reads the first 200
+- Hooks exist but aren't deterministic — they fire sometimes
+- Memory has no layers — everything is dumped in one file
+- Sessions start from scratch because compound learning isn't happening
+- AI fluency patterns are missing — no progressive disclosure, no skill orchestration
+
+You feel like you're doing it right. You're not scoring it.
+
+---
+
+## What It Measures
+
+Three dimensions, 245 points total:
+
+| Dimension | Points | What It Checks |
+|-----------|--------|----------------|
+| **Setup Quality** | 100 | CLAUDE.md structure, skills, hooks, memory architecture |
+| **Usage Activity** | 115 | Sessions, patterns, memory growth, compound evidence |
+| **AI Fluency** | 30 | Progressive disclosure, skill orchestration, context-awareness |
+
+Returns a score, grade (A–F), and prioritized fix list with exact point impact per fix.
+
+---
+
+## The 7 Context Engineering Patterns
+
+This tool measures whether your setup implements these patterns:
+
+| Pattern | What It Means | Measured By |
+|---------|--------------|-------------|
+| **Progressive Disclosure** | CLAUDE.md reveals context in layers, not all at once | Setup Quality |
+| **Knowledge Files as RAM** | Structured memory files, not one blob | Setup Quality |
+| **Hooks as Guardrails** | Deterministic shell commands, not suggestions | Setup Quality |
+| **Three-Layer Memory** | Episodic / semantic / goals separation | Setup Quality |
+| **Compound Learning Loop** | Each session teaches the next | Usage Activity |
+| **Self-Correction Protocol** | Mistakes get logged, not just fixed | Usage Activity |
+| **Context Surfaces** | Multiple `.md` files, not just CLAUDE.md | AI Fluency |
+
+A score below 60% on any dimension means that pattern cluster is broken.
+
+---
+
+## What a Failing Brain Looks Like
 
 ```
-Run a health check on my project
+Setup Quality:    41/100  ⚠️  Needs Work
+Usage Activity:   28/115  ✗   Not Compounding
+AI Fluency:        8/30   ✗   Basic
+
+CLAUDE.md: 847 lines — too long, Claude truncates after ~200
+Hooks: 0 active — no guardrails, no auto-tracking
+Memory: 1 file (MEMORY.md) — no episodic/semantic split
+Skills: 3 found — below threshold for compound workflows
+Sessions: 0 logged — no compound learning evidence
+
+Top fixes (by point impact):
+  +18 pts  Add Quick Start section to CLAUDE.md (first 20 lines)
+  +15 pts  Create episodic memory directory
+  +12 pts  Add at least 1 PreToolUse hook
+  +10 pts  Log sessions with /begin and /end
+  + 8 pts  Split CLAUDE.md — move details to linked topic files
 ```
 
-Claude runs the check, reads the output, and can start fixing the gaps in the same session.
+If this looks familiar, the tool will tell you exactly what to fix.
 
-### MCP Tools
+---
+
+## MCP Tools
 
 | Tool | Description |
 |------|-------------|
-| `check_health` | Full 3-dimension health check with text report |
-| `get_fix_suggestions` | Prioritized action plan for your weakest area |
-| `generate_dashboard` | Self-contained HTML dashboard with scores and grade badges |
-| `generate_pdf` | PDF report via headless Chrome (requires Chrome/Chromium) |
+| `check_health` | Full 3-dimension health check, text report |
+| `get_fix_suggestions` | Weakest dimension focus, prioritized action plan |
+| `generate_dashboard` | HTML dashboard — dark mode, mobile-responsive |
+
+The dashboard (`health-check-report.html`) is shareable — grade badges, layer breakdown, top fixes with commands.
 
 ---
 
-## CLI (no Claude Code needed)
+## Context Engineering vs. Prompt Engineering
 
-```bash
-npx second-brain-health-check /path/to/your/project
-npx second-brain-health-check --pdf /path/to/your/project
-```
+Prompt engineering optimizes a single call. Context engineering optimizes the system the call happens inside.
 
-Outputs a text report to stdout. Add `--pdf` to generate a PDF report alongside it.
+| | Prompt Engineering | Context Engineering |
+|--|---|---|
+| **Unit** | Single prompt | Full session context |
+| **Scope** | One response | Persistent across sessions |
+| **Tool** | Better instructions | CLAUDE.md + hooks + memory architecture |
+| **What breaks** | Bad phrasing | Bad system structure |
+| **What this tool scores** | ✗ | ✓ |
 
----
-
-## What It Checks
-
-**Setup Quality** (100 pts) — Is your brain correctly configured?
-
-CLAUDE.md structure and length, skills with valid frontmatter, hooks and lifecycle events, memory architecture, directory organization, brain health infrastructure, personalization depth.
-
-**Usage Activity** (115 pts) — Is your brain actually being used?
-
-Session frequency and recency, pattern recognition and promotion, memory evolution over time, review loops, compound evidence that the system is improving, cross-reference quality across knowledge files.
-
-**AI Fluency** (30 pts) — How effectively are you working with AI?
-
-Progressive disclosure (CLAUDE.md as routing layer, not a wall of text), skill orchestration with multiple tool types, context-aware skills that pull from knowledge directories.
+You can write perfect prompts inside a broken context system and still get inconsistent results. This tool finds the structural issues.
 
 ---
 
-## What You Need
+## Documentation
 
-A project directory with a `CLAUDE.md` file. The more context engineering you have — skills, hooks, memory, patterns — the higher your score.
-
-No API key. No account. Runs entirely on your local filesystem with zero network calls.
-
----
-
-## Example Output
-
-```
-================================================================
-  SECOND BRAIN HEALTH CHECK
-================================================================
-
-SETUP QUALITY:    72/100 (B - Solid foundation)
-USAGE ACTIVITY:   45/115 (Growing - Building habits)
-AI FLUENCY:       20/30 (Intermediate - Good foundations)
-
-----------------------------------------------------------------
-SETUP QUALITY BREAKDOWN
-----------------------------------------------------------------
-
-CLAUDE.md Foundation           ||||||||||||||||....  16/20
-  [pass] Quick Start with numbered rules
-  [pass] About Me with role context
-  [warn] 1 domain pattern(s) found — aim for 3+
-  [fail] No gotchas/pitfalls section
-  [pass] Project structure documentation found
-
-...
-
-----------------------------------------------------------------
-TOP FIXES (highest impact)
-----------------------------------------------------------------
-
-1. MEMORY FILES EVOLVING (+8 pts usage)
-   12 memory files but none modified after setup — brain is static
-
-2. AUTO MEMORY POPULATED (+6 pts usage)
-   MEMORY.md has only 2 line(s) — barely populated
-
-3. INDEX FILES FOR NAVIGATION (+5 pts setup)
-   No index files found — add index.md files to help the agent navigate
-================================================================
-```
-
-The HTML dashboard renders the same data with score visualizations and grade badges in a brutalist monospace design — same aesthetic as the PDF report.
-
----
-
-## Scoring
-
-Full technical reference in [SCORING.md](./SCORING.md).
-
-| Grade | Setup Score | Meaning |
-|-------|-------------|---------|
-| A | 85–100 | Production-ready |
-| B | 70–84 | Good foundation |
-| C | 50–69 | Basic setup |
-| D | 30–49 | Minimal |
-| F | 0–29 | Barely configured |
-
-Usage Activity and AI Fluency use their own grade scales — detailed in SCORING.md.
-
----
-
-## From a Diagnostic to a Working System
-
-This health check tells you what's missing. The [AI Second Brain](https://www.iwoszapar.com/second-brain-ai) gives you the system itself — pre-configured repository, skills, hooks, memory structure, and a remote Guide MCP with personalized recommendations.
-
-Three packages: DIY ($237), Kickstart ($597), Done-With-You ($1,797).
-
-If your score is low and you want to skip the trial-and-error, that's what the paid product is for.
+| Document | Purpose |
+|----------|---------|
+| [SCORING.md](./SCORING.md) | Every check, threshold, regex, point value |
 
 ---
 
 ## Security
 
-- Runs only on your local filesystem
-- Enforces home-directory boundary (cannot scan outside `$HOME`)
+- Enforces home-directory boundary — cannot scan outside `$HOME`
+- No network calls, pure filesystem operations
 - Resolves symlinks before path validation
-- No network calls, no telemetry, no data collection
 - Escapes all user content in HTML output
 
-## License
+---
 
-MIT
+## Build Your System
+
+This tool scores what you've built. If your score reveals gaps, [Second Brain AI](https://www.iwoszapar.com/second-brain-ai) builds the full architecture with you — CLAUDE.md, hooks, skills, memory, and the CE patterns this tool measures.
+
+---
+
+Part of the [Context Engineering](https://www.iwoszapar.com/context-engineering) product suite at [iwoszapar.com](https://www.iwoszapar.com).
