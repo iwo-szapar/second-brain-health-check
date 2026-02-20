@@ -56,8 +56,9 @@ MCP Server:
 
     // Privacy notice — printed once before analysis begins
     process.stderr.write(
-        '\nRuns locally. Zero network calls. Zero telemetry.\n' +
-        'Reads: CLAUDE.md, .claude/ config files, memory/ structure — not your code, emails, or documents.\n\n'
+        '\nRuns entirely locally. Zero network calls. Zero telemetry.\n' +
+        'Reads file structure and config metadata — never logs, stores, or transmits secret values.\n' +
+        'Secret detection reports "found/not found" only — your actual keys are never shown in output.\n\n'
     );
 
     try {

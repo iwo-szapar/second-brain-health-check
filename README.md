@@ -292,13 +292,18 @@ Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware sk
 
 ---
 
-## Security
+## Security & Privacy
 
 ```
-  ┌─ Security Model ──────────────────────────────────────────┐
+  ┌─ Security & Privacy Model ────────────────────────────────┐
   │                                                           │
-  │  ◆ Home directory boundary -- cannot scan outside $HOME   │
-  │  ◆ Zero network calls -- no fetch, http, https imports    │
+  │  ◆ Runs entirely locally — zero network calls             │
+  │  ◆ Zero telemetry — nothing is sent anywhere              │
+  │  ◆ Reads file structure and config metadata only          │
+  │  ◆ Never reads your code, emails, or documents            │
+  │  ◆ Secret detection: reports "found/not found" only —     │
+  │    your actual API keys are never shown in output         │
+  │  ◆ Home directory boundary — cannot scan outside $HOME    │
   │  ◆ stdio transport only                                   │
   │  ◆ Path null-byte validation via Zod                      │
   │  ◆ File count limits (500 max per directory scan)         │
