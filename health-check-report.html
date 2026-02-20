@@ -3,31 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Second Brain Health Check &mdash; 21% (Grade F)</title>
+<title>Second Brain Health Check &mdash; 62% (Grade C)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
-    background: #0a0a0a;
-    color: #d0d0d0;
+    font-family: 'Outfit', sans-serif;
+    background: #f5f0eb;
+    color: #1c1917;
     min-height: 100vh;
     padding: 48px 44px;
     font-size: 13px;
     line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
-  .container { max-width: 840px; margin: 0 auto; }
-  a { color: #22c55e; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  code { font-family: inherit; }
+  .container { max-width: 860px; margin: 0 auto; }
+  a { color: #57534e; text-decoration: none; border-bottom: 1px solid #d6d3d1; }
+  a:hover { color: #1c1917; border-bottom-color: #1c1917; }
+  code { font-family: 'DM Mono', monospace; font-size: 0.92em; background: rgba(28,25,23,0.06); padding: 1px 5px; border-radius: 3px; }
   details summary { list-style: none; }
   details summary::-webkit-details-marker { display: none; }
   @media (max-width: 680px) {
     body { padding: 24px 20px; }
     .score-panel { grid-template-columns: 1fr !important; }
-    .score-right { border-left: none !important; border-top: 1px solid #2a2a2a !important; }
+    .score-right { border-left: none !important; border-top: 1px solid #e7e5e4 !important; }
     .big-num { font-size: 88px !important; }
-    .journey-row { flex-wrap: wrap; }
   }
 </style>
 </head>
@@ -35,21 +37,21 @@
 <div class="container">
 
     <!-- Nav header -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:0.1em;">
-        <span>SECOND BRAIN // HEALTH CHECK v0.8.3</span>
-        <span style="text-align:right;">2026-02-20<br>14:09:50 UTC</span>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;font-size:10px;color:#a8a29e;text-transform:uppercase;letter-spacing:0.12em;font-family:'DM Mono',monospace;">
+        <span>Second Brain / Health Check v0.8.4</span>
+        <span style="text-align:right;">2026-02-20<br>16:26:47 UTC</span>
     </div>
 
     <!-- Title -->
-    <h1 style="font-size:56px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:-0.01em;line-height:1;margin-bottom:8px;">DIAGNOSTIC REPORT</h1>
-    <span style="font-size:13px;color:#22c55e;display:block;margin-bottom:4px;">~/second-brain-health-check/health-check</span>
-    <span style="font-size:12px;color:#555;font-style:italic;display:block;margin-bottom:24px;">Your Second Brain, examined.</span>
+    <h1 style="font-family:'Instrument Serif',Georgia,serif;font-size:52px;font-weight:400;color:#1c1917;letter-spacing:-0.5px;line-height:1.05;margin-bottom:8px;">Health Check Report</h1>
+    <span style="font-size:12px;color:#78716c;display:block;margin-bottom:4px;font-family:'DM Mono',monospace;">~/second-brain-health-check</span>
+    <span style="font-size:12px;color:#a8a29e;font-style:italic;display:block;margin-bottom:28px;">Your Second Brain, examined.</span>
 
-    <div style="border-top:1px solid #2a2a2a;margin-bottom:32px;"></div>
+    <div style="border-top:1px solid #e7e5e4;margin-bottom:32px;"></div>
 
     <!-- What is a Second Brain? -->
-    <div style="border-left:2px solid #2233cc;padding:16px 20px;margin-bottom:32px;font-size:12px;color:#888;line-height:1.7;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:8px;">WHAT IS A SECOND BRAIN?</div>
+    <div style="border-left:2px solid #d6d3d1;padding:16px 20px;margin-bottom:32px;font-size:12px;color:#78716c;line-height:1.7;background:rgba(28,25,23,0.02);border-radius:0 8px 8px 0;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#a8a29e;margin-bottom:8px;font-family:'DM Mono',monospace;">What is a Second Brain?</div>
         A Second Brain is a structured AI workspace that learns how you work.
         It is not an app. It is a repository &mdash; CLAUDE.md instructions, custom
         skills, memory systems, and automation hooks &mdash; configured for your
@@ -58,65 +60,65 @@
     </div>
 
     <!-- Score panel -->
-    <div class="score-panel" style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #2a2a2a;">
+    <div class="score-panel" style="display:grid;grid-template-columns:1fr 1fr;border:1px solid #e7e5e4;border-radius:12px;overflow:hidden;background:#faf8f5;">
         <!-- Left: big score -->
-        <div style="padding:32px 36px;display:flex;flex-direction:column;justify-content:center;gap:20px;">
+        <div style="padding:32px 36px;display:flex;flex-direction:column;justify-content:center;gap:20px;background:#1c1917;">
             <div>
-                <span class="big-num" style="font-size:110px;font-weight:700;color:#fff;line-height:1;">21</span><span style="font-size:32px;color:#555;font-weight:700;">%</span>
+                <span class="big-num" style="font-size:110px;font-weight:700;color:#faf8f5;line-height:1;font-family:'DM Mono',monospace;">62</span><span style="font-size:32px;color:rgba(250,248,245,0.35);font-weight:300;font-family:'DM Mono',monospace;">%</span>
             </div>
-            <div style="border:2px solid #ef4444;padding:10px 0;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:#ef4444;">GRADE F</div>
+            <div style="border:1px solid #d97706;padding:10px 0;text-align:center;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.2em;color:#d97706;border-radius:6px;font-family:'DM Mono',monospace;">Grade C</div>
         </div>
 
         <!-- Right: dimension breakdown -->
-        <div class="score-right" style="padding:32px 36px;border-left:1px solid #2a2a2a;">
-            <div style="font-size:12px;color:#555;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:22px;">93 / 449 POINTS</div>
+        <div class="score-right" style="padding:32px 36px;border-left:1px solid #e7e5e4;">
+            <div style="font-size:11px;color:#a8a29e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:22px;font-family:'DM Mono',monospace;">53 / 85 points</div>
 
             <!-- Setup -->
             <div style="margin-bottom:18px;">
-                <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:7px;">
-                    <span>SETUP</span>
-                    <span>33/100</span>
+                <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#78716c;margin-bottom:7px;font-family:'DM Mono',monospace;">
+                    <span>Setup</span>
+                    <span>70/100</span>
                 </div>
-                <div style="height:4px;background:#1a1a1a;">
-                    <div style="height:100%;width:33%;background:#ef4444;"></div>
+                <div style="height:4px;background:#e7e5e4;border-radius:2px;">
+                    <div style="height:100%;width:70%;background:#d97706;border-radius:2px;"></div>
                 </div>
             </div>
 
             <!-- Usage -->
             <div style="margin-bottom:18px;">
-                <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:7px;">
-                    <span>USAGE</span>
-                    <span>1/100</span>
+                <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#78716c;margin-bottom:7px;font-family:'DM Mono',monospace;">
+                    <span>Usage</span>
+                    <span>60/100</span>
                 </div>
-                <div style="height:4px;background:#1a1a1a;">
-                    <div style="height:100%;width:1%;background:#ef4444;"></div>
+                <div style="height:4px;background:#e7e5e4;border-radius:2px;">
+                    <div style="height:100%;width:60%;background:#d97706;border-radius:2px;"></div>
                 </div>
             </div>
 
             <!-- Fluency -->
             <div>
-                <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin-bottom:7px;">
-                    <span>FLUENCY</span>
-                    <span>7/100</span>
+                <div style="display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#78716c;margin-bottom:7px;font-family:'DM Mono',monospace;">
+                    <span>Fluency</span>
+                    <span>50/100</span>
                 </div>
-                <div style="height:4px;background:#1a1a1a;">
-                    <div style="height:100%;width:7%;background:#ef4444;"></div>
+                <div style="height:4px;background:#e7e5e4;border-radius:2px;">
+                    <div style="height:100%;width:50%;background:#ea580c;border-radius:2px;"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- How to read this report -->
-    <div style="border-left:2px solid #2233cc;padding:16px 20px;margin-top:32px;margin-bottom:8px;font-size:12px;color:#888;line-height:1.7;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:12px;">HOW TO READ THIS REPORT</div>
-        This report measures three things:<br><br>
-        <span style="color:#ccc;font-weight:700;">SETUP</span> &mdash; Does your brain have the right architecture?
+    <div style="border-left:2px solid #d6d3d1;padding:16px 20px;margin-top:32px;margin-bottom:8px;font-size:12px;color:#78716c;line-height:1.7;background:rgba(28,25,23,0.02);border-radius:0 8px 8px 0;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#a8a29e;margin-bottom:12px;font-family:'DM Mono',monospace;">How to read this report</div>
+        This report measures three dimensions:<br><br>
+        <span style="color:#1c1917;font-weight:600;">Setup</span> &mdash; Does your brain have the right architecture?
         Your CLAUDE.md file, skill library, memory system, hooks, and directory
         structure. A well-set-up brain gives AI the context it needs to help you.<br><br>
-        <span style="color:#ccc;font-weight:700;">USAGE</span> &mdash; Is the brain being used, or collecting dust?
+        <span style="color:#1c1917;font-weight:600;">Usage</span> &mdash; Is the brain being used, or collecting dust?
         Session logs, evolving patterns, growing memory. A brain that compounds
         is one that gets used daily and learns from every session.<br><br>
-        <span style="color:#ccc;font-weight:700;">FLUENCY</span> &mdash; How sophisticated is your AI collaboration?
+        <span style="color:#1c1917;font-weight:600;">Fluency</span> &mdash; How sophisticated is your AI collaboration?
         Not just &ldquo;do you use AI&rdquo; but &ldquo;do your skills orchestrate
         multiple tools, reference knowledge directories, and use progressive
         disclosure?&rdquo; This is the difference between prompting and engineering.
@@ -124,61 +126,17 @@
 
     <!-- Top Fixes -->
     
-    <div style="border:1px solid #2a2a2a;margin-top:32px;">
-        <div style="background:#0d0d40;padding:13px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;">TOP FIXES &mdash; HIGHEST IMPACT</div>
+    <div style="border:1px solid #e7e5e4;margin-top:32px;border-radius:12px;overflow:hidden;background:#faf8f5;">
+        <div style="background:#1c1917;padding:13px 20px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:rgba(250,248,245,0.6);font-family:'DM Mono',monospace;">Top Fixes &mdash; Highest Impact</div>
         
-        <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #1a1a1a;">
-            <span style="font-size:20px;font-weight:700;color:#2a2a2a;flex-shrink:0;width:30px;">01</span>
+        <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #e7e5e4;">
+            <span style="font-size:18px;font-weight:300;color:#d6d3d1;flex-shrink:0;width:30px;font-family:'DM Mono',monospace;">01</span>
             <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#e0e0e0;">CLAUDE.MD EXTERNAL REFERENCES</span>
-                    <span style="font-size:10px;padding:2px 7px;border:1px solid #6644cc;color:#6644cc;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">+17% fluency</span>
+                    <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:#1c1917;font-family:'Outfit',sans-serif;">Add hooks configuration</span>
+                    <span style="font-size:10px;padding:2px 7px;border:1px solid #57534e;color:#57534e;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;border-radius:4px;font-family:'DM Mono',monospace;">High</span>
                 </div>
-                <p style="font-size:12px;color:#666;margin:0;">No CLAUDE.md found — cannot measure progressive disclosure</p>
-                
-            </div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #1a1a1a;">
-            <span style="font-size:20px;font-weight:700;color:#2a2a2a;flex-shrink:0;width:30px;">02</span>
-            <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#e0e0e0;">SKILL ORCHESTRATION DETECTION</span>
-                    <span style="font-size:10px;padding:2px 7px;border:1px solid #6644cc;color:#6644cc;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">+17% fluency</span>
-                </div>
-                <p style="font-size:12px;color:#666;margin:0;">No .claude/skills/ directory found</p>
-                
-            </div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #1a1a1a;">
-            <span style="font-size:20px;font-weight:700;color:#2a2a2a;flex-shrink:0;width:30px;">03</span>
-            <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#e0e0e0;">KNOWLEDGE-AWARE SKILLS</span>
-                    <span style="font-size:10px;padding:2px 7px;border:1px solid #6644cc;color:#6644cc;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">+17% fluency</span>
-                </div>
-                <p style="font-size:12px;color:#666;margin:0;">No .claude/skills/ directory found</p>
-                
-            </div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #1a1a1a;">
-            <span style="font-size:20px;font-weight:700;color:#2a2a2a;flex-shrink:0;width:30px;">04</span>
-            <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#e0e0e0;">CLAUDE.MD EXISTS</span>
-                    <span style="font-size:10px;padding:2px 7px;border:1px solid #4455ee;color:#4455ee;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">+8% setup</span>
-                </div>
-                <p style="font-size:12px;color:#666;margin:0;">No CLAUDE.md found at project root</p>
-                
-            </div>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:20px;padding:16px 20px;border-top:1px solid #1a1a1a;">
-            <span style="font-size:20px;font-weight:700;color:#2a2a2a;flex-shrink:0;width:30px;">05</span>
-            <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-                    <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#e0e0e0;">CLAUDE.MD REFERENCES RESOLVE</span>
-                    <span style="font-size:10px;padding:2px 7px;border:1px solid #6644cc;color:#6644cc;text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap;">+8% fluency</span>
-                </div>
-                <p style="font-size:12px;color:#666;margin:0;">No CLAUDE.md found to check references</p>
+                <p style="font-size:12px;color:#78716c;margin:0;line-height:1.6;">Hooks automate quality gates and session management.</p>
                 
             </div>
         </div>
@@ -186,1128 +144,169 @@
 
     <!-- CE Patterns -->
     
-    <div style="border:1px solid #2a2a2a;margin-top:32px;">
-        <div style="background:#0d0d40;padding:13px 20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;">CONTEXT ENGINEERING PATTERNS</div>
+    <div style="border:1px solid #e7e5e4;margin-top:32px;border-radius:12px;overflow:hidden;background:#faf8f5;">
+        <div style="background:#1c1917;padding:13px 20px;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:rgba(250,248,245,0.6);font-family:'DM Mono',monospace;">Context Engineering Patterns</div>
         <div style="padding:12px 20px;">
-            <div style="font-size:11px;color:#666;margin-bottom:12px;">How well your brain implements the 7 Context Engineering patterns.</div>
+            <div style="font-size:11px;color:#a8a29e;margin-bottom:12px;">How well your brain implements the 7 Context Engineering patterns.</div>
             <svg viewBox="0 0 280 280" width="280" height="280" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 16px;">
-        <polygon points="140,112.5 161.50036576787082,122.85403044888483 166.81051758500016,146.11932568379865 151.93180282573286,164.77664386731652 128.06819717426714,164.77664386731652 113.18948241499984,146.11932568379865 118.49963423212918,122.85403044888483" fill="none" stroke="#1a1a1a" stroke-width="1"/><polygon points="140,85 183.00073153574164,105.70806089776966 193.6210351700003,152.2386513675973 163.8636056514657,189.55328773463305 116.13639434853431,189.55328773463305 86.3789648299997,152.2386513675973 96.99926846425836,105.70806089776966" fill="none" stroke="#1a1a1a" stroke-width="1"/><polygon points="140,57.5 204.50109730361245,88.56209134665448 220.43155275500044,158.35797705139595 175.79540847719855,214.32993160194957 104.20459152280145,214.32993160194957 59.56844724499955,158.35797705139595 75.49890269638753,88.5620913466545" fill="none" stroke="#1a1a1a" stroke-width="1"/><polygon points="140,30 226.00146307148327,71.41612179553931 247.2420703400006,164.4773027351946 187.7272113029314,239.1065754692661 92.27278869706862,239.1065754692661 32.757929659999405,164.4773027351946 53.998536928516714,71.41612179553933" fill="none" stroke="#1a1a1a" stroke-width="1"/><line x1="140" y1="140" x2="140" y2="30" stroke="#1a1a1a" stroke-width="1"/><line x1="140" y1="140" x2="226.00146307148327" y2="71.41612179553931" stroke="#1a1a1a" stroke-width="1"/><line x1="140" y1="140" x2="247.2420703400006" y2="164.4773027351946" stroke="#1a1a1a" stroke-width="1"/><line x1="140" y1="140" x2="187.7272113029314" y2="239.1065754692661" stroke="#1a1a1a" stroke-width="1"/><line x1="140" y1="140" x2="92.27278869706862" y2="239.1065754692661" stroke="#1a1a1a" stroke-width="1"/><line x1="140" y1="140" x2="32.757929659999405" y2="164.4773027351946" stroke="#1a1a1a" stroke-width="1"/><line x1="140" y1="140" x2="53.998536928516714" y2="71.41612179553933" stroke="#1a1a1a" stroke-width="1"/>
-        <polygon points="140,108.1 143.44005852285932,137.25664487182158 175.3898832122002,148.07750990261422 140.95454422605863,141.9821315093853 139.04545577394137,141.9821315093853 129.27579296599993,142.44773027351945 99.57931235640285,107.7655772439035" fill="rgba(34,51,204,0.2)" stroke="#2233cc" stroke-width="2"/>
-        <text x="140" y="8" fill="#ef4444" font-size="9" text-anchor="middle" dominant-baseline="middle" font-family="monospace">Progressive Disclosure</text><text x="243.20175568577991" y="57.69934615464717" fill="#ef4444" font-size="9" text-anchor="start" dominant-baseline="middle" font-family="monospace">Knowledge Files RAM</text><text x="268.6904844080007" y="169.3727632822335" fill="#ef4444" font-size="9" text-anchor="start" dominant-baseline="middle" font-family="monospace">Hooks Guardrails</text><text x="197.27265356351768" y="258.9278905631193" fill="#ef4444" font-size="9" text-anchor="start" dominant-baseline="middle" font-family="monospace">Memory</text><text x="82.72734643648234" y="258.9278905631193" fill="#ef4444" font-size="9" text-anchor="end" dominant-baseline="middle" font-family="monospace">Compound Learning</text><text x="11.309515591999286" y="169.3727632822335" fill="#ef4444" font-size="9" text-anchor="end" dominant-baseline="middle" font-family="monospace">Self-Correction</text><text x="36.79824431422006" y="57.6993461546472" fill="#eab308" font-size="9" text-anchor="end" dominant-baseline="middle" font-family="monospace">Context Surfaces</text>
+        <polygon points="140,112.5 167.5,140 140,167.5 112.5,140" fill="none" stroke="#e7e5e4" stroke-width="1"/><polygon points="140,85 195,140 140,195 85,140" fill="none" stroke="#e7e5e4" stroke-width="1"/><polygon points="140,57.5 222.5,140 140,222.5 57.5,140" fill="none" stroke="#e7e5e4" stroke-width="1"/><polygon points="140,30 250,140 140,250 30,140" fill="none" stroke="#e7e5e4" stroke-width="1"/><line x1="140" y1="140" x2="140" y2="30" stroke="#e7e5e4" stroke-width="1"/><line x1="140" y1="140" x2="250" y2="140" stroke="#e7e5e4" stroke-width="1"/><line x1="140" y1="140" x2="140" y2="250" stroke="#e7e5e4" stroke-width="1"/><line x1="140" y1="140" x2="30" y2="140" stroke="#e7e5e4" stroke-width="1"/>
+        <polygon points="140,57.5 184,140 140,239 79.5,140" fill="rgba(28,25,23,0.06)" stroke="#57534e" stroke-width="2"/>
+        <text x="140" y="8" fill="#16a34a" font-size="9" text-anchor="middle" dominant-baseline="middle" font-family="DM Mono,monospace">Context</text><text x="272" y="140" fill="#d97706" font-size="9" text-anchor="start" dominant-baseline="middle" font-family="DM Mono,monospace">Progressive Disclosure Architecture</text><text x="140" y="272" fill="#16a34a" font-size="9" text-anchor="middle" dominant-baseline="middle" font-family="DM Mono,monospace">Skills Reusable Programs</text><text x="8" y="140.00000000000003" fill="#d97706" font-size="9" text-anchor="end" dominant-baseline="middle" font-family="DM Mono,monospace">Memory Living Context</text>
     </svg>
             
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
-            <span style="font-size:11px;color:#aaa;flex:1;min-width:0;">Progressive Disclosure</span>
-            <div style="width:120px;height:4px;background:#1a1a1a;flex-shrink:0;">
-                <div style="height:100%;width:29%;background:#ef4444;"></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #e7e5e4;">
+            <span style="font-size:11px;color:#78716c;flex:1;min-width:0;">Three-Layer Context Protocol</span>
+            <div style="width:120px;height:4px;background:#e7e5e4;border-radius:2px;flex-shrink:0;">
+                <div style="height:100%;width:75%;background:#16a34a;border-radius:2px;"></div>
             </div>
-            <span style="font-size:12px;color:#ef4444;width:40px;text-align:right;flex-shrink:0;">29%</span>
+            <span style="font-size:12px;color:#16a34a;width:40px;text-align:right;flex-shrink:0;font-family:'DM Mono',monospace;">75%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
-            <span style="font-size:11px;color:#aaa;flex:1;min-width:0;">Knowledge Files as RAM</span>
-            <div style="width:120px;height:4px;background:#1a1a1a;flex-shrink:0;">
-                <div style="height:100%;width:4%;background:#ef4444;"></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #e7e5e4;">
+            <span style="font-size:11px;color:#78716c;flex:1;min-width:0;">Progressive Disclosure as Architecture</span>
+            <div style="width:120px;height:4px;background:#e7e5e4;border-radius:2px;flex-shrink:0;">
+                <div style="height:100%;width:40%;background:#d97706;border-radius:2px;"></div>
             </div>
-            <span style="font-size:12px;color:#ef4444;width:40px;text-align:right;flex-shrink:0;">4%</span>
+            <span style="font-size:12px;color:#d97706;width:40px;text-align:right;flex-shrink:0;font-family:'DM Mono',monospace;">40%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
-            <span style="font-size:11px;color:#aaa;flex:1;min-width:0;">Hooks as Guardrails</span>
-            <div style="width:120px;height:4px;background:#1a1a1a;flex-shrink:0;">
-                <div style="height:100%;width:33%;background:#ef4444;"></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #e7e5e4;">
+            <span style="font-size:11px;color:#78716c;flex:1;min-width:0;">Skills as Reusable Programs</span>
+            <div style="width:120px;height:4px;background:#e7e5e4;border-radius:2px;flex-shrink:0;">
+                <div style="height:100%;width:90%;background:#16a34a;border-radius:2px;"></div>
             </div>
-            <span style="font-size:12px;color:#ef4444;width:40px;text-align:right;flex-shrink:0;">33%</span>
+            <span style="font-size:12px;color:#16a34a;width:40px;text-align:right;flex-shrink:0;font-family:'DM Mono',monospace;">90%</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
-            <span style="font-size:11px;color:#aaa;flex:1;min-width:0;">Compound Learning</span>
-            <div style="width:120px;height:4px;background:#1a1a1a;flex-shrink:0;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #e7e5e4;">
+            <span style="font-size:11px;color:#78716c;flex:1;min-width:0;">Memory as Living Context</span>
+            <div style="width:120px;height:4px;background:#e7e5e4;border-radius:2px;flex-shrink:0;">
+                <div style="height:100%;width:55%;background:#d97706;border-radius:2px;"></div>
             </div>
-            <span style="font-size:12px;color:#ef4444;width:40px;text-align:right;flex-shrink:0;">0%</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
-            <span style="font-size:11px;color:#aaa;flex:1;min-width:0;">Self-Correction Protocol</span>
-            <div style="width:120px;height:4px;background:#1a1a1a;flex-shrink:0;">
-                <div style="height:100%;width:10%;background:#ef4444;"></div>
-            </div>
-            <span style="font-size:12px;color:#ef4444;width:40px;text-align:right;flex-shrink:0;">10%</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
-            <span style="font-size:11px;color:#aaa;flex:1;min-width:0;">Context Surfaces</span>
-            <div style="width:120px;height:4px;background:#1a1a1a;flex-shrink:0;">
-                <div style="height:100%;width:47%;background:#eab308;"></div>
-            </div>
-            <span style="font-size:12px;color:#eab308;width:40px;text-align:right;flex-shrink:0;">47%</span>
+            <span style="font-size:12px;color:#d97706;width:40px;text-align:right;flex-shrink:0;font-family:'DM Mono',monospace;">55%</span>
         </div>
         </div>
     </div>
 
     <!-- Setup -->
     
-    <div style="border-left:2px solid #2233cc;padding:12px 20px;margin-top:40px;margin-bottom:-8px;font-size:12px;color:#888;line-height:1.7;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:6px;">YOUR FOUNDATION</div>
+    <div style="border-left:2px solid #d6d3d1;padding:12px 20px;margin-top:40px;margin-bottom:-8px;font-size:12px;color:#78716c;line-height:1.7;background:rgba(28,25,23,0.02);border-radius:0 6px 6px 0;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#a8a29e;margin-bottom:6px;font-family:'DM Mono',monospace;">YOUR FOUNDATION</div>
         Foundation layer &mdash; CLAUDE.md, directory structure, memory architecture, skills, hooks, and config files. The scaffolding that gives AI context before a single prompt is typed.
     </div>
     
     <div style="margin-top:40px;">
-        <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #2a2a2a;">
-            <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#e0e0e0;flex:1;">Setup Quality</span>
-            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border:1px solid #f97316;color:#f97316;">D</span>
-            <span style="font-size:20px;font-weight:700;color:#fff;">33<span style="font-size:13px;color:#444;">/100</span></span>
+        <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #e7e5e4;">
+            <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#1c1917;flex:1;font-family:'Outfit',sans-serif;">Setup Quality</span>
+            <span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border:1px solid #16a34a;color:#16a34a;border-radius:4px;font-family:'DM Mono',monospace;">B</span>
+            <span style="font-size:20px;font-weight:700;color:#1c1917;font-family:'DM Mono',monospace;">70<span style="font-size:13px;color:#a8a29e;">/100</span></span>
         </div>
-        <div style="height:4px;background:#1a1a1a;margin-bottom:24px;">
-            <div style="height:100%;width:33%;background:#ef4444;"></div>
+        <div style="height:4px;background:#e7e5e4;border-radius:2px;margin-bottom:24px;">
+            <div style="height:100%;width:70%;background:#d97706;border-radius:2px;"></div>
         </div>
         
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">CLAUDE.md Quality</span>
-                <span style="font-size:12px;color:#555;">0/20</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No CLAUDE.md found at project root</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/20</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Skills Configuration</span>
-                <span style="font-size:12px;color:#555;">0/28</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">0 skill(s) found in .claude/skills/</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/6</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .codex/skills/ directory — add one for Codex compatibility</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Directory Structure</span>
-                <span style="font-size:12px;color:#555;">1/15</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:7%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No semantic directories found — organize knowledge into named folders</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No index files found — add index.md files to help the agent navigate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No folder tree found in CLAUDE.md — consider adding a directory overview</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/5</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Memory System</span>
-                <span style="font-size:12px;color:#555;">0/15</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No memory/ directory found — create one to store learned patterns</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No memory/patterns/ or memory/semantic/patterns/ directory</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No style, voice, or personal files found — teach the agent your communication style</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No example or workflow files found — add real examples to improve agent output</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Brain Health Infrastructure</span>
-                <span style="font-size:12px;color:#555;">3/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:30%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No brain-health/ directory or memory/patterns/ fallback found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No tracking files found (growth-log.md, quality-metrics.md, pattern-confidence.md)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Getting started guide found: README.md</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Hooks Configuration</span>
-                <span style="font-size:12px;color:#555;">0/13</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .claude/settings.json found or invalid JSON</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No settings file to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No settings file to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No settings file to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Personalization Depth</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No About Me / role section found in CLAUDE.md</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills found — create skills that match your profession</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No agent configurations found — add .md files to .claude/agents/ for specialized agents</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">MCP Security</span>
-                <span style="font-size:12px;color:#555;">5/8</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:63%;background:#eab308;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Plaintext secrets found in 1 file(s): ~/.claude.json — move secrets to environment variables or a secrets manager</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No project-level MCP server configs found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .mcp.json file present — no git-tracking risk</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Permission allow-list does not contain embedded secrets</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/1</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Config Hygiene</span>
-                <span style="font-size:12px;color:#555;">5/7</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:71%;background:#eab308;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Config files total 2176 lines — likely contains stale or duplicate entries (.claude/settings.local.json (21), ~/.claude.json (2155))</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No duplicate MCP servers between .mcp.json (0 servers) and ~/.claude.json (10 servers)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">14 permission pattern(s) — all referenced paths exist</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No hooks configured — no organization issue</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/1</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Plugin Coverage</span>
-                <span style="font-size:12px;color:#555;">2/6</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:33%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No plugins installed — plugins extend Claude Code capabilities</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">0/6 recommended plugins (0%) — missing: Context7, Feature Dev, Security Guidance, Playground, Canvas, Claude HUD</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Using official plugins</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/1</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Settings Hierarchy</span>
-                <span style="font-size:12px;color:#555;">12/12</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:100%;background:#22c55e;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">2 settings level(s) configured: project-local, user-global</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">4/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No shadowed settings detected across levels</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">4/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Settings are placed in appropriate scopes</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">4/4</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Permissions Audit</span>
-                <span style="font-size:12px;color:#555;">12/12</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:100%;background:#22c55e;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Permissions configured without explicit mode — using defaults with allow/deny rules</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No over-permissive rules detected</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No deny rules configured</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">14 permission pattern(s) — all have valid tool prefixes</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Sandbox Configuration</span>
-                <span style="font-size:12px;color:#555;">1/8</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:13%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No sandbox configuration found — commands run unsandboxed by default</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No sandbox — network controls not configured</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No sandbox configured — excluded commands check not applicable</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No sandbox configured — auto-allow check not applicable</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/1</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Model Configuration</span>
-                <span style="font-size:12px;color:#555;">6/8</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:75%;background:#eab308;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Using default model — no explicit model configuration (fine for most users)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No model aliases configured — using defaults</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No effort level set — using default (high)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Environment Variables</span>
-                <span style="font-size:12px;color:#555;">10/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:100%;background:#22c55e;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .env files present — secrets managed elsewhere</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">4/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">API keys configured through login or other mechanism</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Using default performance settings</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">MCP Server Health</span>
-                <span style="font-size:12px;color:#555;">7/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:70%;background:#eab308;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">10 MCP server(s) configured: filesystem, github, memory, analytics-mcp, postgresql, stripe, google-analytics, google-workspace (+2 more)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">6 configuration issues: filesystem: empty env block; memory: empty env block; postgresql: empty env block (+3 more)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Using default MCP timeout</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No project-level MCP servers</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Attribution &amp; Display</span>
-                <span style="font-size:12px;color:#555;">6/6</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:100%;background:#22c55e;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Using default attribution settings</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Using default display settings</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No plans directory — not needed for all workflows</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Agent Configuration Depth</span>
-                <span style="font-size:12px;color:#555;">0/8</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No custom agents in .claude/agents/ — agents enable task-specific tool restrictions and model selection</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No agents to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No agents to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/2</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Gitignore Hygiene</span>
-                <span style="font-size:12px;color:#555;">4/6</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:67%;background:#eab308;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">1 local settings file(s) properly excluded from git</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .env files found and no .env pattern in .gitignore — add .env* pattern preemptively</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Team Readiness</span>
-                <span style="font-size:12px;color:#555;">5/8</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:63%;background:#eab308;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Agent teams enabled (user-settings)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">3/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No agents in .claude/agents/ — teams need agent definitions to spawn teammates</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">1 team config(s) and 45 task list(s) found — teams are being used</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Rules System</span>
-                <span style="font-size:12px;color:#555;">2/6</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:33%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .claude/rules/ directory — rules provide path-specific instructions beyond CLAUDE.md</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No rules to evaluate scope diversity</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Interaction Configuration</span>
-                <span style="font-size:12px;color:#555;">5/8</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:63%;background:#eab308;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No custom keybindings — run /keybindings to set up keyboard shortcuts</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Partial display config: status line — add status line, output style, or spinner customization</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Thinking and effort configured: thinking=on, effort=medium</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Spec &amp; Planning Artifacts</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No plans/, specs/, or planning/ directory found — use spec files to capture requirements before execution</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No planning directory to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No planning directory to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Knowledge Base Architecture</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .claude/docs/ or .claude/knowledge/ found — create a knowledge base so Claude can pre-load domain context per task area</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No CLAUDE.md to cross-reference knowledge base</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No knowledge directory to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-        </div>
         <div style="margin-bottom:0;padding-bottom:0;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Context Pressure</span>
-                <span style="font-size:12px;color:#555;">2/10</span>
+                <span style="font-size:13px;color:#78716c;font-style:italic;font-family:'Instrument Serif',Georgia,serif;">CLAUDE.md Quality</span>
+                <span style="font-size:12px;color:#a8a29e;font-family:'DM Mono',monospace;">10/14</span>
             </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:20%;background:#ef4444;"></div>
+            <div style="height:3px;background:#e7e5e4;border-radius:2px;margin-bottom:10px;">
+                <div style="height:100%;width:71%;background:#d97706;border-radius:2px;"></div>
             </div>
             
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No CLAUDE.md found. Create one to give your AI context.</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#78716c;">
+                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#16a34a;margin-top:2px;border-radius:2px;"></span>
+                <span style="flex:1;line-height:1.5;">CLAUDE.md present and detailed</span>
+                <span style="color:#a8a29e;white-space:nowrap;padding-left:12px;font-family:'DM Mono',monospace;">3/3</span>
             </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No knowledge files in .claude/docs/ or .claude/knowledge/. All context is in CLAUDE.md.</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#22c55e;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Total context: 0KB (GREEN zone). Lean and efficient.</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No CLAUDE.md to evaluate for progressive disclosure.</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/2</span>
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#78716c;">
+                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#dc2626;margin-top:2px;border-radius:2px;"></span>
+                <span style="flex:1;line-height:1.5;">No hooks configured</span>
+                <span style="color:#a8a29e;white-space:nowrap;padding-left:12px;font-family:'DM Mono',monospace;">0/2</span>
             </div>
         </div>
     </div>
 
     <!-- Usage -->
     
-    <div style="border-left:2px solid #2233cc;padding:12px 20px;margin-top:40px;margin-bottom:-8px;font-size:12px;color:#888;line-height:1.7;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:6px;">YOUR MOMENTUM</div>
+    <div style="border-left:2px solid #d6d3d1;padding:12px 20px;margin-top:40px;margin-bottom:-8px;font-size:12px;color:#78716c;line-height:1.7;background:rgba(28,25,23,0.02);border-radius:0 6px 6px 0;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#a8a29e;margin-bottom:6px;font-family:'DM Mono',monospace;">YOUR MOMENTUM</div>
         Momentum layer &mdash; session frequency, pattern growth, memory evolution, and compound learning loops. Measures whether the system is actively used and improving over time.
     </div>
     
     <div style="margin-top:40px;">
-        <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #2a2a2a;">
-            <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#e0e0e0;flex:1;">Usage Activity</span>
-            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border:1px solid #ef4444;color:#ef4444;">Empty</span>
-            <span style="font-size:20px;font-weight:700;color:#fff;">1<span style="font-size:13px;color:#444;">/100</span></span>
+        <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #e7e5e4;">
+            <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#1c1917;flex:1;font-family:'Outfit',sans-serif;">Usage Activity</span>
+            <span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border:1px solid #d97706;color:#d97706;border-radius:4px;font-family:'DM Mono',monospace;">C</span>
+            <span style="font-size:20px;font-weight:700;color:#1c1917;font-family:'DM Mono',monospace;">60<span style="font-size:13px;color:#a8a29e;">/100</span></span>
         </div>
-        <div style="height:4px;background:#1a1a1a;margin-bottom:24px;">
-            <div style="height:100%;width:1%;background:#ef4444;"></div>
+        <div style="height:4px;background:#e7e5e4;border-radius:2px;margin-bottom:24px;">
+            <div style="height:100%;width:60%;background:#d97706;border-radius:2px;"></div>
         </div>
         
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Session Activity</span>
-                <span style="font-size:12px;color:#555;">0/25</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No session logs found in memory/episodic/sessions/, memory/episodic/, or experiences/</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/8</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No activity dates detected</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/8</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No sessions found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No session files to check recency</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Pattern Recognition</span>
-                <span style="font-size:12px;color:#555;">0/25</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No _pattern-tracker.md found in pattern directories</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/8</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No promoted patterns found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/8</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No pattern files with content found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No pattern tracker — cannot assess confidence progression</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Memory Evolution</span>
-                <span style="font-size:12px;color:#555;">0/20</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No memory/ directory found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/8</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No MEMORY.md found in memory/ or project root</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/6</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No markdown files found in memory/</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/6</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Review Loop</span>
-                <span style="font-size:12px;color:#555;">0/15</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No quality-metrics.md found in brain-health/ or memory/</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/6</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No growth-log.md found in brain-health/ or memory/</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No _pattern-tracker.md found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Compound Evidence</span>
-                <span style="font-size:12px;color:#555;">0/15</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills evolved after initial setup</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No hooks or settings changes detected after setup</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No alignment-log.md, goals/current.md, or personal/goals.md found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Cross-Reference Quality</span>
-                <span style="font-size:12px;color:#555;">1/15</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:7%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">1 knowledge directories: .claude</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/2</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No markdown files found in knowledge directories</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">0 strong refs (explicit directives or brain-dir paths), 0 medium, 0 weak (ignored)</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Knowledge files are isolated — they don't reference each other</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:0;padding-bottom:0;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Workflow Maturity</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skill invocation logs found — consider tracking skill usage for workflow optimization</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No commands in .claude/commands/ — commands define repeatable workflows</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">Too few skills to assess workflow diversity</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/3</span>
-            </div>
-        </div>
     </div>
 
     <!-- Fluency -->
     
-    <div style="border-left:2px solid #2233cc;padding:12px 20px;margin-top:40px;margin-bottom:-8px;font-size:12px;color:#888;line-height:1.7;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#555;margin-bottom:6px;">YOUR CRAFT</div>
+    <div style="border-left:2px solid #d6d3d1;padding:12px 20px;margin-top:40px;margin-bottom:-8px;font-size:12px;color:#78716c;line-height:1.7;background:rgba(28,25,23,0.02);border-radius:0 6px 6px 0;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#a8a29e;margin-bottom:6px;font-family:'DM Mono',monospace;">YOUR CRAFT</div>
         Craft layer &mdash; skill orchestration, progressive disclosure, delegation patterns, and context-aware tooling. How effectively human and AI collaborate as a system.
     </div>
     
     <div style="margin-top:40px;">
-        <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #2a2a2a;">
-            <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#e0e0e0;flex:1;">AI Fluency</span>
-            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border:1px solid #ef4444;color:#ef4444;">Novice</span>
-            <span style="font-size:20px;font-weight:700;color:#fff;">7<span style="font-size:13px;color:#444;">/100</span></span>
+        <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid #e7e5e4;">
+            <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:#1c1917;flex:1;font-family:'Outfit',sans-serif;">AI Fluency</span>
+            <span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border:1px solid #d97706;color:#d97706;border-radius:4px;font-family:'DM Mono',monospace;">C</span>
+            <span style="font-size:20px;font-weight:700;color:#1c1917;font-family:'DM Mono',monospace;">50<span style="font-size:13px;color:#a8a29e;">/100</span></span>
         </div>
-        <div style="height:4px;background:#1a1a1a;margin-bottom:24px;">
-            <div style="height:100%;width:7%;background:#ef4444;"></div>
+        <div style="height:4px;background:#e7e5e4;border-radius:2px;margin-bottom:24px;">
+            <div style="height:100%;width:50%;background:#ea580c;border-radius:2px;"></div>
         </div>
         
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Progressive Disclosure</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No CLAUDE.md found — cannot measure progressive disclosure</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/10</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Skill Orchestration</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .claude/skills/ directory found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/10</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Context-Aware Skills</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No .claude/skills/ directory found</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/10</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Reference Integrity</span>
-                <span style="font-size:12px;color:#555;">2/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:20%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No CLAUDE.md found to check references</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills found to check references</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">2/5</span>
-            </div>
-        </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #1a1a1a;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Delegation Patterns</span>
-                <span style="font-size:12px;color:#555;">2/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:20%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills, agents, or commands to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/4</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No agents defined — tool scoping requires custom agents</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/3</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#f59e0b;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No model selection in skills/agents — everything uses the default model</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">1/3</span>
-            </div>
-        </div>
-        <div style="margin-bottom:0;padding-bottom:0;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
-                <span style="font-size:13px;color:#aaa;font-style:italic;">Interview &amp; Spec Patterns</span>
-                <span style="font-size:12px;color:#555;">0/10</span>
-            </div>
-            <div style="height:3px;background:#1a1a1a;margin-bottom:10px;">
-                <div style="height:100%;width:0%;background:#ef4444;"></div>
-            </div>
-            
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No skills or commands to evaluate</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-            <div style="display:flex;align-items:flex-start;gap:10px;padding:3px 0;font-size:12px;color:#777;">
-                <span style="display:inline-block;width:10px;height:10px;min-width:10px;background:#ef4444;margin-top:2px;"></span>
-                <span style="flex:1;line-height:1.5;">No spec-first pattern detected — consider separating requirements-gathering sessions from execution sessions</span>
-                <span style="color:#444;white-space:nowrap;padding-left:12px;">0/5</span>
-            </div>
-        </div>
     </div>
 
     <!-- Journey Stage -->
     
-    <div style="border:1px solid #2a2a2a;padding:28px 28px 24px;margin-top:48px;">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c0c0c0;margin-bottom:16px;">YOUR SECOND BRAIN JOURNEY</div>
+    <div style="border:1px solid #e7e5e4;padding:28px 28px 24px;margin-top:48px;border-radius:12px;background:#faf8f5;">
+        <div style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:#a8a29e;margin-bottom:16px;font-family:'DM Mono',monospace;">Your Second Brain Journey</div>
         
-        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;">
-            <span style="color:#22c55e;">[x]</span>
-            <span style="color:#22c55e;font-weight:700;min-width:160px;">BLANK SLATE</span>
-            <span style="color:#22c55e;">You have a repo. Not much else.</span>
+        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;font-family:'DM Mono',monospace;">
+            <span style="color:#a8a29e;">[/]</span>
+            <span style="color:#a8a29e;min-width:160px;">BLANK SLATE</span>
+            <span style="color:#a8a29e;">You have a repo. Not much else.</span>
         </div>
-        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;">
-            <span style="color:#333;">[ ]</span>
-            <span style="color:#333;min-width:160px;">SCAFFOLDED</span>
-            <span style="color:#333;">Structure exists. Skills are configured.</span>
+        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;font-family:'DM Mono',monospace;">
+            <span style="color:#a8a29e;">[/]</span>
+            <span style="color:#a8a29e;min-width:160px;">SCAFFOLDED</span>
+            <span style="color:#a8a29e;">Structure exists. Skills are configured.</span>
         </div>
-        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;">
-            <span style="color:#333;">[ ]</span>
-            <span style="color:#333;min-width:160px;">PRACTICING</span>
-            <span style="color:#333;">Daily usage. Patterns starting to form.</span>
+        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;font-family:'DM Mono',monospace;">
+            <span style="color:#16a34a;">[x]</span>
+            <span style="color:#16a34a;font-weight:600;min-width:160px;">PRACTICING</span>
+            <span style="color:#16a34a;">Daily usage. Patterns starting to form.</span>
         </div>
-        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;">
-            <span style="color:#333;">[ ]</span>
-            <span style="color:#333;min-width:160px;">COMPOUNDING</span>
-            <span style="color:#333;">Memory grows between sessions. AI knows your context.</span>
+        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;font-family:'DM Mono',monospace;">
+            <span style="color:#d6d3d1;">[ ]</span>
+            <span style="color:#d6d3d1;min-width:160px;">COMPOUNDING</span>
+            <span style="color:#d6d3d1;">Memory grows between sessions. AI knows your context.</span>
         </div>
-        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;">
-            <span style="color:#333;">[ ]</span>
-            <span style="color:#333;min-width:160px;">PRODUCTION-GRADE</span>
-            <span style="color:#333;">Self-improving system. Hooks, reviews, compound loops.</span>
+        <div style="display:flex;gap:12px;padding:4px 0;font-size:12px;font-family:'DM Mono',monospace;">
+            <span style="color:#d6d3d1;">[ ]</span>
+            <span style="color:#d6d3d1;min-width:160px;">PRODUCTION-GRADE</span>
+            <span style="color:#d6d3d1;">Self-improving system. Hooks, reviews, compound loops.</span>
         </div>
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #1a1a1a;font-size:12px;color:#888;line-height:1.7;">
-            You are in the <span style="color:#22c55e;font-weight:700;">BLANK SLATE</span> stage. The jump from <span style="color:#ccc;">BLANK SLATE</span> to <span style="color:#ccc;">SCAFFOLDED</span> is usually about the areas where you scored lowest. Check your Top Fixes above.
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #e7e5e4;font-size:12px;color:#78716c;line-height:1.7;">
+            You are in the <span style="color:#16a34a;font-weight:600;">PRACTICING</span> stage. The jump from <span style="color:#1c1917;font-weight:600;">PRACTICING</span> to <span style="color:#1c1917;font-weight:600;">COMPOUNDING</span> is usually about the areas where you scored lowest. Check your Top Fixes above.
         </div>
     </div>
 
     <!-- CTA -->
-    <div style="border:1px solid #2a2a2a;padding:44px 40px;text-align:center;margin-top:32px;margin-bottom:32px;">
-        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#fff;margin-bottom:16px;">THE FASTEST WAY TO PRODUCTION-GRADE</div>
-        <p style="font-size:12px;color:#888;margin-bottom:24px;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto;">You could fix everything on this report yourself. It would take weeks of trial and error. Or you could start with a Second Brain that already scores 85+ out of the box &mdash; pre-configured with skills, hooks, memory systems, and knowledge architecture built for how you actually work.</p>
-        <a href="https://www.iwoszapar.com/second-brain-ai" style="display:inline-block;padding:12px 36px;background:#2233cc;color:#fff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;text-decoration:none;">GET YOUR SECOND BRAIN</a>
+    <div style="background:#1c1917;padding:44px 40px;text-align:center;margin-top:32px;margin-bottom:32px;border-radius:12px;">
+        <div style="font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:rgba(250,248,245,0.6);margin-bottom:16px;font-family:'DM Mono',monospace;">The fastest way to production-grade</div>
+        <p style="font-size:12px;color:rgba(250,248,245,0.45);margin-bottom:24px;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto;">You could fix everything on this report yourself. It would take weeks of trial and error. Or you could start with a Second Brain that already scores 85+ out of the box &mdash; pre-configured with skills, hooks, memory systems, and knowledge architecture built for how you actually work.</p>
+        <a href="https://www.iwoszapar.com/second-brain-ai" style="display:inline-block;padding:12px 36px;background:#ffffff;color:#1c1917;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;text-decoration:none;border:none;border-radius:6px;font-family:'DM Mono',monospace;">Get your Second Brain</a>
     </div>
 
     <!-- Footer -->
-    <div style="text-align:center;padding-top:20px;border-top:1px solid #1a1a1a;font-size:10px;color:#444;text-transform:uppercase;letter-spacing:0.1em;">
-        GENERATED BY <a href="https://www.iwoszapar.com/second-brain-ai" style="color:#22c55e;">SECOND BRAIN HEALTH CHECK</a> v0.8.3 &middot; 2026-02-20T14:09:50.095Z
+    <div style="text-align:center;padding-top:20px;border-top:1px solid #e7e5e4;font-size:10px;color:#a8a29e;text-transform:uppercase;letter-spacing:0.1em;font-family:'DM Mono',monospace;">
+        Generated by <a href="https://www.iwoszapar.com/second-brain-ai" style="color:#57534e;border-bottom:1px solid #d6d3d1;">Second Brain Health Check</a> v0.8.4 &middot; 2026-02-20T16:26:47.250Z
     </div>
 
 </div>
