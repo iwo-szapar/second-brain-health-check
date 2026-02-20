@@ -1,22 +1,10 @@
-<div align="center">
-
-```
-  ____                            _   ____            _
- / ___|  ___  ___ ___  _ __   __| | | __ ) _ __ __ _(_)_ __
- \___ \ / _ \/ __/ _ \| '_ \ / _` | |  _ \| '__/ _` | | '_ \
-  ___) |  __/ (_| (_) | | | | (_| | | |_) | | | (_| | | | | |
- |____/ \___|\___\___/|_| |_|\__,_| |____/|_|  \__,_|_|_| |_|
-
-  _   _            _ _   _        ____ _               _
- | | | | ___  __ _| | |_| |__    / ___| |__   ___  ___| | __
- | |_| |/ _ \/ _` | | __| '_ \  | |   | '_ \ / _ \/ __| |/ /
- |  _  |  __/ (_| | | |_| | | | | |___| | | |  __/ (__|   <
- |_| |_|\___|\__,_|_|\__|_| |_|  \____|_| |_|\___|\___|_|\_\
-
-  Context Engineering Quality Scanner for Claude Code
-```
-
-</div>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg" />
+    <img src="assets/banner-dark.svg" alt="Second Brain Health Check" width="720" />
+  </picture>
+</p>
 
 [![npm version](https://img.shields.io/npm/v/second-brain-health-check?style=flat-square&color=222)](https://www.npmjs.com/package/second-brain-health-check)
 [![License: MIT](https://img.shields.io/badge/license-MIT-222?style=flat-square)](https://opensource.org/licenses/MIT)
@@ -31,16 +19,27 @@ Scores CLAUDE.md, skills, hooks, memory, and planning artifacts across 38 check 
 
 ## Quick Start
 
+### Terminal (one line, instant results)
+
 ```bash
-npm install -g second-brain-health-check
+npx second-brain-health-check
+```
+
+Scans your current directory and prints the report to stdout. No install required.
+
+### Inside Claude Code (interactive, with follow-up)
+
+1. Add the MCP server (once):
+```bash
 claude mcp add second-brain-health -- npx second-brain-health-check
 ```
 
-Then from Claude Code:
-
+2. Then ask Claude:
 ```
 Run health check on current project
 ```
+
+Claude will run the scan, interpret the results, and help you fix what it finds — interactively.
 
 ---
 
