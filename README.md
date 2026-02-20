@@ -1,6 +1,35 @@
-# Second Brain Health Check
+<div align="center">
 
-Context engineering quality scanner for Claude Code. Scores 38 check layers across CLAUDE.md, skills, hooks, memory, and planning artifacts — adaptive reports, CE pattern mapping, time estimates.
+```
+  ____                            _   ____            _
+ / ___|  ___  ___ ___  _ __   __| | | __ ) _ __ __ _(_)_ __
+ \___ \ / _ \/ __/ _ \| '_ \ / _` | |  _ \| '__/ _` | | '_ \
+  ___) |  __/ (_| (_) | | | | (_| | | |_) | | | (_| | | | | |
+ |____/ \___|\___\___/|_| |_|\__,_| |____/|_|  \__,_|_|_| |_|
+
+  _   _            _ _   _        ____ _               _
+ | | | | ___  __ _| | |_| |__    / ___| |__   ___  ___| | __
+ | |_| |/ _ \/ _` | | __| '_ \  | |   | '_ \ / _ \/ __| |/ /
+ |  _  |  __/ (_| | | |_| | | | | |___| | | |  __/ (__|   <
+ |_| |_|\___|\__,_|_|\__|_| |_|  \____|_| |_|\___|\___|_|\_\
+
+  Context Engineering Quality Scanner for Claude Code
+```
+
+</div>
+
+[![npm version](https://img.shields.io/npm/v/second-brain-health-check?style=flat-square&color=222)](https://www.npmjs.com/package/second-brain-health-check)
+[![License: MIT](https://img.shields.io/badge/license-MIT-222?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Node](https://img.shields.io/badge/node-%3E%3D20-222?style=flat-square)](https://nodejs.org)
+[![MCP Compatible](https://img.shields.io/badge/MCP-compatible-222?style=flat-square)](https://modelcontextprotocol.io)
+
+**Your AI workspace has 38 things that could be better. This finds them in 2 seconds.**
+
+Scores CLAUDE.md, skills, hooks, memory, and planning artifacts across 38 check layers. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes, and time estimates. Zero network calls. Runs locally.
+
+---
+
+## Quick Start
 
 ```bash
 npm install -g second-brain-health-check
@@ -8,210 +37,306 @@ claude mcp add second-brain-health -- npx second-brain-health-check
 ```
 
 Then from Claude Code:
+
 ```
 Run health check on current project
 ```
 
 ---
 
-## What It Measures
+## What You Get
 
-Three dimensions, ~424 points total (all normalized to /100 for display):
+The report adapts to your brain's maturity level. No information overload for beginners, no hand-holding for experts.
 
-| Dimension | Raw Max | Layers | What It Checks |
-|-----------|---------|--------|----------------|
-| **Setup Quality** | ~249 pts | 25 layers | CLAUDE.md structure, skills, hooks, memory architecture, MCP security, permissions, sandbox, model config, team readiness, rules system, context pressure |
-| **Usage Activity** | ~125 pts | 7 layers | Session frequency, pattern growth, memory evolution, review loops, compound evidence, cross-references, workflow maturity |
-| **AI Fluency** | ~60 pts | 6 layers | Progressive disclosure, skill orchestration, context-aware skills, reference integrity, delegation patterns, interview patterns |
+<details open>
+<summary><strong>Empty Brain -- Getting Started Guide</strong></summary>
 
-Returns a normalized score per dimension, a grade, a prioritized fix list with time estimates, and a CE pattern coverage map.
+```
+  ================================================================
+    SECOND BRAIN HEALTH CHECK
+  ================================================================
 
-**Grading:**
-- Setup Quality: A (85%+) / B (70%+) / C (50%+) / D (30%+) / F (<30%)
-- Usage Activity: Active (85%+) / Growing (70%+) / Starting (50%+) / Dormant (30%+) / Empty (<30%)
-- AI Fluency: Expert (85%+) / Proficient (70%+) / Developing (50%+) / Beginner (30%+) / Novice (<30%)
+  STATUS: No Second Brain detected.
+
+  That is totally fine. Here is how to get started:
+
+  ----------------------------------------------------------------
+  GETTING STARTED (3 steps, ~20 minutes)
+  ----------------------------------------------------------------
+
+  STEP 1: Create CLAUDE.md (~5 min)
+    Your AI's instruction manual. Start with:
+    - Who you are and what you do
+    - Your top 3-5 rules ("always do X", "never do Y")
+    - Key tools and frameworks you use
+
+  STEP 2: Add skills (~10 min)
+    Create .claude/skills/ with YAML-frontmatter files
+    that teach Claude your workflows.
+
+  STEP 3: Set up memory (~5 min)
+    Create .claude/memory/ for episodic and semantic
+    context that persists across sessions.
+
+  ================================================================
+    See what a properly configured Second Brain looks like:
+    https://www.iwoszapar.com/context-engineering
+  ================================================================
+```
+
+</details>
+
+<details open>
+<summary><strong>Configured Brain -- Full Report with CE Patterns</strong></summary>
+
+```
+  ================================================================
+    SECOND BRAIN HEALTH CHECK
+  ================================================================
+
+  SETUP QUALITY:    84/100 (B - Good foundation)
+  USAGE ACTIVITY:   89/100 (Active - Brain is compounding)
+  AI FLUENCY:       92/100 (Expert - Advanced AI collaboration)
+
+  ----------------------------------------------------------------
+  CONTEXT ENGINEERING PATTERNS (7 patterns)
+  ----------------------------------------------------------------
+
+  [pass] Progressive Disclosure       |||||||||||||.. 87%
+  [pass] Knowledge Files as RAM       ||||||||||||||. 93%
+  [warn] Hooks as Guardrails          |||||.......... 33%
+  [pass] Three-Layer Memory           ||||||||||||... 80%
+  [pass] Compound Learning            ||||||||||||||. 93%
+  [pass] Self-Correction              |||||||||||.... 73%
+  [pass] Context Surfaces             |||||||||||||.. 87%
+
+  ----------------------------------------------------------------
+  TOP FIXES (highest impact)
+  ----------------------------------------------------------------
+
+  1. Add profession-specific rules to CLAUDE.md (+3 pts setup, ~10 min)
+     Include 2+ domain patterns (MEDDPICC, sprint, SEO, KPI, etc.)
+
+  2. Add PreToolUse hook for file operations (+5 pts setup, ~15 min)
+     Prevents accidental writes to protected paths.
+
+  ================================================================
+    2 points from Production-grade.
+    Missing pattern: Hooks as Guardrails.
+    https://www.iwoszapar.com/context-engineering
+  ================================================================
+```
+
+</details>
 
 ---
 
-## v0.8.1 — Adaptive Reports
+## What It Measures
 
-Reports now adapt to your brain's maturity level:
+Three dimensions. 38 check layers. ~424 raw points, normalized to `/100`.
 
-| Brain State | Report Style |
-|-------------|-------------|
-| **Empty** (no CLAUDE.md) | 3-step getting-started guide with time estimates. Not 37 failed checks. |
-| **Minimal/Basic** (score 1-40) | Growth mode: celebrates what exists, shows top 3 fixes only. |
-| **Structured+** (score 41+) | Full report with all dimensions, CE patterns, and complete breakdown. |
+```
+  SETUP QUALITY        25 layers    ~249 pts
+  ████████████████████████████████████████████░░░░░░  Structure & config
+  A (85%+) | B (70%+) | C (50%+) | D (30%+) | F (<30%)
 
-New in v0.8.1:
-- **Brain state detection** — fast pre-scan (~100ms) classifies maturity before running checks
-- **CE pattern mapping** — maps 38 layers to 7 Context Engineering patterns with percentage scores
-- **Time estimates** — every fix shows `~N min` so you can plan your session
-- **Score-band CTAs** — dynamic footer based on overall score
-- **Context pressure check** — new 10-point layer detecting CLAUDE.md bloat and context surface area
-- **Three-tier fix remediation** — dashboard fixes show summary + why + step-by-step guide
-- **Quick mode** — `mode: 'quick'` for detection-only scan (~100ms)
+  USAGE ACTIVITY        7 layers    ~125 pts
+  ████████████████████████████████████████████░░░░░░  Growth & patterns
+  Active (85%+) | Growing (70%+) | Starting (50%+) | Dormant (30%+) | Empty (<30%)
+
+  AI FLUENCY            6 layers     ~60 pts
+  ████████████████████████████████████████████░░░░░░  Collaboration depth
+  Expert (85%+) | Proficient (70%+) | Developing (50%+) | Beginner (30%+) | Novice (<30%)
+```
+
+### Adaptive Reports
+
+Reports shift based on brain maturity, detected via a fast pre-scan (~100ms):
+
+| Brain State | Score Range | Report Style |
+|:--|:--|:--|
+| **Empty** | No CLAUDE.md | 3-step getting-started guide with time estimates |
+| **Minimal / Basic** | 1--40 | Growth mode: celebrates what exists, shows top 3 fixes only |
+| **Structured+** | 41+ | Full report with all dimensions, CE patterns, and complete breakdown |
 
 ---
 
 ## Context Engineering Patterns
 
-v0.8.1 maps your 38 check layers to 7 CE patterns:
+The scanner maps all 38 check layers to 7 Context Engineering patterns. This is the signal that separates a collection of files from a working system.
 
-| Pattern | What It Measures |
-|---------|-----------------|
-| Progressive Disclosure | CLAUDE.md references external docs, knowledge files exist |
-| Knowledge Files as RAM | Knowledge base architecture, directory structure |
-| Hooks as Guardrails | PreToolUse/PostToolUse hooks, rules system |
-| Three-Layer Memory | Memory architecture, session logs |
-| Compound Learning | Review loops, compound evidence, workflow maturity, patterns |
-| Self-Correction | Brain health infra, memory evolution, cross-references |
-| Context Surfaces | MCP servers, plugins, interaction config, context pressure |
+```
+  ┌─────────────────────────────────────────────────────────────┐
+  │  CE PATTERN                       COVERAGE                  │
+  ├─────────────────────────────────────────────────────────────┤
+  │                                                             │
+  │  Progressive Disclosure    ██████████████░░  87%            │
+  │  External doc refs, knowledge files, layered context        │
+  │                                                             │
+  │  Knowledge Files as RAM    ███████████████░  93%            │
+  │  Knowledge base architecture, directory structure           │
+  │                                                             │
+  │  Hooks as Guardrails       █████░░░░░░░░░░  33%            │
+  │  PreToolUse / PostToolUse hooks, rules system               │
+  │                                                             │
+  │  Three-Layer Memory        ████████████░░░  80%            │
+  │  Episodic / semantic separation, session logs               │
+  │                                                             │
+  │  Compound Learning         ███████████████░  93%            │
+  │  Review loops, compound evidence, workflow maturity         │
+  │                                                             │
+  │  Self-Correction           ███████████░░░░  73%            │
+  │  Health infra, memory evolution, cross-references           │
+  │                                                             │
+  │  Context Surfaces          ██████████████░░  87%            │
+  │  MCP servers, plugins, interaction config, context pressure │
+  │                                                             │
+  └─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
-## What Gets Checked
+## Check Layers
 
-The 25 setup layers cover:
+<details>
+<summary><strong>25 Setup Quality Layers</strong> -- CLAUDE.md, skills, hooks, memory, config, security</summary>
 
-| Layer | Points | Key Check |
-|-------|--------|-----------|
-| CLAUDE.md Foundation | 23 | Quick Start section, About Me, profession-specific rules, gotchas, length (2K–6K chars), freshness (14 days) |
-| Skills & Commands | 24 | 2+ skills, YAML frontmatter, profession-relevant naming, 200+ char instructions |
-| Directory Structure | 15 | Organized folders, separation of concerns |
-| Memory Architecture | 15 | Episodic/semantic separation, not a single blob |
-| Brain Health Infra | 10 | Health monitoring setup |
-| Hooks | 19 | PreToolUse/PostToolUse hooks, coverage |
-| Personalization | 10 | User-specific config |
-| MCP Security | 8 | Server configuration safety |
-| Config Hygiene | 7 | Clean settings, no stale config |
-| Plugin Coverage | 6 | MCP server coverage |
-| Settings Hierarchy | 12 | Project vs user vs global settings |
-| Permissions Audit | 12 | Tool permissions configured |
-| Sandbox Config | 8 | Sandbox boundaries set |
-| Model Config | 8 | Model selection configured |
-| Environment Variables | 10 | Env vars managed |
-| MCP Server Health | 10 | MCP servers responding |
-| Attribution & Display | 6 | Output styling, status line |
-| Agent Config Depth | 8 | Custom agents with tool restrictions |
-| Gitignore Hygiene | 6 | .env and local settings excluded from git |
-| Team Readiness | 8 | Agent teams enabled, team artifacts |
-| Rules System | 6 | .claude/rules/ with scoped rule files |
-| Interaction Config | 8 | Keybindings, output style, thinking mode |
-| Spec & Planning | 10 | Plans/specs directories, structured requirements |
-| Knowledge Base | 10 | .claude/docs/ or .claude/knowledge/ with domain context |
-| **Context Pressure** | **10** | **CLAUDE.md size, knowledge file distribution, total context surface, progressive disclosure** |
+&nbsp;
 
-The 7 usage layers check: session logs, pattern files, memory file dates, review loop evidence, compound learning artifacts, cross-references between memory files, and workflow diversity across skill categories.
+| # | Layer | Pts | What It Checks |
+|--:|:------|----:|:---------------|
+| 1 | CLAUDE.md Foundation | 23 | Quick Start section, About Me, profession-specific rules, gotchas, length (2K--6K chars), freshness (14 days) |
+| 2 | Skills & Commands | 24 | 2+ skills, YAML frontmatter, profession-relevant naming, 200+ char instructions |
+| 3 | Directory Structure | 15 | Organized folders, separation of concerns |
+| 4 | Memory Architecture | 15 | Episodic/semantic separation, not a single blob |
+| 5 | Brain Health Infra | 10 | Health monitoring setup |
+| 6 | Hooks | 19 | PreToolUse/PostToolUse hooks, coverage |
+| 7 | Personalization | 10 | User-specific config |
+| 8 | MCP Security | 8 | Server configuration safety |
+| 9 | Config Hygiene | 7 | Clean settings, no stale config |
+| 10 | Plugin Coverage | 6 | MCP server coverage |
+| 11 | Settings Hierarchy | 12 | Project vs user vs global settings |
+| 12 | Permissions Audit | 12 | Tool permissions configured |
+| 13 | Sandbox Config | 8 | Sandbox boundaries set |
+| 14 | Model Config | 8 | Model selection configured |
+| 15 | Environment Variables | 10 | Env vars managed |
+| 16 | MCP Server Health | 10 | MCP servers responding |
+| 17 | Attribution & Display | 6 | Output styling, status line |
+| 18 | Agent Config Depth | 8 | Custom agents with tool restrictions |
+| 19 | Gitignore Hygiene | 6 | .env and local settings excluded from git |
+| 20 | Team Readiness | 8 | Agent teams enabled, team artifacts |
+| 21 | Rules System | 6 | `.claude/rules/` with scoped rule files |
+| 22 | Interaction Config | 8 | Keybindings, output style, thinking mode |
+| 23 | Spec & Planning | 10 | Plans/specs directories, structured requirements |
+| 24 | Knowledge Base | 10 | `.claude/docs/` or `.claude/knowledge/` with domain context |
+| 25 | Context Pressure | 10 | CLAUDE.md size, knowledge file distribution, total context surface, progressive disclosure |
 
-The 6 fluency layers check: progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware skill design, file reference integrity (do paths in CLAUDE.md actually resolve?), multi-tier orchestration with model routing, and interview/spec-first patterns.
+</details>
 
----
+<details>
+<summary><strong>7 Usage Activity Layers</strong> -- session frequency, pattern growth, memory evolution</summary>
 
-## Example Report Output
+&nbsp;
 
-### Empty Brain
-```
-================================================================
-  SECOND BRAIN HEALTH CHECK
-================================================================
+Session logs, pattern files, memory file dates, review loop evidence, compound learning artifacts, cross-references between memory files, and workflow diversity across skill categories.
 
-STATUS: No Second Brain detected.
+</details>
 
-That is totally fine. Here is how to get started:
+<details>
+<summary><strong>6 AI Fluency Layers</strong> -- progressive disclosure, delegation, orchestration</summary>
 
-----------------------------------------------------------------
-GETTING STARTED (3 steps, ~20 minutes)
-----------------------------------------------------------------
+&nbsp;
 
-STEP 1: Create CLAUDE.md (~5 min)
-  Your AI's instruction manual. Start with:
-  - Who you are and what you do
-  - Your top 3-5 rules ("always do X", "never do Y")
-  - Key tools and frameworks you use
+Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware skill design, file reference integrity (do paths in CLAUDE.md actually resolve?), multi-tier orchestration with model routing, and interview/spec-first patterns.
 
-STEP 2: Add skills (~10 min)
-  ...
-
-================================================================
-  See what a properly configured Second Brain looks like:
-  https://www.iwoszapar.com/context-engineering
-================================================================
-```
-
-### Configured Brain
-```
-================================================================
-  SECOND BRAIN HEALTH CHECK
-================================================================
-
-SETUP QUALITY:    84/100 (B - Good foundation)
-USAGE ACTIVITY:   89/100 (Active - Brain is compounding)
-AI FLUENCY:       92/100 (Expert - Advanced AI collaboration)
-
-----------------------------------------------------------------
-CONTEXT ENGINEERING PATTERNS (7 patterns)
-----------------------------------------------------------------
-
-[pass] Progressive Disclosure       |||||||||||||.. 87%
-[pass] Knowledge Files as RAM       ||||||||||||||. 93%
-[warn] Hooks as Guardrails          |||||.......... 33%
-...
-
-----------------------------------------------------------------
-TOP FIXES (highest impact)
-----------------------------------------------------------------
-
-1. Add profession-specific rules to CLAUDE.md (+3 pts setup, ~10 min)
-   Include 2+ domain patterns (MEDDPICC, sprint, SEO, KPI, etc.)
-
-================================================================
-  2 points from Production-grade. Missing pattern: Hooks as Guardrails.
-  https://www.iwoszapar.com/context-engineering
-================================================================
-```
+</details>
 
 ---
 
 ## MCP Tools
 
-| Tool | Description |
-|------|-------------|
-| `check_health` | Full 38-layer health check across 3 dimensions. Supports 14 languages, workspace type (solo/team/enterprise), use case context, and mode (full/quick). Adaptive report format based on brain maturity. |
-| `get_fix_suggestions` | Focus on weakest dimension, prioritized action plan with time estimates |
-| `generate_dashboard` | Self-contained HTML dashboard — dark mode, mobile-responsive, grade badges, CE patterns, three-tier fix guides |
-| `generate_pdf` | PDF report via headless Chrome |
+```
+  ┌──────────────────────┬──────────────────────────────────────────────────┐
+  │  check_health        │  Full 38-layer scan across 3 dimensions.        │
+  │                      │  Supports 14 languages, workspace type          │
+  │                      │  (solo/team/enterprise), use case context,      │
+  │                      │  and mode (full/quick/manifest).                │
+  │                      │  Adaptive report based on brain maturity.       │
+  ├──────────────────────┼──────────────────────────────────────────────────┤
+  │  get_fix_suggestions │  Focus on weakest dimension. Prioritized        │
+  │                      │  action plan with time estimates.               │
+  ├──────────────────────┼──────────────────────────────────────────────────┤
+  │  generate_dashboard  │  Self-contained HTML dashboard. Dark mode,      │
+  │                      │  mobile-responsive, grade badges, CE pattern    │
+  │                      │  radar chart, three-tier fix guides.            │
+  ├──────────────────────┼──────────────────────────────────────────────────┤
+  │  generate_pdf        │  PDF report via headless Chrome.                │
+  └──────────────────────┴──────────────────────────────────────────────────┘
+```
+
+**Modes:**
+- `full` -- complete 38-layer scan with adaptive reporting
+- `quick` -- detection-only pre-scan (~100ms)
+- `manifest` -- machine-readable YAML output for CI/other tools
+
+---
+
+## v0.8.3 Highlights
+
+- **Delta tracking** -- persists last 20 runs in `.health-check.json`, shows "+N% since last scan"
+- **Brain manifest** -- `mode: 'manifest'` outputs machine-readable YAML for CI pipelines
+- **CE radar chart** -- SVG visualization of 7 pattern scores in the HTML dashboard
+- **Adaptive reports** -- empty brains get a 3-step guide, not 37 failed checks
+- **CE pattern mapping** -- all 38 layers mapped to 7 Context Engineering patterns
+- **Time estimates** -- every fix shows `~N min` so you can plan your session
+- **Context pressure** -- detects CLAUDE.md bloat and context surface area issues
 
 ---
 
 ## Security
 
-- Home directory boundary — cannot scan outside `$HOME`
-- No network calls — zero `fetch`, `http`, `https` imports
-- stdio transport only
-- Path null-byte check via Zod validation
-- File count limits (500 max entries per directory scan)
-- Recursion depth limits (3-4 levels)
-- All user content escaped in HTML output
+```
+  ┌─ Security Model ──────────────────────────────────────────┐
+  │                                                           │
+  │  ◆ Home directory boundary -- cannot scan outside $HOME   │
+  │  ◆ Zero network calls -- no fetch, http, https imports    │
+  │  ◆ stdio transport only                                   │
+  │  ◆ Path null-byte validation via Zod                      │
+  │  ◆ File count limits (500 max per directory scan)         │
+  │  ◆ Recursion depth limits (3-4 levels)                    │
+  │  ◆ All user content escaped in HTML output                │
+  │                                                           │
+  └───────────────────────────────────────────────────────────┘
+```
 
-Full security details: [SCORING.md — Security Hardening](./SCORING.md#security-hardening)
+Full security details: [SCORING.md -- Security Hardening](./SCORING.md#security-hardening)
+
+---
+
+## Context Engineering vs. Prompt Engineering
+
+> Prompt engineering optimizes a single LLM call.
+> Context engineering optimizes the persistent system surrounding those calls --
+> the files, hooks, memory, and skills that shape every session.
+
+This tool scores the **context engineering layer**, not your prompts.
 
 ---
 
 ## Documentation
 
 | Document | Purpose |
-|----------|---------|
-| [SCORING.md](./SCORING.md) | Every check, threshold, regex, point value — the source of truth |
+|:---------|:--------|
+| [SCORING.md](./SCORING.md) | Every check, threshold, regex, point value -- the source of truth |
+| [CHANGELOG.md](./CHANGELOG.md) | Full version history from v0.1.0 to v0.8.3 |
 
 ---
 
-## Context Engineering vs. Prompt Engineering
+<p align="center">
 
-Prompt engineering optimizes a single LLM call. Context engineering optimizes the persistent system surrounding those calls — the files, hooks, memory, and skills that shape every session.
+Part of the [Context Engineering](https://www.iwoszapar.com/context-engineering) product suite.
+If your score reveals gaps, [Second Brain AI](https://www.iwoszapar.com/second-brain-ai) builds the full architecture.
 
-This tool scores the context engineering layer, not your prompts.
+Built by [Iwo Szapar](https://www.iwoszapar.com) -- AI Implementation Expert & Second Brain Architect.
 
----
-
-Part of the [Context Engineering](https://www.iwoszapar.com/context-engineering) product suite. If your score reveals gaps, [Second Brain AI](https://www.iwoszapar.com/second-brain-ai) builds the full architecture.
+</p>
