@@ -1,4 +1,4 @@
-# Second Brain Health Check — Scoring Reference
+# Second Brain Health Check — Scoring Reference (for Claude Code)
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >

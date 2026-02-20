@@ -1,7 +1,7 @@
 <h1 align="center">Second Brain Health Check</h1>
 
 <p align="center">
-<strong>Your AI workspace has 38 things that could be better. This finds them in 2 seconds.</strong>
+<strong>Your Claude Code setup has 38 things that could be better. This finds them in 2 seconds.</strong>
 </p>
 
 <p align="center">
@@ -13,7 +13,7 @@
 
 <p align="center"><em>Context Engineering quality scanner for Claude Code</em></p>
 
-Scores CLAUDE.md, skills, hooks, memory, and planning artifacts across 38 check layers. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes, and time estimates. Zero network calls. Runs locally.
+Scores your Claude Code Second Brain — CLAUDE.md, skills, hooks, memory, and planning artifacts — across 38 check layers. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes, and time estimates. Zero network calls. Runs locally.
 
 ---
 
@@ -312,13 +312,15 @@ Full security details: [SCORING.md -- Security Hardening](./SCORING.md#security-
 
 ---
 
-## Context Engineering vs. Prompt Engineering
+## What Is a Claude Code Second Brain?
+
+A "Second Brain" is the persistent context layer that lives alongside Claude Code — your CLAUDE.md, `.claude/` directory, skills, hooks, memory files, MCP servers, and planning artifacts. It's what makes Claude remember your preferences, follow your rules, and get smarter over time.
 
 > Prompt engineering optimizes a single LLM call.
 > Context engineering optimizes the persistent system surrounding those calls --
 > the files, hooks, memory, and skills that shape every session.
 
-This tool scores the **context engineering layer**, not your prompts.
+This tool scores that **context engineering layer**, not your prompts.
 
 ---
 
