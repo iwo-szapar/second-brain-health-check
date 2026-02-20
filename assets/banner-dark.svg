@@ -1,16 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="260" viewBox="0 0 720 260">
-  <rect width="720" height="260" rx="8" fill="#0d1117"/>
-  <text font-family="'SFMono-Regular','Consolas','Liberation Mono','Menlo',monospace" font-size="13.5" fill="#e6edf3">
-    <tspan x="32" y="38">  ____                            _   ____            _</tspan>
-    <tspan x="32" y="55"> / ___|  ___  ___ ___  _ __   __| | | __ ) _ __ __ _(_)_ __</tspan>
-    <tspan x="32" y="72"> \___ \ / _ \/ __/ _ \| '_ \ / _` | |  _ \| '__/ _` | | '_ \</tspan>
-    <tspan x="32" y="89">  ___) |  __/ (_| (_) | | | | (_| | | |_) | | | (_| | | | | |</tspan>
-    <tspan x="32" y="106"> |____/ \___|\___\___/|_| |_|\__,_| |____/|_|  \__,_|_|_| |_|</tspan>
-    <tspan x="32" y="136">  _   _            _ _   _        ____ _               _</tspan>
-    <tspan x="32" y="153"> | | | | ___  __ _| | |_| |__    / ___| |__   ___  ___| | __</tspan>
-    <tspan x="32" y="170"> | |_| |/ _ \/ _` | | __| '_ \  | |   | '_ \ / _ \/ __| |/ /</tspan>
-    <tspan x="32" y="187"> |  _  |  __/ (_| | | |_| | | | | |___| | | |  __/ (__|   &lt;</tspan>
-    <tspan x="32" y="204"> |_| |_|\___|\__,_|_|\__|_| |_|  \____|_| |_|\___|\___|_|\_\</tspan>
-    <tspan x="32" y="238" fill="#7ee787">  Context Engineering Quality Scanner for Claude Code</tspan>
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="180" viewBox="0 0 720 180">
+  <defs>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7ee787;stop-opacity:0.15" />
+      <stop offset="50%" style="stop-color:#7ee787;stop-opacity:0.05" />
+      <stop offset="100%" style="stop-color:#7ee787;stop-opacity:0.15" />
+    </linearGradient>
+  </defs>
+  <rect width="720" height="180" rx="8" fill="#0d1117"/>
+  <rect x="0" y="130" width="720" height="1" fill="#21262d"/>
+  <text font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" font-weight="800" font-size="48" fill="#e6edf3" text-anchor="middle" x="360" y="62">Second Brain</text>
+  <text font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" font-weight="300" font-size="48" fill="#8b949e" text-anchor="middle" x="360" y="115">Health Check</text>
+  <text font-family="'SFMono-Regular','Consolas','Liberation Mono','Menlo',monospace" font-size="14" fill="#7ee787" text-anchor="middle" x="360" y="160">Context Engineering Quality Scanner for Claude Code</text>
 </svg>
