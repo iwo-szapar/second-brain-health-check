@@ -310,4 +310,3 @@ export async function checkCrossReferences(rootPath) {
         checks,
     };
 }
-//# sourceMappingURL=cross-references.js.map

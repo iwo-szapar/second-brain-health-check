@@ -48,6 +48,7 @@ import { checkContextAwareSkills } from './fluency/context-aware-skills.js';
 import { checkReferenceIntegrity } from './fluency/reference-integrity.js';
 import { checkDelegationPatterns } from './fluency/delegation-patterns.js';
 import { checkInterviewPatterns } from './fluency/interview-patterns.js';
+import { VERSION } from './version.js';
 
 /**
  * Fast pre-scan (~100ms) to detect brain maturity before running full checks.
@@ -358,7 +359,7 @@ async function saveHealthCheckState(rootPath, report) {
 
     const runEntry = {
         timestamp: report.timestamp,
-        version: '0.8.3',
+        version: VERSION,
         overallPct,
         setup: report.setup.normalizedScore,
         usage: report.usage.normalizedScore,

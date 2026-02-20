@@ -18,9 +18,10 @@ import { formatReport, formatFixSuggestions } from './report-formatter.js';
 import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 import { generateManifestYaml, saveManifest } from './brain-manifest.js';
+import { VERSION } from './version.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
-    version: '0.8.3',
+    version: VERSION,
 });
 const pathSchema = z
     .string()
@@ -232,7 +233,7 @@ server.registerTool('generate_pdf', {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('Second Brain Health Check MCP server running on stdio (v0.8.3)');
+    console.error(`Second Brain Health Check MCP server running on stdio (v${VERSION})`);
 }
 main().catch((error) => {
     console.error('Fatal error:', error);

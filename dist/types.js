@@ -44,4 +44,3 @@ export function normalizeScore(points, maxPoints) {
     if (maxPoints <= 0) return 0;
     return Math.round((points / maxPoints) * 100);
 }
-//# sourceMappingURL=types.js.map
