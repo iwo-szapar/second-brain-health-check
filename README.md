@@ -1,17 +1,17 @@
+<h1 align="center">Second Brain Health Check</h1>
+
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg" />
-    <img src="assets/banner-dark.svg" alt="Second Brain Health Check" width="720" />
-  </picture>
+<strong>Your AI workspace has 38 things that could be better. This finds them in 2 seconds.</strong>
 </p>
 
-[![npm version](https://img.shields.io/npm/v/second-brain-health-check?style=flat-square&color=222)](https://www.npmjs.com/package/second-brain-health-check)
-[![License: MIT](https://img.shields.io/badge/license-MIT-222?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Node](https://img.shields.io/badge/node-%3E%3D20-222?style=flat-square)](https://nodejs.org)
-[![MCP Compatible](https://img.shields.io/badge/MCP-compatible-222?style=flat-square)](https://modelcontextprotocol.io)
+<p align="center">
+<a href="https://www.npmjs.com/package/second-brain-health-check"><img src="https://img.shields.io/npm/v/second-brain-health-check?style=flat-square&color=222" alt="npm version" /></a>
+<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-222?style=flat-square" alt="License: MIT" /></a>
+<a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-222?style=flat-square" alt="Node" /></a>
+<a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-222?style=flat-square" alt="MCP Compatible" /></a>
+</p>
 
-**Your AI workspace has 38 things that could be better. This finds them in 2 seconds.**
+<p align="center"><em>Context Engineering quality scanner for Claude Code</em></p>
 
 Scores CLAUDE.md, skills, hooks, memory, and planning artifacts across 38 check layers. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes, and time estimates. Zero network calls. Runs locally.
 
