@@ -49,7 +49,9 @@ async function pathExists(filePath) {
  */
 function countLines(text) {
     if (!text) return 0;
-    return text.split('\n').length;
+    // Trim trailing newline to match standard wc -l behavior
+    const trimmed = text.endsWith('\n') ? text.slice(0, -1) : text;
+    return trimmed.split('\n').length;
 }
 
 export async function checkConfigHygiene(rootPath) {
