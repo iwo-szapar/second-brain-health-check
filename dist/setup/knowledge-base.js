@@ -28,8 +28,8 @@ async function findKnowledgeDir(rootPath) {
 }
 
 async function countFilesRecursive(dirPath, maxDepth, depth = 0) {
-    if (depth > maxDepth) return { files: 0, dirs: 0 };
-    let files = 0, dirs = 0;
+    if (depth > maxDepth) return { files: 0, topDirs: 0 };
+    let files = 0, topDirs = 0;
     try {
         const entries = await readdir(dirPath);
         for (const entry of entries) {
@@ -40,15 +40,14 @@ async function countFilesRecursive(dirPath, maxDepth, depth = 0) {
                 if (s.isFile() && (entry.endsWith('.md') || entry.endsWith('.txt'))) {
                     files++;
                 } else if (s.isDirectory()) {
-                    dirs++;
+                    if (depth === 0) topDirs++;
                     const sub = await countFilesRecursive(fullPath, maxDepth, depth + 1);
                     files += sub.files;
-                    dirs += sub.dirs;
                 }
             } catch { continue; }
         }
     } catch { /* empty */ }
-    return { files, dirs };
+    return { files, topDirs };
 }
 
 export async function checkKnowledgeBase(rootPath) {
@@ -64,7 +63,7 @@ export async function checkKnowledgeBase(rootPath) {
                 message: 'No .claude/docs/ or .claude/knowledge/ found — create a knowledge base so Claude can pre-load domain context per task area',
             });
         } else {
-            const { files, dirs } = await countFilesRecursive(knowledgeDir, 3);
+            const { files, topDirs } = await countFilesRecursive(knowledgeDir, 3);
             const dirLabel = knowledgeDir.replace(rootPath, '').replace(/^\//, '');
             let status, points;
             if (files >= 10) {
@@ -81,7 +80,7 @@ export async function checkKnowledgeBase(rootPath) {
             checks.push({
                 name: 'Knowledge base directory',
                 status, points, maxPoints: 4,
-                message: `${files} reference file(s) in ${dirLabel}/ — ${dirs > 0 ? `organized into ${dirs} topic area(s)` : 'flat structure'}`,
+                message: `${files} reference file(s) in ${dirLabel}/ — ${topDirs > 0 ? `organized into ${topDirs} topic area(s)` : 'flat structure'}`,
             });
         }
     }
@@ -126,14 +125,14 @@ export async function checkKnowledgeBase(rootPath) {
                 message: 'No knowledge directory to evaluate',
             });
         } else {
-            const { files, dirs } = await countFilesRecursive(knowledgeDir, 2);
+            const { files, topDirs } = await countFilesRecursive(knowledgeDir, 2);
             let status, points, message;
-            if (dirs >= 5 || files >= 15) {
+            if (topDirs >= 5 || files >= 15) {
                 status = 'pass'; points = 3;
-                message = `${dirs} knowledge domains, ${files} reference files — comprehensive pre-session context architecture`;
-            } else if (dirs >= 2 || files >= 5) {
+                message = `${topDirs} knowledge domains, ${files} reference files — comprehensive pre-session context architecture`;
+            } else if (topDirs >= 2 || files >= 5) {
                 status = 'warn'; points = 2;
-                message = `${dirs > 0 ? dirs + ' topic area(s)' : files + ' reference file(s)'} — expand with more domain-specific knowledge folders`;
+                message = `${topDirs > 0 ? topDirs + ' topic area(s)' : files + ' reference file(s)'} — expand with more domain-specific knowledge folders`;
             } else {
                 status = 'warn'; points = 1;
                 message = 'Knowledge base is small — add domain-specific reference guides for each major workflow area';

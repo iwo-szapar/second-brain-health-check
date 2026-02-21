@@ -16,7 +16,7 @@ const SEMANTIC_DIRS = [
 ];
 
 async function countIndexFiles(rootPath, depth, maxDepth, counter) {
-    if (depth > maxDepth || counter.entries > 500) return;
+    if (depth > maxDepth || counter.entries > 5000) return;
     let entries;
     try {
         entries = await readdir(rootPath);
@@ -26,7 +26,7 @@ async function countIndexFiles(rootPath, depth, maxDepth, counter) {
 
     for (const entry of entries) {
         counter.entries++;
-        if (counter.entries > 500) return;
+        if (counter.entries > 5000) return;
         if (entry.startsWith('.') || entry === 'node_modules') continue;
 
         const entryLower = entry.toLowerCase();
