@@ -2,7 +2,7 @@
  * Dashboard Generator — Refined Brutalism + Terminal Pattern
  *
  * Self-contained HTML dashboard from health check results.
- * Design: DM Sans + Space Mono, pure B&W, 4px borders, zero border-radius.
+ * Design: DM Sans + Space Mono, B&W structure + semantic color (pass/warn/fail), 4px borders, zero border-radius.
  * Layout: Terminal-style scannable rows for all check layers.
  *
  * Based on iwoszapar.com design system (DESIGN_SYSTEM.md).
@@ -21,20 +21,20 @@ function escapeHtml(str) {
 
 function getBarColor(points, maxPoints) {
     const pct = maxPoints > 0 ? (points / maxPoints) * 100 : 0;
-    if (pct >= 60) return '#000000';
-    if (pct >= 40) return '#595959';
-    return '#767676';
+    if (pct >= 60) return '#1a7a3a';
+    if (pct >= 40) return '#b08800';
+    return '#cf222e';
 }
 
 function getGradeColor(grade) {
     const g = String(grade).toLowerCase();
-    if (['a', 'expert', 'active', 'b', 'proficient', 'growing'].includes(g)) return '#000000';
-    if (['c', 'developing', 'starting', 'd', 'beginner', 'dormant'].includes(g)) return '#595959';
-    return '#767676';
+    if (['a', 'expert', 'active', 'b', 'proficient', 'growing'].includes(g)) return '#1a7a3a';
+    if (['c', 'developing', 'starting', 'd', 'beginner', 'dormant'].includes(g)) return '#b08800';
+    return '#cf222e';
 }
 
 function dotHtml(status) {
-    const colors = { pass: '#000000', warn: '#595959', fail: '#bbbbbb' };
+    const colors = { pass: '#1a7a3a', warn: '#b08800', fail: '#cf222e' };
     const label = status === 'pass' ? 'Passing' : status === 'warn' ? 'Warning' : 'Failing';
     return `<span role="img" aria-label="${label}" style="display:inline-block;width:10px;height:10px;min-width:10px;background:${colors[status] || '#cccccc'};flex-shrink:0;"></span>`;
 }
@@ -206,7 +206,7 @@ function renderDimension(dim, label, dimId) {
         for (const check of (layer.checks || [])) {
             checksHtml += `
                 <div style="display:flex;align-items:flex-start;gap:8px;padding:3px 0;font-size:11px;color:#595959;line-height:1.5;">
-                    <span style="display:inline-block;width:6px;height:6px;min-width:6px;margin-top:5px;background:${check.status === 'pass' ? '#000' : check.status === 'warn' ? '#777' : '#bbb'};"></span>
+                    <span style="display:inline-block;width:6px;height:6px;min-width:6px;margin-top:5px;background:${check.status === 'pass' ? '#1a7a3a' : check.status === 'warn' ? '#b08800' : '#cf222e'};"></span>
                     <span style="flex:1;">${escapeHtml(check.message)}</span>
                     <span style="color:#767676;font-family:'Space Mono',monospace;font-size:10px;white-space:nowrap;">${check.points}/${check.maxPoints}</span>
                 </div>`;
@@ -217,7 +217,7 @@ function renderDimension(dim, label, dimId) {
             <div style="display:grid;grid-template-columns:14px 1fr 100px 44px;align-items:center;gap:8px;padding:12px 0;min-height:44px;">
                 ${dotHtml(status)}
                 <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(layer.name)}</span>
-                <span style="height:4px;background:#e5e5e5;position:relative;"><span style="position:absolute;left:0;top:0;height:100%;width:${layerPct}%;background:${layerPct >= 60 ? '#000' : layerPct >= 40 ? '#595959' : '#767676'};"></span></span>
+                <span style="height:4px;background:#e5e5e5;position:relative;"><span style="position:absolute;left:0;top:0;height:100%;width:${layerPct}%;background:${layerPct >= 60 ? '#1a7a3a' : layerPct >= 40 ? '#b08800' : '#cf222e'};"></span></span>
                 <span style="text-align:right;font-family:'Space Mono',monospace;font-size:10px;color:#767676;">${layerPct}%</span>
             </div>
             <div class="term-checks">${checksHtml}</div>
@@ -326,7 +326,7 @@ function renderRadarChart(cePatterns) {
 
     return `<svg viewBox="-80 0 480 320" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto 16px;width:100%;max-width:480px;height:auto;">
         ${gridLines}${axes}
-        <polygon points="${dataPts}" fill="rgba(0,0,0,0.06)" stroke="#000" stroke-width="2"/>
+        <polygon points="${dataPts}" fill="rgba(26,122,58,0.08)" stroke="#1a7a3a" stroke-width="2"/>
         ${labels}
     </svg>`;
 }
@@ -339,7 +339,7 @@ function renderCEPatterns(cePatterns) {
     let patternsHtml = '';
     for (const p of cePatterns) {
         if (p.maxScore === 0) continue;
-        const barColor = p.percentage >= 70 ? '#000' : p.percentage >= 40 ? '#595959' : '#767676';
+        const barColor = p.percentage >= 70 ? '#1a7a3a' : p.percentage >= 40 ? '#b08800' : '#cf222e';
         patternsHtml += `
         <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:2px solid #e5e5e5;">
             <span style="font-size:12px;color:#000;font-weight:500;flex:1;min-width:0;font-family:'DM Sans',sans-serif;">${escapeHtml(p.name)}</span>
@@ -494,7 +494,7 @@ export function generateDashboardHtml(report) {
             <div>
                 <span class="big-num" style="font-size:110px;font-weight:700;color:#fff;line-height:1;font-family:'Space Mono',monospace;">${overallPct}</span><span style="font-size:32px;color:rgba(255,255,255,.35);font-family:'Space Mono',monospace;">%</span>
             </div>
-            <div style="border:2px solid ${gradeColor === '#000000' ? '#fff' : gradeColor};padding:10px 0;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:${gradeColor === '#000000' ? '#fff' : gradeColor};font-family:'Space Mono',monospace;">Grade ${overallGrade}</div>
+            <div style="border:2px solid ${gradeColor === '#1a7a3a' ? '#4ade80' : gradeColor};padding:10px 0;text-align:center;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:${gradeColor === '#1a7a3a' ? '#4ade80' : gradeColor};font-family:'Space Mono',monospace;">Grade ${overallGrade}</div>
         </div>
 
         <div class="score-right" style="padding:32px 36px;border-left:4px solid #000;">
@@ -512,6 +512,33 @@ export function generateDashboardHtml(report) {
             </div>`).join('')}
         </div>
     </div>
+
+    <!-- Status Tally -->
+    ${(() => {
+        const dims = [report.setup, report.usage, report.fluency].filter(Boolean);
+        let pass = 0, warn = 0, fail = 0;
+        for (const dim of dims) {
+            for (const layer of (dim.layers || [])) {
+                for (const check of (layer.checks || [])) {
+                    if (check.status === 'pass') pass++;
+                    else if (check.status === 'warn') warn++;
+                    else fail++;
+                }
+            }
+        }
+        const total = pass + warn + fail;
+        if (total === 0) return '';
+        const passPct = Math.round((pass / total) * 100);
+        const warnPct = Math.round((warn / total) * 100);
+        const failPct = Math.round((fail / total) * 100);
+        return `<div style="display:flex;align-items:center;gap:24px;padding:14px 20px;border:4px solid #000;border-top:none;font-family:'Space Mono',monospace;font-size:11px;">
+            <span style="color:#595959;text-transform:uppercase;letter-spacing:.08em;">${total} checks</span>
+            <span style="display:flex;align-items:center;gap:6px;color:#1a7a3a;font-weight:700;"><span style="display:inline-block;width:8px;height:8px;background:#1a7a3a;"></span>${pass} pass<span style="font-weight:400;color:#767676;">${passPct}%</span></span>
+            <span style="display:flex;align-items:center;gap:6px;color:#b08800;font-weight:700;"><span style="display:inline-block;width:8px;height:8px;background:#b08800;"></span>${warn} warn<span style="font-weight:400;color:#767676;">${warnPct}%</span></span>
+            <span style="display:flex;align-items:center;gap:6px;color:#cf222e;font-weight:700;"><span style="display:inline-block;width:8px;height:8px;background:#cf222e;"></span>${fail} fail<span style="font-weight:400;color:#767676;">${failPct}%</span></span>
+            <span style="flex:1;height:4px;display:flex;"><span style="width:${passPct}%;background:#1a7a3a;height:100%;"></span><span style="width:${warnPct}%;background:#b08800;height:100%;"></span><span style="width:${failPct}%;background:#cf222e;height:100%;"></span></span>
+        </div>`;
+    })()}
 
     <!-- Top Fixes -->
     ${renderTopFixes(report.topFixes)}

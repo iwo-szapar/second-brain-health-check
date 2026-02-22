@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-19 (v0.8.1)
+> Last verified against code: 2026-02-21 (v0.9.2)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -15,7 +15,7 @@ Only compiled JS is distributed:
 
 ```
 dist/
-  index.js                     # MCP server entry point (4 tools, v0.8.1)
+  index.js                     # MCP server entry point (4 tools, v0.9.2)
   cli.js                       # CLI entry point
   types.js                     # Grade functions + normalizeScore
   health-check.js              # Orchestrator + detectBrainState() + mapChecksToCEPatterns()
@@ -101,12 +101,12 @@ All dimensions are **normalized to /100** for display. The report and dashboard 
 | Path null-byte check | `index.js:22` | Zod `.refine(p => !p.includes('\0'))` |
 | No shell execution | All files except hooks.js, gitignore-hygiene.js | hooks.js uses `execFileSync('bash', ...)`, gitignore-hygiene uses `execFileSync('git', ...)` |
 | No network calls | All files | Zero `fetch`, `http`, `https` imports |
-| File count limits | `memory.js:33`, `structure.js:43` | `entries.slice(0, MAX_ENTRIES)` caps at 500 |
+| File count limits | `memory.js:33`, `structure.js:43` | `entries.slice(0, MAX_ENTRIES)` caps at 5000 |
 | Depth limits | `memory.js:29`, `structure.js:35` | `depth > 3` or `depth > 4` recursion guards |
 
 ---
 
-## Brain State Detection (v0.8.1)
+## Brain State Detection
 
 ### `detectBrainState()` — `health-check.js`
 

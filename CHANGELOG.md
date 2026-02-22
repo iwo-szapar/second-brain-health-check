@@ -4,6 +4,42 @@ All notable changes to the Second Brain Health Check MCP are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.2] - 2026-02-21
+
+### Fixed
+- Config line count off by 3 — `split('\n').length` counted trailing newline as extra line per file
+
+## [0.9.1] - 2026-02-21
+
+### Fixed
+- Index file counter bailed at 500 entries — raised to 5000. Large repos missed most INDEX.md files.
+- Knowledge base "topic areas" inflated — counted all nested subdirs instead of immediate children only
+
+## [0.9.0] - 2026-02-21
+
+### Changed
+- Complete dashboard redesign: Refined Brutalism (DM Sans + Space Mono, pure B&W, 4px borders, zero radius)
+- Dimension sections replaced with terminal-style compact rows — click to expand checks
+- Removed editorial light theme, "What is a Second Brain?" block, "How to read this report" block
+
+### Added
+- WCAG AA contrast compliance (#999 → #767676, 4.5:1 ratio)
+- Keyboard navigation on expandable rows (role="button", tabindex, aria-expanded, focus-visible)
+- Responsive radar chart (width:100%;max-width:480px)
+- Aria-labels on status dots for screen readers
+- 44px minimum touch targets on terminal rows
+
+## [0.8.6] - 2026-02-21
+
+### Fixed
+- Radar chart left-side label clipping (negative viewBox offset)
+- npm publish OTP error with granular token (removed --provenance)
+- CI test glob quoting for Linux shell
+
+### Added
+- Light theme dashboard (v0.8.5)
+- npm publish GitHub Actions workflow
+
 ## [0.8.3] - 2026-02-19
 
 ### Added

@@ -128,6 +128,22 @@ The report adapts to your brain's maturity level. No information overload for be
 
 </details>
 
+### HTML Dashboard
+
+Run `npx second-brain-health-check --dashboard` to generate a self-contained HTML report with semantic color coding, radar chart, and guided fixes.
+
+<p align="center">
+<img src="assets/dashboard-score-panel.png" alt="Dashboard — score panel, status tally, and top fixes" width="720" />
+</p>
+
+<p align="center">
+<img src="assets/dashboard-ce-patterns.png" alt="Dashboard — Context Engineering radar chart and pattern scores" width="720" />
+</p>
+
+<p align="center">
+<img src="assets/dashboard-setup-quality.png" alt="Dashboard — Setup Quality dimension with pass/warn/fail indicators" width="720" />
+</p>
+
 ---
 
 ## What It Measures
@@ -265,9 +281,9 @@ Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware sk
   │  get_fix_suggestions │  Focus on weakest dimension. Prioritized        │
   │                      │  action plan with time estimates.               │
   ├──────────────────────┼──────────────────────────────────────────────────┤
-  │  generate_dashboard  │  Self-contained HTML dashboard. Dark mode,      │
-  │                      │  mobile-responsive, grade badges, CE pattern    │
-  │                      │  radar chart, three-tier fix guides.            │
+  │  generate_dashboard  │  Self-contained HTML dashboard. Refined          │
+  │                      │  Brutalism design, mobile-responsive, CE radar  │
+  │                      │  chart, terminal-style rows, fix guides.        │
   ├──────────────────────┼──────────────────────────────────────────────────┤
   │  generate_pdf        │  PDF report via headless Chrome.                │
   └──────────────────────┴──────────────────────────────────────────────────┘
@@ -280,15 +296,17 @@ Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware sk
 
 ---
 
-## v0.8.3 Highlights
+## v0.9.2 Highlights
 
+- **Refined Brutalism dashboard** -- DM Sans + Space Mono, pure B&W, 4px structural borders, brutalist hover shadows
+- **Terminal pattern** -- dimension sections show compact scannable rows (status dot, name, bar, %). Click to expand.
+- **WCAG AA accessible** -- 4.5:1 contrast, keyboard navigation, aria-labels, 44px touch targets, responsive radar chart
+- **Scanner accuracy fixes** -- index file counter, topic area counting, config line counting all verified against real repos
 - **Delta tracking** -- persists last 20 runs in `.health-check.json`, shows "+N% since last scan"
-- **Brain manifest** -- `mode: 'manifest'` outputs machine-readable YAML for CI pipelines
 - **CE radar chart** -- SVG visualization of 7 pattern scores in the HTML dashboard
 - **Adaptive reports** -- empty brains get a 3-step guide, not 37 failed checks
 - **CE pattern mapping** -- all 38 layers mapped to 7 Context Engineering patterns
 - **Time estimates** -- every fix shows `~N min` so you can plan your session
-- **Context pressure** -- detects CLAUDE.md bloat and context surface area issues
 
 ---
 
@@ -306,7 +324,7 @@ Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware sk
   │  ◆ Home directory boundary — cannot scan outside $HOME    │
   │  ◆ stdio transport only                                   │
   │  ◆ Path null-byte validation via Zod                      │
-  │  ◆ File count limits (500 max per directory scan)         │
+  │  ◆ File count limits (5000 max per directory scan)        │
   │  ◆ Recursion depth limits (3-4 levels)                    │
   │  ◆ All user content escaped in HTML output                │
   │                                                           │
@@ -334,7 +352,7 @@ This tool scores that **context engineering layer**, not your prompts.
 | Document | Purpose |
 |:---------|:--------|
 | [SCORING.md](./SCORING.md) | Every check, threshold, regex, point value -- the source of truth |
-| [CHANGELOG.md](./CHANGELOG.md) | Full version history from v0.1.0 to v0.8.3 |
+| [CHANGELOG.md](./CHANGELOG.md) | Full version history from v0.1.0 to v0.9.2 |
 
 ---
 

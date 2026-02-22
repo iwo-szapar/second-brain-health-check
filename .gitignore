@@ -1,0 +1,5 @@
+node_modules/
+.health-check.json
+health-check-report.html
+health-check-report-*.html
+*.pdf

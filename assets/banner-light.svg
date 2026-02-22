@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="720" height="180" viewBox="0 0 720 180">
-  <rect width="720" height="180" rx="8" fill="#161b22"/>
-  <rect x="0" y="130" width="720" height="1" fill="#30363d"/>
-  <text font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" font-weight="800" font-size="48" fill="#f0f6fc" text-anchor="middle" x="360" y="62">Second Brain</text>
-  <text font-family="-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans',Helvetica,Arial,sans-serif" font-weight="300" font-size="48" fill="#8b949e" text-anchor="middle" x="360" y="115">Health Check</text>
-  <text font-family="'SFMono-Regular','Consolas','Liberation Mono','Menlo',monospace" font-size="14" fill="#3fb950" text-anchor="middle" x="360" y="160">Context Engineering Quality Scanner for Claude Code</text>
-</svg>
