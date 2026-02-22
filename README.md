@@ -298,14 +298,15 @@ Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware sk
 
 ## v0.9.3 Highlights
 
-- **Semantic color** -- pass (green), warn (amber), fail (red) on status dots, bars, grades, radar chart. All structural elements stay pure B&W.
-- **Status tally strip** -- check distribution summary with colored stacked bar below the score panel
-- **Dashboard screenshots** -- README now shows the actual dashboard (score panel, CE patterns, setup quality)
-- **Refined Brutalism dashboard** -- DM Sans + Space Mono, B&W structure, 4px borders, brutalist hover shadows
-- **Terminal pattern** -- dimension sections show compact scannable rows (status dot, name, bar, %). Click to expand.
-- **WCAG AA accessible** -- 4.5:1 contrast, keyboard navigation, aria-labels, 44px touch targets, responsive radar chart
-- **CE radar chart** -- SVG visualization of 7 pattern scores in the HTML dashboard
-- **Adaptive reports** -- empty brains get a 3-step guide, not 37 failed checks
+- **Semantic color** -- pass (green `#1a7a3a`), warn (amber `#b08800`), fail (red `#cf222e`) on status dots, score bars, grade badges, check mini-dots, and radar chart polygon. All structural elements stay pure B&W.
+- **Status tally strip** -- compact summary strip below the score panel showing total checks + pass/warn/fail counts with percentages and a colored stacked distribution bar
+- **Dashboard screenshots** -- score panel, CE patterns radar, and setup quality rows now shown in README
+
+### Previous releases
+
+- **v0.9.0** -- Refined Brutalism dashboard (DM Sans + Space Mono, 4px borders), terminal-style expandable rows, CE radar chart, adaptive reports, WCAG AA
+- **v0.9.1** -- Scanner accuracy: index file counter raised to 5000, topic area counting fixed
+- **v0.9.2** -- Config line count fix (trailing newline handling)
 
 ---
 
