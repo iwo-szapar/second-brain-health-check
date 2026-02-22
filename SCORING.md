@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-21 (v0.9.2)
+> Last verified against code: 2026-02-22 (v0.9.3)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -15,7 +15,7 @@ Only compiled JS is distributed:
 
 ```
 dist/
-  index.js                     # MCP server entry point (4 tools, v0.9.2)
+  index.js                     # MCP server entry point (4 tools, v0.9.3)
   cli.js                       # CLI entry point
   types.js                     # Grade functions + normalizeScore
   health-check.js              # Orchestrator + detectBrainState() + mapChecksToCEPatterns()

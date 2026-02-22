@@ -4,6 +4,17 @@ All notable changes to the Second Brain Health Check MCP are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.9.3] - 2026-02-22
+
+### Added
+- Semantic color for dashboard pass/warn/fail states — forest green (#1a7a3a), dark goldenrod (#b08800), deep red (#cf222e)
+- Status tally strip below score panel — check distribution with colored stacked bar
+- Dashboard screenshots in README (score panel, CE patterns, setup quality)
+
+### Changed
+- Status dots, score bars, grade badges, check mini-dots, radar chart polygon, and CE pattern bars use semantic color
+- All structural elements (borders, backgrounds, typography) remain pure B&W
+
 ## [0.9.2] - 2026-02-21
 
 ### Fixed

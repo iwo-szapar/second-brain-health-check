@@ -296,17 +296,16 @@ Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware sk
 
 ---
 
-## v0.9.2 Highlights
+## v0.9.3 Highlights
 
-- **Refined Brutalism dashboard** -- DM Sans + Space Mono, pure B&W, 4px structural borders, brutalist hover shadows
+- **Semantic color** -- pass (green), warn (amber), fail (red) on status dots, bars, grades, radar chart. All structural elements stay pure B&W.
+- **Status tally strip** -- check distribution summary with colored stacked bar below the score panel
+- **Dashboard screenshots** -- README now shows the actual dashboard (score panel, CE patterns, setup quality)
+- **Refined Brutalism dashboard** -- DM Sans + Space Mono, B&W structure, 4px borders, brutalist hover shadows
 - **Terminal pattern** -- dimension sections show compact scannable rows (status dot, name, bar, %). Click to expand.
 - **WCAG AA accessible** -- 4.5:1 contrast, keyboard navigation, aria-labels, 44px touch targets, responsive radar chart
-- **Scanner accuracy fixes** -- index file counter, topic area counting, config line counting all verified against real repos
-- **Delta tracking** -- persists last 20 runs in `.health-check.json`, shows "+N% since last scan"
 - **CE radar chart** -- SVG visualization of 7 pattern scores in the HTML dashboard
 - **Adaptive reports** -- empty brains get a 3-step guide, not 37 failed checks
-- **CE pattern mapping** -- all 38 layers mapped to 7 Context Engineering patterns
-- **Time estimates** -- every fix shows `~N min` so you can plan your session
 
 ---
 
@@ -352,7 +351,7 @@ This tool scores that **context engineering layer**, not your prompts.
 | Document | Purpose |
 |:---------|:--------|
 | [SCORING.md](./SCORING.md) | Every check, threshold, regex, point value -- the source of truth |
-| [CHANGELOG.md](./CHANGELOG.md) | Full version history from v0.1.0 to v0.9.2 |
+| [CHANGELOG.md](./CHANGELOG.md) | Full version history from v0.1.0 to v0.9.3 |
 
 ---
 
