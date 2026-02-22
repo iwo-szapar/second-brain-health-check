@@ -581,8 +581,11 @@ export async function runSetup() {
     rl.close();
 }
 
-// Run if called directly
-runSetup().catch((err) => {
-    console.error(red(`Setup failed: ${err.message}`));
-    process.exit(1);
-});
+// Run if called directly (not when imported by cli.js)
+const isDirectRun = process.argv[1]?.endsWith('setup.js');
+if (isDirectRun) {
+    runSetup().catch((err) => {
+        console.error(red(`Setup failed: ${err.message}`));
+        process.exit(1);
+    });
+}
