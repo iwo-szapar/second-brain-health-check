@@ -18,6 +18,9 @@ import { formatReport, formatFixSuggestions } from './report-formatter.js';
 import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 import { generateManifestYaml, saveManifest } from './brain-manifest.js';
+import { runWeeklyPulse } from './guide/weekly-pulse.js';
+import { runContextPressure } from './guide/context-pressure-tool.js';
+import { runAuditConfig } from './guide/audit-config.js';
 import { VERSION } from './version.js';
 const server = new McpServer({
     name: 'second-brain-health-check',
@@ -230,6 +233,99 @@ server.registerTool('generate_pdf', {
         };
     }
 });
+// --- Guide Tools (paid — requires GUIDE_TOKEN) ---
+
+function requireGuideToken() {
+    const token = process.env.GUIDE_TOKEN;
+    if (!token) {
+        return {
+            content: [{
+                type: 'text',
+                text: 'This tool requires Second Brain Guide.\n\n' +
+                    'Get access: https://www.iwoszapar.com/context-engineering\n\n' +
+                    'Already purchased? Add your token:\n' +
+                    '  Add GUIDE_TOKEN to .claude/settings.json env block\n' +
+                    '  Or: export GUIDE_TOKEN=sbg_xxxx'
+            }],
+            isError: true,
+        };
+    }
+    return null;
+}
+
+// Tool 5: weekly_pulse
+server.registerTool('weekly_pulse', {
+    description: 'Track your Second Brain progress over time. ' +
+        'Shows score deltas, CE pattern trends, notable events (tier crossings, streaks), ' +
+        'and a targeted suggestion for your weakest area. Reads .health-check.json history.',
+    inputSchema: {
+        period: z
+            .enum(['since_last', '7d', '30d'])
+            .optional()
+            .describe("Comparison period. 'since_last' compares to previous run (default), " +
+            "'7d' compares to ~7 days ago, '30d' compares to ~30 days ago."),
+        path: pathSchema
+            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+    },
+}, async ({ period, path }) => {
+    const gate = requireGuideToken();
+    if (gate) return gate;
+    try {
+        return await runWeeklyPulse(period, path);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return { content: [{ type: 'text', text: `Weekly pulse failed: ${message}` }], isError: true };
+    }
+});
+
+// Tool 6: context_pressure
+server.registerTool('context_pressure', {
+    description: 'Analyze how much of your context window is consumed by fixed overhead. ' +
+        'Measures CLAUDE.md, MEMORY.md, knowledge files, MCP tool definitions, skills, ' +
+        'and settings. Shows a breakdown with token estimates and recommendations to reclaim space.',
+    inputSchema: {
+        path: pathSchema
+            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+    },
+}, async ({ path }) => {
+    const gate = requireGuideToken();
+    if (gate) return gate;
+    try {
+        return await runContextPressure(path);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return { content: [{ type: 'text', text: `Context pressure analysis failed: ${message}` }], isError: true };
+    }
+});
+
+// Tool 7: audit_config
+server.registerTool('audit_config', {
+    description: 'Audit your Second Brain configuration for dead references, conflicts, ' +
+        'security issues, unused items, and performance problems. ' +
+        'Checks CLAUDE.md paths, hook scripts, .gitignore, API key exposure, ' +
+        'MCP overlaps, and context surface bloat.',
+    inputSchema: {
+        path: pathSchema
+            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+        check_categories: z
+            .array(z.enum(['references', 'conflicts', 'security', 'unused', 'performance']))
+            .optional()
+            .describe("Which categories to check. Defaults to all 5. " +
+            "Options: 'references' (dead file paths), 'conflicts' (duplicate configs, overlapping MCPs), " +
+            "'security' (.gitignore, exposed keys), 'unused' (skills/agents with 0 invocations), " +
+            "'performance' (bloat thresholds)."),
+    },
+}, async ({ path, check_categories }) => {
+    const gate = requireGuideToken();
+    if (gate) return gate;
+    try {
+        return await runAuditConfig(path, check_categories);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return { content: [{ type: 'text', text: `Config audit failed: ${message}` }], isError: true };
+    }
+});
+
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
