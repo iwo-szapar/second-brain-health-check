@@ -366,6 +366,11 @@ async function saveHealthCheckState(rootPath, report) {
         fluency: report.fluency.normalizedScore,
         maturity: report.brainState?.maturity || 'unknown',
         cePatterns: (report.cePatterns || []).map(p => ({ name: p.name, pct: p.percentage })),
+        checks: [
+            ...(report.setup.layers || []).map(l => ({ dim: 'setup', name: l.name, pts: l.points, max: l.maxPoints })),
+            ...(report.usage.layers || []).map(l => ({ dim: 'usage', name: l.name, pts: l.points, max: l.maxPoints })),
+            ...(report.fluency.layers || []).map(l => ({ dim: 'fluency', name: l.name, pts: l.points, max: l.maxPoints })),
+        ],
     };
 
     let state = { runs: [] };
