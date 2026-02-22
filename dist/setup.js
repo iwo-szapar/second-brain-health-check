@@ -62,20 +62,96 @@ function ask(rl, question) {
 }
 
 /**
- * Show numbered options, return the selected option object.
- * Enter = first option (default). Accepts number or label prefix.
+ * Interactive arrow-key selector. Up/Down to move, Enter to confirm.
+ * Falls back to number input if raw mode unavailable (piped stdin).
  */
 async function askChoice(rl, question, options, defaultIndex = 0) {
-    console.log(bold(question));
-    for (let i = 0; i < options.length; i++) {
-        const marker = i === defaultIndex ? green('*') : ' ';
-        console.log(`  ${marker} ${i + 1}. ${options[i].label}`);
+    // Fallback for non-TTY (piped input)
+    if (!process.stdin.isTTY) {
+        console.log(bold(question));
+        for (let i = 0; i < options.length; i++) {
+            const marker = i === defaultIndex ? green('>') : ' ';
+            console.log(`  ${marker} ${i + 1}. ${options[i].label}`);
+        }
+        const input = await ask(rl, '  > ');
+        const num = parseInt(input.trim(), 10);
+        if (num >= 1 && num <= options.length) return options[num - 1];
+        return options[defaultIndex];
     }
-    console.log(dim(`  Enter = ${options[defaultIndex].label}`));
-    const input = await ask(rl, '\n  > ');
-    const num = parseInt(input.trim(), 10);
-    if (num >= 1 && num <= options.length) return options[num - 1];
-    return options[defaultIndex];
+
+    return new Promise((resolve) => {
+        let selected = defaultIndex;
+        const HIDE_CURSOR = '\x1b[?25l';
+        const SHOW_CURSOR = '\x1b[?25h';
+        const MOVE_UP = (n) => `\x1b[${n}A`;
+        const CLEAR_LINE = '\x1b[2K\r';
+
+        function render(firstTime) {
+            if (!firstTime) {
+                // Move cursor up to redraw options
+                process.stdout.write(MOVE_UP(options.length));
+            }
+            for (let i = 0; i < options.length; i++) {
+                process.stdout.write(CLEAR_LINE);
+                if (i === selected) {
+                    process.stdout.write(`  ${cyan('>')} ${bold(options[i].label)}\n`);
+                } else {
+                    process.stdout.write(`    ${dim(options[i].label)}\n`);
+                }
+            }
+        }
+
+        console.log(bold(question));
+        console.log(dim('  Use arrow keys to move, Enter to select\n'));
+        process.stdout.write(HIDE_CURSOR);
+        render(true);
+
+        // Switch to raw mode for keypress detection
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+
+        function onData(key) {
+            // Up arrow: \x1b[A
+            if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x41) {
+                selected = selected > 0 ? selected - 1 : options.length - 1;
+                render(false);
+            }
+            // Down arrow: \x1b[B
+            else if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x42) {
+                selected = selected < options.length - 1 ? selected + 1 : 0;
+                render(false);
+            }
+            // Enter
+            else if (key[0] === 0x0d) {
+                cleanup();
+                resolve(options[selected]);
+            }
+            // Number keys 1-9
+            else if (key[0] >= 0x31 && key[0] <= 0x39) {
+                const num = key[0] - 0x30;
+                if (num >= 1 && num <= options.length) {
+                    selected = num - 1;
+                    render(false);
+                    cleanup();
+                    resolve(options[selected]);
+                }
+            }
+            // Ctrl+C
+            else if (key[0] === 0x03) {
+                cleanup();
+                process.exit(0);
+            }
+        }
+
+        function cleanup() {
+            process.stdin.removeListener('data', onData);
+            process.stdin.setRawMode(false);
+            process.stdin.pause();
+            process.stdout.write(SHOW_CURSOR);
+        }
+
+        process.stdin.on('data', onData);
+    });
 }
 
 function claudeCliAvailable() {
