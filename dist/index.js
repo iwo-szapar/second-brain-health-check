@@ -236,7 +236,7 @@ server.registerTool('generate_pdf', {
 // --- Guide Tools (paid — requires GUIDE_TOKEN) ---
 
 function requireGuideToken() {
-    const token = process.env.GUIDE_TOKEN;
+    const token = process.env.SBF_TOKEN || process.env.GUIDE_TOKEN;
     if (!token) {
         return {
             content: [{
@@ -244,8 +244,8 @@ function requireGuideToken() {
                 text: 'This tool requires Second Brain Guide.\n\n' +
                     'Get access: https://www.iwoszapar.com/context-engineering\n\n' +
                     'Already purchased? Add your token:\n' +
-                    '  Add GUIDE_TOKEN to .claude/settings.json env block\n' +
-                    '  Or: export GUIDE_TOKEN=sbg_xxxx'
+                    '  Add SBF_TOKEN to .claude/settings.json env block\n' +
+                    '  Or: export SBF_TOKEN=sbf_xxxx'
             }],
             isError: true,
         };
