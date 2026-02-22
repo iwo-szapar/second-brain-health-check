@@ -229,6 +229,20 @@ export async function runSetup() {
             writeFileSync(jsonPath, JSON.stringify(report, null, 2) + '\n');
             console.log(dim(`\n  Saved: ${jsonPath}`));
         } catch { /* non-critical */ }
+
+        // Generate and open HTML dashboard
+        try {
+            const { saveDashboard } = await import('./dashboard/generate.js');
+            const dashPath = await saveDashboard(report);
+            console.log(dim('  Dashboard: ' + dashPath));
+
+            const { execFile } = await import('node:child_process');
+            execFile('open', [dashPath], (err) => {
+                if (err) {
+                    execFile('xdg-open', [dashPath], () => { /* no-op */ });
+                }
+            });
+        } catch { /* non-critical */ }
     } catch (err) {
         console.log(yellow('  Could not run health check: ') + err.message);
         console.log(dim('  You can run it later: ask Claude to use check_health'));
