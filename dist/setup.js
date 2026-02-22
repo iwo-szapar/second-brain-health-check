@@ -3,11 +3,12 @@
  * Setup CLI for Second Brain Health Check + Guide.
  *
  * Flow (OpenClaw-inspired):
- *   1. Token (free/paid gate)
- *   2. Configure MCPs
- *   3. Profile: role, experience, goal (one question at a time, Enter = default)
- *   4. Health check + dashboard
- *   5. Personalized next steps
+ *   1. Banner + version
+ *   2. Token (free/paid gate)
+ *   3. Configure MCPs
+ *   4. Profile: role, experience, goal (arrow-key selector)
+ *   5. Health check + dashboard
+ *   6. Personalized next steps
  *
  * Run via: npx second-brain-health-check setup
  */
@@ -48,7 +49,7 @@ const GOALS = [
     { key: 'organize',          label: 'Organize knowledge & reduce context switching' },
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── ANSI Helpers ─────────────────────────────────────────────────────────────
 
 function dim(s) { return `\x1b[2m${s}\x1b[0m`; }
 function bold(s) { return `\x1b[1m${s}\x1b[0m`; }
@@ -56,16 +57,65 @@ function green(s) { return `\x1b[32m${s}\x1b[0m`; }
 function yellow(s) { return `\x1b[33m${s}\x1b[0m`; }
 function red(s) { return `\x1b[31m${s}\x1b[0m`; }
 function cyan(s) { return `\x1b[36m${s}\x1b[0m`; }
+function bgWhite(s) { return `\x1b[47m\x1b[30m${s}\x1b[0m`; }
 
 function ask(rl, question) {
     return new Promise((resolve) => rl.question(question, resolve));
 }
 
-/**
- * Interactive arrow-key selector. Up/Down to move, Enter to confirm.
- * On confirm, collapses the list to a single line showing the choice.
- * Falls back to number input if raw mode unavailable (piped stdin).
- */
+// ── Box Drawing ──────────────────────────────────────────────────────────────
+
+function box(title, lines) {
+    const width = 64;
+    const top = dim(`  ${'─'.repeat(width)}`);
+    const bot = dim(`  ${'─'.repeat(width)}`);
+    const out = [];
+    if (title) {
+        out.push(dim('  ') + cyan(bold(title)));
+    }
+    out.push(top);
+    for (const line of lines) {
+        out.push(dim('  │ ') + line);
+    }
+    out.push(bot);
+    return out.join('\n');
+}
+
+function section(title) {
+    return '\n' + dim('  ') + cyan(bold(title)) + dim(' ─'.repeat(28));
+}
+
+// ── Banner ───────────────────────────────────────────────────────────────────
+
+function printBanner() {
+    const { version } = JSON.parse(
+        readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
+    );
+
+    // ASCII art block
+    const art = `
+  ┌─────────────────────────────────────────────────────┐
+  │  ███████ ███████  ██████  ██████  ███    ██ ██████  │
+  │  ██      ██      ██      ██    ██ ████   ██ ██   ██ │
+  │  ███████ █████   ██      ██    ██ ██ ██  ██ ██   ██ │
+  │       ██ ██      ██      ██    ██ ██  ██ ██ ██   ██ │
+  │  ███████ ███████  ██████  ██████  ██   ████ ██████  │
+  │                                                     │
+  │              ██████  ██████   █████  ██ ███    ██    │
+  │              ██   ██ ██   ██ ██   ██ ██ ████   ██   │
+  │              ██████  ██████  ███████ ██ ██ ██  ██   │
+  │              ██   ██ ██   ██ ██   ██ ██ ██  ██ ██   │
+  │              ██████  ██   ██ ██   ██ ██ ██   ████   │
+  └─────────────────────────────────────────────────────┘`;
+
+    console.log(bold(art));
+    console.log('');
+    console.log(`  ${bold('Second Brain')} ${dim(`v${version}`)} ${dim('—')} ${dim('Your knowledge, scored and optimized.')}`);
+    console.log('');
+}
+
+// ── Arrow-Key Selector ───────────────────────────────────────────────────────
+
 async function askChoice(rl, question, options, defaultIndex = 0) {
     // Fallback for non-TTY (piped input)
     if (!process.stdin.isTTY) {
@@ -80,7 +130,6 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
         return options[defaultIndex];
     }
 
-    // Pause readline so it doesn't fight with raw mode
     rl.pause();
 
     const result = await new Promise((resolve) => {
@@ -89,10 +138,7 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
         const SHOW_CURSOR = '\x1b[?25h';
         const MOVE_UP = (n) => `\x1b[${n}A`;
         const CLEAR_LINE = '\x1b[2K\r';
-
-        // Track how many lines we've printed so we can erase them
-        // Header: question + instruction + blank = 3 lines, then options
-        const headerLines = 2; // question + instruction line
+        const headerLines = 2;
 
         function render(firstTime) {
             if (!firstTime) {
@@ -101,29 +147,27 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
             for (let i = 0; i < options.length; i++) {
                 process.stdout.write(CLEAR_LINE);
                 if (i === selected) {
-                    process.stdout.write(`  ${cyan('>')} ${bold(options[i].label)}\n`);
+                    process.stdout.write(`    ${cyan('>')} ${bold(options[i].label)}\n`);
                 } else {
-                    process.stdout.write(`    ${dim(options[i].label)}\n`);
+                    process.stdout.write(`      ${dim(options[i].label)}\n`);
                 }
             }
         }
 
         function collapse() {
-            // Move up over all options + header lines and clear everything
             const totalLines = options.length + headerLines;
             process.stdout.write(MOVE_UP(totalLines));
             for (let i = 0; i < totalLines; i++) {
                 process.stdout.write(CLEAR_LINE + '\n');
             }
-            // Move back up and print the collapsed single line
             process.stdout.write(MOVE_UP(totalLines));
             process.stdout.write(CLEAR_LINE);
-            process.stdout.write(`  ${bold(question)} ${green(options[selected].label)}\n`);
+            process.stdout.write(`    ${bold(question)} ${green(options[selected].label)}\n`);
         }
 
         process.stdout.write('\n');
-        console.log(bold(question));
-        console.log(dim('  Arrow keys to move, Enter to select'));
+        console.log(`    ${bold(question)}`);
+        console.log(dim('    Arrow keys to move, Enter to select'));
         process.stdout.write(HIDE_CURSOR);
         render(true);
 
@@ -131,24 +175,17 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
         process.stdin.resume();
 
         function onData(key) {
-            // Up arrow
             if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x41) {
                 selected = selected > 0 ? selected - 1 : options.length - 1;
                 render(false);
-            }
-            // Down arrow
-            else if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x42) {
+            } else if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x42) {
                 selected = selected < options.length - 1 ? selected + 1 : 0;
                 render(false);
-            }
-            // Enter
-            else if (key[0] === 0x0d) {
+            } else if (key[0] === 0x0d) {
                 collapse();
                 cleanup();
                 resolve(options[selected]);
-            }
-            // Number keys 1-9
-            else if (key[0] >= 0x31 && key[0] <= 0x39) {
+            } else if (key[0] >= 0x31 && key[0] <= 0x39) {
                 const num = key[0] - 0x30;
                 if (num >= 1 && num <= options.length) {
                     selected = num - 1;
@@ -156,9 +193,7 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
                     cleanup();
                     resolve(options[selected]);
                 }
-            }
-            // Ctrl+C
-            else if (key[0] === 0x03) {
+            } else if (key[0] === 0x03) {
                 process.stdout.write(SHOW_CURSOR);
                 cleanup();
                 process.exit(0);
@@ -175,10 +210,88 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
         process.stdin.on('data', onData);
     });
 
-    // Resume readline for subsequent ask() calls
     rl.resume();
     return result;
 }
+
+// ── Yes/No Prompt ────────────────────────────────────────────────────────────
+
+async function askYesNo(rl, question, defaultYes = true) {
+    if (!process.stdin.isTTY) {
+        const answer = await ask(rl, `  ${question} (${defaultYes ? 'Y/n' : 'y/N'}) `);
+        if (defaultYes) return answer.toLowerCase() !== 'n';
+        return answer.toLowerCase() === 'y';
+    }
+
+    rl.pause();
+
+    const result = await new Promise((resolve) => {
+        let yes = defaultYes;
+        const HIDE_CURSOR = '\x1b[?25l';
+        const SHOW_CURSOR = '\x1b[?25h';
+        const CLEAR_LINE = '\x1b[2K\r';
+        const MOVE_UP = (n) => `\x1b[${n}A`;
+
+        function render(firstTime) {
+            if (!firstTime) {
+                process.stdout.write(MOVE_UP(1));
+            }
+            process.stdout.write(CLEAR_LINE);
+            const yLabel = yes ? green(bold('Yes')) : dim('Yes');
+            const nLabel = !yes ? green(bold('No')) : dim('No');
+            process.stdout.write(`    ${yLabel}  /  ${nLabel}\n`);
+        }
+
+        console.log(`\n  ${cyan(bold(question))}`);
+        process.stdout.write(HIDE_CURSOR);
+        render(true);
+
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+
+        function onData(key) {
+            // Left/Right arrows or y/n
+            if (key[0] === 0x1b && key[1] === 0x5b && (key[2] === 0x44 || key[2] === 0x43)) {
+                yes = !yes;
+                render(false);
+            } else if (key[0] === 0x79) { // y
+                yes = true;
+                render(false);
+            } else if (key[0] === 0x6e) { // n
+                yes = false;
+                render(false);
+            } else if (key[0] === 0x0d) { // Enter
+                // Collapse to single line
+                process.stdout.write(MOVE_UP(2));
+                process.stdout.write(CLEAR_LINE + '\n');
+                process.stdout.write(CLEAR_LINE);
+                process.stdout.write(MOVE_UP(1));
+                process.stdout.write(CLEAR_LINE);
+                process.stdout.write(`    ${question} ${green(yes ? 'Yes' : 'No')}\n`);
+                cleanup();
+                resolve(yes);
+            } else if (key[0] === 0x03) { // Ctrl+C
+                process.stdout.write(SHOW_CURSOR);
+                cleanup();
+                process.exit(0);
+            }
+        }
+
+        function cleanup() {
+            process.stdin.removeListener('data', onData);
+            process.stdin.setRawMode(false);
+            process.stdin.pause();
+            process.stdout.write(SHOW_CURSOR);
+        }
+
+        process.stdin.on('data', onData);
+    });
+
+    rl.resume();
+    return result;
+}
+
+// ── Utility Functions ────────────────────────────────────────────────────────
 
 function claudeCliAvailable() {
     try {
@@ -238,55 +351,38 @@ function saveTokenToSettings(token) {
 // ── Personalized Next Steps ──────────────────────────────────────────────────
 
 function getNextSteps(profile, isPaid) {
-    const { role, experience, goal } = profile;
-    const steps = [];
+    const { role, experience } = profile;
+    const lines = [];
 
     if (isPaid) {
-        steps.push('Your Guide MCP is connected. In Claude Code, try:\n');
-
-        // First suggestion: always context_pressure (universal value)
-        steps.push(cyan('  "Run context_pressure to see what eats your context window"'));
-
-        // Role-specific suggestion
         if (role === 'developer' || role === 'researcher') {
-            steps.push(cyan('  "Run audit_config to find dead references and security issues"'));
+            lines.push(cyan('  "Run context_pressure to see what eats your context window"'));
+            lines.push(cyan('  "Run audit_config to find dead references and security issues"'));
         } else if (role === 'content_creator' || role === 'sales') {
-            steps.push(cyan('  "Run optimize_brain to improve my knowledge organization"'));
+            lines.push(cyan('  "Run context_pressure to see what eats your context window"'));
+            lines.push(cyan('  "Run optimize_brain to improve my knowledge organization"'));
         } else if (role === 'founder' || role === 'ops') {
-            steps.push(cyan('  "Run weekly_pulse to track my productivity trends"'));
+            lines.push(cyan('  "Run weekly_pulse to track my productivity trends"'));
+            lines.push(cyan('  "Run context_pressure to see what eats your context window"'));
         } else {
-            steps.push(cyan('  "Run weekly_pulse to see my progress over time"'));
+            lines.push(cyan('  "Run context_pressure to see what eats your context window"'));
+            lines.push(cyan('  "Run weekly_pulse to see my progress over time"'));
         }
 
-        // Experience-specific suggestion
         if (experience === 'beginner') {
-            steps.push(cyan('  "Show me fix suggestions for my weakest area"'));
-        } else if (experience === 'power_user') {
-            steps.push(cyan('  "Run audit_config to check for unused tools and conflicts"'));
+            lines.push(cyan('  "Show me fix suggestions for my weakest area"'));
         } else {
-            steps.push(cyan('  "Run optimize_brain to level up my Second Brain"'));
+            lines.push(cyan('  "Run optimize_brain to level up my Second Brain"'));
         }
-
-        steps.push('');
-        steps.push(dim('Free tools also available: check_health, get_fix_suggestions, generate_dashboard'));
     } else {
-        steps.push('Health Check is ready. In Claude Code, try:\n');
-        steps.push(cyan('  "Run check_health on this project"'));
-        steps.push(cyan('  "Show me fix suggestions for my weakest area"'));
-
-        // Goal-specific free suggestion
-        if (goal === 'organize') {
-            steps.push(cyan('  "Generate a health dashboard to see my brain structure"'));
-        } else {
-            steps.push(cyan('  "Generate a health dashboard"'));
-        }
-
-        steps.push('');
-        steps.push(dim('Upgrade for context_pressure, audit_config, weekly_pulse, and guided optimization:'));
-        steps.push(dim('https://www.iwoszapar.com/second-brain-ai'));
+        lines.push(cyan('  "Run check_health on this project"'));
+        lines.push(cyan('  "Show me fix suggestions for my weakest area"'));
+        lines.push(cyan('  "Generate a health dashboard"'));
+        lines.push('');
+        lines.push(dim('  Upgrade: https://www.iwoszapar.com/second-brain-ai'));
     }
 
-    return steps;
+    return lines;
 }
 
 // ── Main Setup Flow ─────────────────────────────────────────────────────────
@@ -294,73 +390,81 @@ function getNextSteps(profile, isPaid) {
 export async function runSetup() {
     const rl = createInterface({ input: process.stdin, output: process.stdout });
 
-    console.log('');
-    console.log(bold('Second Brain Health Check — Setup'));
-    console.log(dim('Configures MCP servers + profiles your setup for personalized recommendations\n'));
+    // ── Banner ──
+    printBanner();
 
-    // Step 0: Check claude CLI
+    // ── Prerequisites ──
     if (!claudeCliAvailable()) {
-        console.log(red('Error: Claude Code CLI not found.'));
-        console.log('Install it first: https://docs.anthropic.com/en/docs/claude-code/overview');
-        console.log('');
-        console.log(dim('Manual setup (without CLI):'));
-        console.log(dim('  Add to .claude/settings.json mcpServers block:'));
-        console.log(dim('  "second-brain-health": { "command": "npx", "args": ["second-brain-health-check"] }'));
+        console.log(box('Error', [
+            red('Claude Code CLI not found.'),
+            '',
+            'Install it first:',
+            cyan('  https://docs.anthropic.com/en/docs/claude-code/overview'),
+            '',
+            dim('Manual setup: add to .claude/settings.json mcpServers:'),
+            dim('  "second-brain-health": { "command": "npx", "args": ["second-brain-health-check"] }'),
+        ]));
         rl.close();
         process.exit(1);
     }
 
-    // Step 1: Token
+    // ── Token ──
+    console.log(section('Authentication'));
+    console.log('');
+
     const existingToken = findExistingToken();
     let token = existingToken;
 
     if (existingToken) {
-        console.log(green('Found existing token: ') + dim(existingToken.slice(0, 8) + '...'));
-        const answer = await ask(rl, 'Use this token? (Y/n) ');
-        if (answer.toLowerCase() === 'n') {
-            token = null;
-        }
+        console.log(`    ${green('Found token:')} ${dim(existingToken.slice(0, 8) + '...')}`);
+        const keepToken = await askYesNo(rl, 'Use this token?', true);
+        if (!keepToken) token = null;
     }
 
     if (!token) {
-        console.log('Enter your token from the purchase email.');
-        console.log(dim('Press Enter to skip (free tier — health check tools only).\n'));
-        const input = await ask(rl, 'Token: ');
+        console.log('');
+        console.log(`    Enter your token from the purchase email.`);
+        console.log(dim('    Press Enter to skip (free tier — health check only).'));
+        console.log('');
+        const input = await ask(rl, '    Token: ');
         token = input.trim() || null;
 
         if (token && !token.startsWith('sbf_')) {
-            console.log(yellow('\nWarning: Token should start with "sbf_". Proceeding anyway.\n'));
+            console.log(yellow('    Warning: Token should start with "sbf_". Proceeding anyway.'));
         }
     }
 
     const isPaid = !!token;
+    const tier = isPaid ? green('Guide (paid)') : dim('Free tier');
+    console.log(`\n    ${bold('Tier:')} ${tier}`);
 
-    // Step 2: Configure MCPs
-    console.log('\n' + bold('Configuring local MCP...'));
+    // ── MCP Configuration ──
+    console.log(section('Configuration'));
+    console.log('');
+
+    // Local MCP
     let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'second-brain-health-check']);
     if (localResult !== null) {
-        console.log(green('  + ') + `${LOCAL_MCP_NAME} added`);
+        console.log(`    ${green('+')} ${LOCAL_MCP_NAME} ${dim('added')}`);
     } else {
         execClaude(['mcp', 'remove', LOCAL_MCP_NAME]);
         const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'second-brain-health-check']);
         if (retry !== null) {
-            console.log(green('  + ') + `${LOCAL_MCP_NAME} added (replaced existing)`);
+            console.log(`    ${green('+')} ${LOCAL_MCP_NAME} ${dim('(replaced)')}`);
         } else {
-            console.log(yellow('  ~ ') + `${LOCAL_MCP_NAME} may already be configured`);
+            console.log(`    ${yellow('~')} ${LOCAL_MCP_NAME} ${dim('may already be configured')}`);
         }
     }
 
+    // Token + Remote MCP (paid only)
     if (isPaid) {
-        console.log(bold('\nSaving token...'));
         try {
             const settingsPath = saveTokenToSettings(token);
-            console.log(green('  + ') + `SBF_TOKEN saved to ${dim(settingsPath)}`);
+            console.log(`    ${green('+')} SBF_TOKEN ${dim('saved')}`);
         } catch (err) {
-            console.log(yellow('  ~ ') + `Could not save token automatically: ${err.message}`);
-            console.log(dim('    Add manually: SBF_TOKEN=' + token + ' in your environment'));
+            console.log(`    ${yellow('~')} Token: ${dim('save manually: SBF_TOKEN=' + token)}`);
         }
 
-        console.log(bold('\nConfiguring remote Guide MCP...'));
         const header = `Authorization: Bearer ${token}`;
         execClaude(['mcp', 'remove', REMOTE_MCP_NAME]);
         const remoteResult = execClaude([
@@ -370,21 +474,20 @@ export async function runSetup() {
             '--header', header
         ]);
         if (remoteResult !== null) {
-            console.log(green('  + ') + `${REMOTE_MCP_NAME} added`);
+            console.log(`    ${green('+')} ${REMOTE_MCP_NAME} ${dim('added')}`);
         } else {
-            console.log(yellow('  ~ ') + `Could not add remote MCP automatically.`);
-            console.log(dim('    Run manually:'));
-            console.log(dim(`    claude mcp add ${REMOTE_MCP_NAME} --transport http --url ${REMOTE_MCP_URL} --header "${header}"`));
+            console.log(`    ${yellow('~')} ${REMOTE_MCP_NAME} ${dim('— add manually:')}`);
+            console.log(dim(`      claude mcp add ${REMOTE_MCP_NAME} --transport http --url ${REMOTE_MCP_URL}`));
         }
     }
 
-    // Step 3: Profile (one question at a time, Enter = default)
-    console.log('\n' + bold('--- Quick Profile ---'));
-    console.log(dim('3 quick questions to personalize your experience. Press Enter to skip any.\n'));
+    // ── Profile ──
+    console.log(section('Quick Profile'));
+    console.log(dim('    3 questions to personalize your experience.\n'));
 
-    const roleChoice = await askChoice(rl, 'What\'s your primary role?', ROLES, 0);
-    const expChoice = await askChoice(rl, 'How familiar are you with Claude Code?', EXPERIENCE_LEVELS, 1);
-    const goalChoice = await askChoice(rl, 'What\'s your #1 priority?', GOALS, 0);
+    const roleChoice = await askChoice(rl, 'Your role?', ROLES, 0);
+    const expChoice = await askChoice(rl, 'Claude Code experience?', EXPERIENCE_LEVELS, 1);
+    const goalChoice = await askChoice(rl, 'Top priority?', GOALS, 0);
 
     const profile = {
         role: roleChoice.key,
@@ -393,15 +496,14 @@ export async function runSetup() {
         created_at: new Date().toISOString(),
     };
 
-    // Step 4: Health check + dashboard
-    console.log(bold('Running first health check...'));
+    // ── Health Check ──
+    console.log(section('Health Check'));
+    console.log('');
+
     let report = null;
     try {
         const { runHealthCheck } = await import('./health-check.js');
-
         report = await runHealthCheck(process.cwd());
-
-        // Attach profile to report
         report.profile = profile;
 
         const overallMax = report.setup.maxPoints + report.usage.maxPoints + report.fluency.maxPoints;
@@ -412,25 +514,32 @@ export async function runSetup() {
         const usageScore = report.usage?.normalizedScore ?? '?';
         const fluencyScore = report.fluency?.normalizedScore ?? '?';
 
-        console.log('');
-        console.log(bold('  Brain Maturity: ') + cyan(maturity));
-        console.log(bold('  Overall Score:  ') + `${overall}%`);
-        console.log(`    Setup Quality: ${setupScore}%`);
-        console.log(`    Usage Activity: ${usageScore}%`);
-        console.log(`    AI Fluency: ${fluencyScore}%`);
+        // Score display
+        const scoreBar = (score) => {
+            const filled = Math.round(score / 5);
+            const empty = 20 - filled;
+            return green('█'.repeat(filled)) + dim('░'.repeat(empty));
+        };
 
-        // Save .health-check.json (with profile)
+        console.log(`    ${bold('Maturity:')}  ${cyan(maturity)}`);
+        console.log(`    ${bold('Overall:')}   ${scoreBar(overall)} ${bold(overall + '%')}`);
+        console.log('');
+        console.log(`    Setup     ${scoreBar(setupScore)} ${setupScore}%`);
+        console.log(`    Usage     ${scoreBar(usageScore)} ${usageScore}%`);
+        console.log(`    Fluency   ${scoreBar(fluencyScore)} ${fluencyScore}%`);
+
+        // Save .health-check.json
         try {
             const jsonPath = join(process.cwd(), '.health-check.json');
             writeFileSync(jsonPath, JSON.stringify(report, null, 2) + '\n');
-            console.log(dim(`\n  Saved: ${jsonPath}`));
+            console.log(dim(`\n    Saved: ${jsonPath}`));
         } catch { /* non-critical */ }
 
-        // Generate and open HTML dashboard
+        // Generate and open dashboard
         try {
             const { saveDashboard } = await import('./dashboard/generate.js');
             const dashPath = await saveDashboard(report);
-            console.log(dim('  Dashboard: ' + dashPath));
+            console.log(dim(`    Dashboard: ${dashPath}`));
 
             const { execFile } = await import('node:child_process');
             execFile('open', [dashPath], (err) => {
@@ -440,10 +549,10 @@ export async function runSetup() {
             });
         } catch { /* non-critical */ }
     } catch (err) {
-        console.log(yellow('  Could not run health check: ') + err.message);
-        console.log(dim('  You can run it later: ask Claude to use check_health'));
+        console.log(`    ${yellow('Could not run health check:')} ${err.message}`);
+        console.log(dim('    Run later: ask Claude to use check_health'));
 
-        // Still save profile even if health check fails
+        // Save profile even if health check fails
         try {
             const jsonPath = join(process.cwd(), '.health-check.json');
             let existing = {};
@@ -455,14 +564,20 @@ export async function runSetup() {
         } catch { /* non-critical */ }
     }
 
-    // Step 5: Personalized next steps
-    console.log('\n' + bold('--- Next Steps ---\n'));
+    // ── Next Steps ──
+    console.log(section('Next Steps'));
+    console.log('');
+    console.log(`    ${bold('In Claude Code, try:')}`);
+    console.log('');
     const steps = getNextSteps(profile, isPaid);
     for (const step of steps) {
         console.log('  ' + step);
     }
 
     console.log('');
+    console.log(dim('  ─'.repeat(32)));
+    console.log('');
+
     rl.close();
 }
 
