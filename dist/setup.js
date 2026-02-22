@@ -63,6 +63,7 @@ function ask(rl, question) {
 
 /**
  * Interactive arrow-key selector. Up/Down to move, Enter to confirm.
+ * On confirm, collapses the list to a single line showing the choice.
  * Falls back to number input if raw mode unavailable (piped stdin).
  */
 async function askChoice(rl, question, options, defaultIndex = 0) {
@@ -79,16 +80,22 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
         return options[defaultIndex];
     }
 
-    return new Promise((resolve) => {
+    // Pause readline so it doesn't fight with raw mode
+    rl.pause();
+
+    const result = await new Promise((resolve) => {
         let selected = defaultIndex;
         const HIDE_CURSOR = '\x1b[?25l';
         const SHOW_CURSOR = '\x1b[?25h';
         const MOVE_UP = (n) => `\x1b[${n}A`;
         const CLEAR_LINE = '\x1b[2K\r';
 
+        // Track how many lines we've printed so we can erase them
+        // Header: question + instruction + blank = 3 lines, then options
+        const headerLines = 2; // question + instruction line
+
         function render(firstTime) {
             if (!firstTime) {
-                // Move cursor up to redraw options
                 process.stdout.write(MOVE_UP(options.length));
             }
             for (let i = 0; i < options.length; i++) {
@@ -101,28 +108,42 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
             }
         }
 
+        function collapse() {
+            // Move up over all options + header lines and clear everything
+            const totalLines = options.length + headerLines;
+            process.stdout.write(MOVE_UP(totalLines));
+            for (let i = 0; i < totalLines; i++) {
+                process.stdout.write(CLEAR_LINE + '\n');
+            }
+            // Move back up and print the collapsed single line
+            process.stdout.write(MOVE_UP(totalLines));
+            process.stdout.write(CLEAR_LINE);
+            process.stdout.write(`  ${bold(question)} ${green(options[selected].label)}\n`);
+        }
+
+        process.stdout.write('\n');
         console.log(bold(question));
-        console.log(dim('  Use arrow keys to move, Enter to select\n'));
+        console.log(dim('  Arrow keys to move, Enter to select'));
         process.stdout.write(HIDE_CURSOR);
         render(true);
 
-        // Switch to raw mode for keypress detection
         process.stdin.setRawMode(true);
         process.stdin.resume();
 
         function onData(key) {
-            // Up arrow: \x1b[A
+            // Up arrow
             if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x41) {
                 selected = selected > 0 ? selected - 1 : options.length - 1;
                 render(false);
             }
-            // Down arrow: \x1b[B
+            // Down arrow
             else if (key[0] === 0x1b && key[1] === 0x5b && key[2] === 0x42) {
                 selected = selected < options.length - 1 ? selected + 1 : 0;
                 render(false);
             }
             // Enter
             else if (key[0] === 0x0d) {
+                collapse();
                 cleanup();
                 resolve(options[selected]);
             }
@@ -131,13 +152,14 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
                 const num = key[0] - 0x30;
                 if (num >= 1 && num <= options.length) {
                     selected = num - 1;
-                    render(false);
+                    collapse();
                     cleanup();
                     resolve(options[selected]);
                 }
             }
             // Ctrl+C
             else if (key[0] === 0x03) {
+                process.stdout.write(SHOW_CURSOR);
                 cleanup();
                 process.exit(0);
             }
@@ -152,6 +174,10 @@ async function askChoice(rl, question, options, defaultIndex = 0) {
 
         process.stdin.on('data', onData);
     });
+
+    // Resume readline for subsequent ask() calls
+    rl.resume();
+    return result;
 }
 
 function claudeCliAvailable() {
@@ -357,13 +383,8 @@ export async function runSetup() {
     console.log(dim('3 quick questions to personalize your experience. Press Enter to skip any.\n'));
 
     const roleChoice = await askChoice(rl, 'What\'s your primary role?', ROLES, 0);
-    console.log(green('  -> ') + roleChoice.label + '\n');
-
     const expChoice = await askChoice(rl, 'How familiar are you with Claude Code?', EXPERIENCE_LEVELS, 1);
-    console.log(green('  -> ') + expChoice.label + '\n');
-
     const goalChoice = await askChoice(rl, 'What\'s your #1 priority?', GOALS, 0);
-    console.log(green('  -> ') + goalChoice.label + '\n');
 
     const profile = {
         role: roleChoice.key,
