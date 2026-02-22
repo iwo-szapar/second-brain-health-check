@@ -3,15 +3,18 @@
  * CLI entry point for Second Brain Health Check.
  *
  * Routing logic:
+ *   - "setup" subcommand → interactive setup wizard
  *   - Any CLI flag (--help, --pdf, --no-open, or a path arg) → CLI mode
  *   - No args AND stdin is not a TTY (piped by Claude Code) → MCP server mode
  *   - No args AND stdin IS a TTY (user ran it bare) → CLI mode (runs health check)
  *
  * Usage:
- *   npx second-brain-health-check [path]              Text report + dashboard (default)
- *   npx second-brain-health-check --no-open [path]    Text report only, no browser
- *   npx second-brain-health-check --pdf [path]         PDF report (needs Chrome)
- *   npx second-brain-health-check --help               Show usage
+ *   npx second-brain-health-check                        Text report + dashboard (default)
+ *   npx second-brain-health-check setup                  Configure MCP servers + token
+ *   npx second-brain-health-check [path]                 Text report + dashboard
+ *   npx second-brain-health-check --no-open [path]       Text report only, no browser
+ *   npx second-brain-health-check --pdf [path]           PDF report (needs Chrome)
+ *   npx second-brain-health-check --help                 Show usage
  */
 
 const args = process.argv.slice(2);
@@ -21,6 +24,10 @@ const hasCliArgs = args.length > 0;
 // Delegate to index.js which starts the actual MCP stdio transport.
 if (!hasCliArgs && !process.stdin.isTTY) {
     await import('./index.js');
+} else if (args[0] === 'setup') {
+    // Setup wizard: configure MCPs + token
+    const { runSetup } = await import('./setup.js');
+    await runSetup();
 } else {
     // CLI mode: run health check interactively
     const { runHealthCheck } = await import('./health-check.js');
@@ -32,14 +39,17 @@ if (!hasCliArgs && !process.stdin.isTTY) {
         console.log(`Second Brain Health Check
 
 Usage:
-  npx second-brain-health-check [path]              Text report + open dashboard (default)
-  npx second-brain-health-check --no-open [path]    Text report only, skip browser
-  npx second-brain-health-check --pdf [path]         PDF report via headless Chrome
+  npx second-brain-health-check                        Text report + open dashboard (default)
+  npx second-brain-health-check setup                  Configure MCP servers + token
+  npx second-brain-health-check [path]                 Text report + dashboard for path
+  npx second-brain-health-check --no-open [path]       Text report only, skip browser
+  npx second-brain-health-check --pdf [path]           PDF report via headless Chrome
 
 Options:
-  --no-open     Skip opening the HTML dashboard in browser
-  --pdf         Generate PDF report via headless Chrome
-  --help, -h    Show this help
+  setup           Interactive setup wizard — configures Health Check + Guide MCPs
+  --no-open       Skip opening the HTML dashboard in browser
+  --pdf           Generate PDF report via headless Chrome
+  --help, -h      Show this help
 
 Path defaults to current directory. Must contain a CLAUDE.md file.
 
