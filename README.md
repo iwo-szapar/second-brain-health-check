@@ -19,13 +19,64 @@ Scores your Claude Code Second Brain — CLAUDE.md, skills, hooks, memory, and p
 
 ## Quick Start
 
-### Terminal (one line, instant results)
+### First time? Run setup
+
+```bash
+npx second-brain-health-check setup
+```
+
+Interactive onboarding that configures your profile and (optionally) your Guide token for weekly coaching. Takes ~2 minutes. Runs the health check at the end.
+
+```
+  ================================================================
+    SECOND BRAIN HEALTH CHECK  v0.12.6
+  ================================================================
+
+  AUTHENTICATION
+  --------------
+  Do you have a Second Brain Guide token? [Yes / No]
+
+  PROFILE
+  -------
+  What is your name?  Iwo
+  What do you do?     AI Implementation Expert
+  Priorities? (pick all that apply)
+    ▶ Build faster with AI
+      Improve system quality
+      Reduce context switching
+
+  HEALTH CHECK
+  ------------
+  Running 38 checks...
+```
+
+### Just run a health check
 
 ```bash
 npx second-brain-health-check
 ```
 
-Scans your current directory and prints the report to stdout. No install required.
+Scans your current directory and prints the full report to stdout. No install required.
+
+### Generate an HTML dashboard
+
+```bash
+npx second-brain-health-check --dashboard
+```
+
+---
+
+## CLI Commands
+
+| Command | What it does |
+|:--------|:-------------|
+| `npx second-brain-health-check` | Run the full 38-layer health scan |
+| `npx second-brain-health-check setup` | First-time setup: profile, Guide token, then health check |
+| `npx second-brain-health-check --dashboard` | Generate self-contained HTML report (opens in browser) |
+
+> **Note:** `setup` stores your profile in `~/.health-check.json`. Running it again reconfigures everything. Delete that file to start fresh.
+
+---
 
 ### Inside Claude Code (interactive, with follow-up)
 
@@ -293,20 +344,6 @@ Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware sk
 - `full` -- complete 38-layer scan with adaptive reporting
 - `quick` -- detection-only pre-scan (~100ms)
 - `manifest` -- machine-readable YAML output for CI/other tools
-
----
-
-## v0.9.3 Highlights
-
-- **Semantic color** -- pass (green `#1a7a3a`), warn (amber `#b08800`), fail (red `#cf222e`) on status dots, score bars, grade badges, check mini-dots, and radar chart polygon. All structural elements stay pure B&W.
-- **Status tally strip** -- compact summary strip below the score panel showing total checks + pass/warn/fail counts with percentages and a colored stacked distribution bar
-- **Dashboard screenshots** -- score panel, CE patterns radar, and setup quality rows now shown in README
-
-### Previous releases
-
-- **v0.9.0** -- Refined Brutalism dashboard (DM Sans + Space Mono, 4px borders), terminal-style expandable rows, CE radar chart, adaptive reports, WCAG AA
-- **v0.9.1** -- Scanner accuracy: index file counter raised to 5000, topic area counting fixed
-- **v0.9.2** -- Config line count fix (trailing newline handling)
 
 ---
 
