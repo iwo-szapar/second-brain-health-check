@@ -482,7 +482,7 @@ export function generateDashboardHtml(report) {
     </div>
 
     <!-- Title -->
-    <h1 style="font-family:'DM Sans',sans-serif;font-size:48px;font-weight:700;color:#000;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px;">Health Check Report</h1>
+    <h1 style="font-family:'DM Sans',sans-serif;font-size:48px;font-weight:700;color:#000;letter-spacing:-.03em;line-height:1.05;margin-bottom:8px;">Second Brain Health Check Report</h1>
     <span style="font-size:12px;color:#000;display:block;margin-bottom:4px;font-family:'Space Mono',monospace;">${escapeHtml(shortPath)}</span>
     <span style="font-size:13px;color:#595959;display:block;margin-bottom:28px;">Your Second Brain, examined.</span>
 
