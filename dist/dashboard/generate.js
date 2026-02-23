@@ -10,6 +10,7 @@
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { VERSION } from '../version.js';
+import { getBrainVizHtml } from './brain-viz.js';
 
 function escapeHtml(str) {
     return String(str)
@@ -428,6 +429,22 @@ export function generateDashboardHtml(report) {
     const usageBarPct = usageMax > 0 ? Math.round((usagePts / usageMax) * 100) : 0;
     const fluencyBarPct = fluencyMax > 0 ? Math.round((fluencyPts / fluencyMax) * 100) : 0;
 
+    // Brain region scores — 3 dimensions mapped to 6 lobes
+    // Setup    → frontal (planning/foundation) + occipital (output of good setup)
+    // Usage    → temporal (memory/learning)    + cerebellum (habits/automation)
+    // Fluency  → parietal (skills/processing)  + brainstem (core infrastructure)
+    const setupScore   = report.setup?.normalizedScore   ?? setupBarPct;
+    const usageScore   = report.usage?.normalizedScore   ?? usageBarPct;
+    const fluencyScore = report.fluency?.normalizedScore ?? fluencyBarPct;
+    const brainRegions = {
+        frontal:    { name: 'Frontal Lobe',   subtitle: 'Foundation & Planning',  score: setupScore   },
+        temporal:   { name: 'Temporal Lobes', subtitle: 'Memory & Learning',      score: usageScore   },
+        parietal:   { name: 'Parietal Lobe',  subtitle: 'Skills & Processing',    score: fluencyScore },
+        occipital:  { name: 'Occipital Lobe', subtitle: 'Output & Retrieval',     score: setupScore   },
+        cerebellum: { name: 'Cerebellum',     subtitle: 'Habits & Automation',    score: usageScore   },
+        brainstem:  { name: 'Brain Stem',     subtitle: 'Core Infrastructure',    score: fluencyScore },
+    };
+
     const ts = new Date(report.timestamp);
     const dateStr = ts.toISOString().slice(0, 10);
     const timeStr = ts.toISOString().slice(11, 19) + ' UTC';
@@ -539,6 +556,12 @@ export function generateDashboardHtml(report) {
             <span style="flex:1;height:4px;display:flex;"><span style="width:${passPct}%;background:#1a7a3a;height:100%;"></span><span style="width:${warnPct}%;background:#b08800;height:100%;"></span><span style="width:${failPct}%;background:#cf222e;height:100%;"></span></span>
         </div>`;
     })()}
+
+    <!-- Brain Map -->
+    <div style="border:4px solid #000;padding:32px 36px;margin-top:32px;">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:#000;margin-bottom:20px;font-family:'Space Mono',monospace;">Neural Map — Region Health</div>
+        ${getBrainVizHtml(brainRegions)}
+    </div>
 
     <!-- Top Fixes -->
     ${renderTopFixes(report.topFixes)}
