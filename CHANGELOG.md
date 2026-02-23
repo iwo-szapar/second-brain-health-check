@@ -4,6 +4,14 @@ All notable changes to the Second Brain Health Check MCP are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.12.6] - 2026-02-23
+
+### Added
+- Brain visualization component (`dist/dashboard/brain-viz.js`) — self-contained SVG neural map with animated regions, particles, hover tooltips, and two usage modes: static HTML string (`getBrainVizHtml`) for the dashboard generator and DOM mode (`renderBrainViz`) for client-side use
+- Neural Map section in the HTML dashboard — appears between the status tally and Top Fixes, colors baked in at generation time (no flash on load)
+- Region colors derived directly from dimension scores: Setup → Frontal + Occipital, Usage → Temporal + Cerebellum, Fluency → Parietal + Brainstem
+- Score thresholds: green (85+), yellow (70+), orange (50+), red (below 50)
+
 ## [0.9.3] - 2026-02-22
 
 ### Added
