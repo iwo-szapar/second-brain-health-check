@@ -4,13 +4,24 @@ All notable changes to the Second Brain Health Check MCP are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.12.6] - 2026-02-23
+## [0.13.0] - 2026-02-23
 
 ### Added
-- Brain visualization component (`dist/dashboard/brain-viz.js`) — self-contained SVG neural map with animated regions, particles, hover tooltips, and two usage modes: static HTML string (`getBrainVizHtml`) for the dashboard generator and DOM mode (`renderBrainViz`) for client-side use
-- Neural Map section in the HTML dashboard — appears between the status tally and Top Fixes, colors baked in at generation time (no flash on load)
-- Region colors derived directly from dimension scores: Setup → Frontal + Occipital, Usage → Temporal + Cerebellum, Fluency → Parietal + Brainstem
-- Score thresholds: green (85+), yellow (70+), orange (50+), red (below 50)
+- 7 new Setup Quality layers (+35 max points, 45 total layers, ~459 max points): PRP Files, Examples Directory, Planning Doc, Task Tracking, Validate Command, Settings Local, Feature Request Template
+- `schema_version: 1` in `.health-check.json` state file for future migration safety
+- `setup` command — interactive onboarding with ASCII banner, arrow-key selectors, profile questions (multi-select goals), and SBF token configuration
+
+### Changed
+- `Promise.all` → `Promise.allSettled` — failed layers return 0 points gracefully instead of crashing the scan
+- Layer count updated from 38 to 45 in all tooling descriptions and README
+- Max points updated from ~424 to ~459
+
+### Fixed
+- Double-execution guard in setup CLI (`import.meta.url` check)
+- Arrow-key multi-select for goal priorities (was single-select)
+
+### Docs
+- README: added `setup` command to Quick Start, new CLI Commands table, removed stale v0.9.x highlights
 
 ## [0.9.3] - 2026-02-22
 
