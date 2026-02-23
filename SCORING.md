@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-22 (v0.9.3)
+> Last verified against code: 2026-02-23 (v0.12.2)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -15,7 +15,7 @@ Only compiled JS is distributed:
 
 ```
 dist/
-  index.js                     # MCP server entry point (4 tools, v0.9.3)
+  index.js                     # MCP server entry point (4 tools, v0.12.2)
   cli.js                       # CLI entry point
   types.js                     # Grade functions + normalizeScore
   health-check.js              # Orchestrator + detectBrainState() + mapChecksToCEPatterns()
@@ -106,6 +106,101 @@ All dimensions are **normalized to /100** for display. The report and dashboard 
 
 ---
 
+## State File Schema (`.health-check.json`)
+
+Written to `<rootPath>/.health-check.json` after every successful `check_health` run. Used for delta tracking (score changes between runs).
+
+```json
+{
+  "runs": [
+    {
+      "timestamp": "2026-02-23T07:47:50.100Z",
+      "version": "0.12.2",
+      "overallPct": 82,
+      "setup": 80,
+      "usage": 79,
+      "fluency": 93,
+      "maturity": "configured",
+      "cePatterns": [
+        { "name": "Progressive Disclosure", "pct": 94 },
+        { "name": "Knowledge Files as RAM", "pct": 84 }
+      ],
+      "checks": [
+        { "dim": "setup", "name": "CLAUDE.md Quality", "pts": 25, "max": 26 }
+      ]
+    }
+  ]
+}
+```
+
+**Fields:**
+- `runs`: Array of all historical runs (unbounded — can grow large over time)
+- `version`: npm package version that produced the run (from `package.json`)
+- `overallPct`: Normalized overall score 0-100
+- `setup` / `usage` / `fluency`: Per-dimension normalized scores 0-100
+- `maturity`: Brain maturity at time of scan (`empty` | `minimal` | `basic` | `structured` | `configured`)
+- `cePatterns`: Array of CE pattern scores `{ name, pct }`
+- `checks`: Array of all layer scores `{ dim, name, pts, max }`
+
+**Known gap (task-2570):** No `schema_version` field. If the run object schema changes between npm versions, old runs in the array can't be migrated safely. Fix: add `"schema_version": 1` at the top level and bump when schema changes.
+
+---
+
+## Known Engineering Debt
+
+These are confirmed gaps identified 2026-02-23. Tasks filed for each.
+
+### 1. No Layer Fault Isolation (task-2571)
+
+`health-check.js:249` runs all 38 layers via `Promise.all()`. If any single layer throws an unhandled error, **the entire dimension fails** and returns no results. Should use `Promise.allSettled()` with a fallback:
+
+```js
+// Current (broken on single layer failure):
+const [setupLayers] = await Promise.all([Promise.all([checkClaudeMd(), ...])]);
+
+// Fix: fault-isolate each layer
+const results = await Promise.allSettled([checkClaudeMd(), ...]);
+const setupLayers = results.map((r, i) =>
+  r.status === 'fulfilled' ? r.value : { name: layerNames[i], points: 0, maxPoints: 0, checks: [], error: r.reason.message }
+);
+```
+
+Risk: Most likely to trigger on: `hooks.js` (execFileSync bash), `gitignore-hygiene.js` (execFileSync git), any layer hitting a permission-denied file.
+
+### 2. No State File Schema Version (task-2570)
+
+`.health-check.json` has `version` (package version) but no `schema_version` (run object schema version). When the `checks[]` schema changes (new fields, renamed dims), old runs in the array are silently incompatible. Fix: add `schema_version: 1` at root level.
+
+### 3. Pattern Tracker Parsing is Brittle
+
+`usage/patterns.js` parses `_pattern-tracker.md` using string matching for `LOW/MEDIUM/HIGH` and `Total Reviews`. If users customize their tracker format or rename the file, checks silently return 0 pts. No error message surfaced to user.
+
+### 4. Template Detection by File Size is Imprecise
+
+`setup/memory.js` detects "not a template" by checking `fileSize > 100 bytes`. A 101-byte template is indistinguishable from real content. Better signal: check for placeholder keywords like `[YOUR`, `TODO:`, `FILL IN`.
+
+### 5. CLAUDE.md Length Check is Byte-Aware, Not Char-Aware
+
+`setup/claude-md.js` checks `content.length` for the 2K-6K range. In JS, `.length` on a string returns UTF-16 code units, not characters. For non-ASCII content (Polish, Japanese, Arabic), multibyte sequences inflate the count. Real char count should use `[...content].length`.
+
+---
+
+## Pending Layers (v0.11.0)
+
+Seven new Setup Quality layers identified from `context-engineering-intro` research (task-2572). Filed in `memory/semantic/patterns/health-check-new-layers-from-ce-intro.md`.
+
+| Layer | Check | Points Est. |
+|-------|-------|-------------|
+| PRP Files | `.claude/PRPs/` directory with 2+ files | +8 |
+| Examples Directory | `examples/` with non-template content | +6 |
+| PLANNING.md | Task scratchpad file present and non-empty | +4 |
+| TASK.md | Active task tracking file | +4 |
+| Validate Command | `validate` skill/command present | +6 |
+| settings.local.json | User-local overrides file exists | +4 |
+| Feature Request Template | `.github/FEATURE_REQUEST.md` or equivalent | +3 |
+
+---
+
 ## Brain State Detection
 
 ### `detectBrainState()` — `health-check.js`
@@ -193,9 +288,71 @@ Scans both `.claude/skills/` and `.codex/skills/`.
 | Clear instructions (200+ chars) | 4 | 80%+ have 200+ chars (4) | 50%+ (2) | <50% (0) | `content.trim().length >= 200` |
 | Frontmatter field depth | 4 | 3+ skills with advanced fields (4) | 1+ (2) | Basic only (1) or none (0) | Checks for model, allowed-tools, context, disable-model-invocation fields |
 
-### Layer 3–17: (unchanged from v0.4.0)
+### Layer 3: Project Structure (15 pts) — `setup/structure.js`
 
-See previous layers documentation — these remain unchanged.
+Validates semantic directory structure, index files, and that tree documented in CLAUDE.md matches actual dirs.
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Semantic directory structure matching profession | 5 | Domain-specific folder names |
+| Index files (`_index.md` / `INDEX.md`) in key dirs | 5 | Glob scan |
+| Documented tree in CLAUDE.md matches actual dirs | 5 | Parse tree block, verify dirs exist |
+
+### Layer 4: Memory Architecture (15 pts) — `setup/memory.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| `memory/` directory with subdirectories | 4 | Dir exists + has children |
+| `memory/patterns/` or `memory/semantic/patterns/` | 3 | Path check |
+| Style/voice files populated (not empty templates) | 4 | File sizes > 100 bytes |
+| Examples directory has real content | 4 | Non-template content check |
+
+### Layer 5: Brain Health Infrastructure (10 pts) — `setup/brain-health.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| `brain-health/` directory with tracking files | 4 | Dir + file existence |
+| Growth log, quality metrics, pattern confidence files | 3 | Specific file checks |
+| Onboarding summary or getting-started guide | 3 | File existence check |
+
+### Layer 6: Automation & Hooks (19 pts) — `setup/hooks.js`
+
+Includes 8 checks added across versions (session init hook +3, hierarchical context +3 also attributed here).
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| `.claude/settings.json` with hooks configured | 4 | File exists + JSON parse |
+| 1+ PreToolUse or PostToolUse hook | 3 | Check hooks array |
+| Hook scripts exist and are executable | 3 | File + permission check |
+| SessionStart hook (context before session) | 3 | Checks `SessionStart` event in hooks config |
+| Additional hook diversity checks | 6 | Multiple event types, command vs prompt hooks |
+
+### Layer 7: Personalization Quality (10 pts) — `setup/personalization.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| CLAUDE.md mentions user's profession/role | 4 | About Me not a placeholder |
+| Skills match detected profession | 3 | Cross-reference skill content with role |
+| Agent selection appropriate for use case | 3 | `.claude/agents/` relevance |
+
+### Layers 8–17: Advanced Configuration Layers
+
+These layers were added in v0.5.0–v0.9.0. Full check-level docs are in the npm package source. Point values below are from live scoring.
+
+| # | Layer | Max Pts | File |
+|---|-------|---------|------|
+| 8 | MCP Security | 8 | `setup/mcp-security.js` |
+| 9 | Config Hygiene | 7 | `setup/config-hygiene.js` |
+| 10 | Plugin Coverage | 6 | `setup/plugins.js` |
+| 11 | Settings Hierarchy | 12 | `setup/settings-hierarchy.js` |
+| 12 | Permissions Audit | 12 | `setup/permissions-audit.js` |
+| 13 | Sandbox Config | 8 | `setup/sandbox-config.js` |
+| 14 | Model Config | 8 | `setup/model-config.js` |
+| 15 | Environment Variables | 10 | `setup/env-vars.js` |
+| 16 | MCP Server Health | 10 | `setup/mcp-health.js` |
+| 17 | Attribution & Display | 6 | `setup/attribution-display.js` |
+
+> **TODO:** Expand these to full check-level docs (same format as Layers 1-7 above). The local `dist/setup/` only contains layers 1-7 — layers 8-25 are in the npm-published package. To document them, pull from npm: `npm pack second-brain-health-check && tar xf *.tgz`.
 
 ### Layer 18: Agent Configuration Depth (8 pts) — `setup/agent-quality.js`
 
@@ -286,7 +443,53 @@ Measures whether the brain is causing context bloat. Traffic light zones: GREEN 
 
 ## Usage Activity — 7 Layers (~125 pts)
 
-### Layers 1–6: (unchanged from v0.4.0)
+### Layer 1: Session Activity (25 pts) — `usage/sessions.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Session logs exist in `memory/episodic/sessions/` | 8 | Count files |
+| Session dates span > 7 days | 8 | Parse dates from filenames |
+| 3+ session entries | 5 | Count check |
+| Most recent session within last 14 days | 4 | Date comparison |
+
+### Layer 2: Pattern Growth (25 pts) — `usage/patterns.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Pattern tracker has tracked candidates | 8 | Parse `_pattern-tracker.md` for count > 0 |
+| At least 1 promoted pattern | 8 | Promoted patterns section check |
+| Pattern files have real content | 5 | File size + non-template content |
+| Confidence levels progressing (LOW/MEDIUM/HIGH) | 4 | Parse confidence levels |
+
+> **Known issue:** Checks use hardcoded string matching for `_pattern-tracker.md` format. Custom file formats return 0 pts silently. See Engineering Debt section.
+
+### Layer 3: Memory Evolution (20 pts) — `usage/memory-evolution.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Memory files modified after initial creation | 8 | Compare mod dates to oldest file |
+| MEMORY.md has > 10 lines of real content | 6 | Line count + content check |
+| New files added to `memory/` after initial setup | 6 | Count files created after earliest |
+
+### Layer 4: Review Loop Active (15 pts) — `usage/review-loop.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Quality metrics has logged reviews | 6 | Parse for "Total Reviews" > 0 |
+| Growth log has entries | 5 | Non-template content |
+| Pattern confidence tracker has movement | 4 | Confidence change history |
+
+### Layer 5: Compound Evidence (15 pts) — `usage/compound-evidence.js`
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Skills added/modified after initial setup | 5 | Skill file dates vs oldest |
+| Hooks evolved post-setup | 5 | settings.json modification date |
+| Alignment log or goal tracking has entries | 5 | Non-template data |
+
+### Layer 6: Cross-References (15 pts) — `usage/cross-references.js`
+
+Detects whether memory, skills, and knowledge files reference each other (compound knowledge graph).
 
 ### Layer 7: Workflow Maturity (10 pts) — `usage/workflow-maturity.js`
 
@@ -302,7 +505,32 @@ Measures workflow sophistication: invocation tracking, command definitions, and 
 
 ## AI Fluency — 6 Layers (~60 pts)
 
-### Layers 1–3: (unchanged from v0.4.0)
+### Layer 1: Progressive Disclosure (10 pts) — `fluency/progressive-disclosure.js`
+
+Measures whether CLAUDE.md is lean and delegates detail to external files rather than bloating inline.
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| CLAUDE.md references external docs | 5 | "Read when", doc table patterns, file path references |
+| Knowledge files exist to be referenced | 5 | `.claude/docs/` or `.claude/knowledge/` non-empty |
+
+### Layer 2: Skill Orchestration (10 pts) — `fluency/skill-orchestration.js`
+
+Measures whether skills are wired together (skills calling skills, chaining workflows).
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Skills reference other skills or agents | 5 | Slash command references in skill content |
+| Workflow chaining patterns | 5 | Sequential skill calls, pipeline structures |
+
+### Layer 3: Context-Aware Skills (10 pts) — `fluency/context-aware-skills.js`
+
+Measures whether skills adapt to context (use conditions, branch on state, read from memory).
+
+| Check | Max | Detection |
+|-------|-----|-----------|
+| Skills with conditional logic | 5 | `if`, `when`, `depending on` patterns |
+| Skills reading from memory or state files | 5 | Memory file references in skill content |
 
 ### Layer 4: Reference Integrity (10 pts) — `fluency/reference-integrity.js`
 
