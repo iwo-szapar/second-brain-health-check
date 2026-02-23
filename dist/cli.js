@@ -62,7 +62,34 @@ MCP Server:
     const pdfFlag = args.includes('--pdf');
     const noOpenFlag = args.includes('--no-open');
     const pathArgs = args.filter((a) => !flags.includes(a));
-    const path = pathArgs[0] || process.cwd();
+    let path = pathArgs[0] || process.cwd();
+
+    // Auto-detect: if no CLAUDE.md in the given path, search immediate subdirectories
+    if (!pathArgs[0]) {
+        const { stat: statFs, readdir } = await import('node:fs/promises');
+        const { resolve: resolvePath, join } = await import('node:path');
+        const resolvedPath = resolvePath(path);
+        const hasClaude = await statFs(join(resolvedPath, 'CLAUDE.md')).then(() => true).catch(() => false);
+        if (!hasClaude) {
+            const entries = await readdir(resolvedPath, { withFileTypes: true }).catch(() => []);
+            const matches = [];
+            for (const entry of entries) {
+                if (entry.isDirectory() && !entry.name.startsWith('.')) {
+                    const sub = join(resolvedPath, entry.name);
+                    const subHas = await statFs(join(sub, 'CLAUDE.md')).then(() => true).catch(() => false);
+                    if (subHas) matches.push(sub);
+                }
+            }
+            if (matches.length === 1) {
+                process.stderr.write(`Auto-detected Second Brain at: ${matches[0]}\n\n`);
+                path = matches[0];
+            } else if (matches.length > 1) {
+                process.stderr.write(`Multiple Second Brains found. Please specify a path:\n`);
+                for (const m of matches) process.stderr.write(`  npx second-brain-health-check ${m}\n`);
+                process.stderr.write('\n');
+            }
+        }
+    }
 
     // Privacy notice — printed once before analysis begins
     process.stderr.write(
