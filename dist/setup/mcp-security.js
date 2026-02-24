@@ -155,7 +155,7 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 3,
-                message: `Scanned ${filesToScan.length} MCP config file(s) — no plaintext secrets detected`,
+                message: `No API keys or tokens found in MCP config files (scanned ${filesToScan.length} file(s))`,
             });
         } else {
             status = 'fail';
@@ -165,7 +165,7 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 3,
-                message: `Plaintext secrets found in ${filesWithSecrets.length} file(s): ${filesWithSecrets.join(', ')} — move secrets to environment variables or a secrets manager`,
+                message: `API keys or tokens found in ${filesWithSecrets.length} MCP config file(s): ${filesWithSecrets.join(', ')} — secrets in config files get committed to git and exposed to anyone with repo access. Move them to environment variables instead.`,
             });
         }
     }
@@ -213,7 +213,7 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 2,
-                message: 'Project-level MCP servers do not contain secrets — good separation',
+                message: 'MCP servers in this project do not contain API keys — secrets stored at the right level',
             });
         } else if (projectServersWithSecrets > 3) {
             status = 'warn';
@@ -223,10 +223,9 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 2,
-                message: `${projectServersWithSecrets} project-scoped MCP server(s) contain secrets — move auth-bearing servers to user-level config (~/.claude.json or ~/.claude/mcp.json)`,
+                message: `${projectServersWithSecrets} MCP server(s) in this project contain API keys — project-level config (.mcp.json) is shared with the repo. Move secrets to your personal config (~/.claude.json) so they don't leak.`,
             });
         } else {
-            // 1-3 servers with secrets at project level — mild warning
             status = 'warn';
             points = 1;
             checks.push({
@@ -234,7 +233,7 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 2,
-                message: `${projectServersWithSecrets} project-scoped MCP server(s) contain secrets — consider moving to user-level config for reuse across projects`,
+                message: `${projectServersWithSecrets} MCP server(s) contain API keys in project config — move to ~/.claude.json so the token is personal and not repo-visible`,
             });
         }
     }
@@ -312,10 +311,10 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 2,
-                message: '.mcp.json exists but contains no secrets',
+                message: '.mcp.json has no API keys — safe to commit',
             });
         } else {
-            // Has secrets but not git-tracked
+            // Has secrets but not git-tracked — good
             status = 'pass';
             points = 2;
             checks.push({
@@ -323,7 +322,7 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 2,
-                message: '.mcp.json is not git-tracked — secrets are not in version control',
+                message: '.mcp.json contains API keys but is not committed to git — keys stay private',
             });
         }
     }

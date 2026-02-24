@@ -8,16 +8,18 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-// Match file paths in various formats
+// Match file paths in various formats.
+// Table cell paths require backticks to avoid matching documentation labels
+// like "100x-feature/SKILL.md" that appear as descriptive text in tables.
 const PATH_PATTERNS = [
     /`([a-zA-Z0-9_./-]+\.[a-zA-Z]{1,5})`/g,                    // backtick-wrapped paths
-    /\|\s*`?([a-zA-Z0-9_./-]+\.[a-zA-Z]{1,5})`?\s*\|/g,        // table cell paths
+    /\|\s*`([a-zA-Z0-9_./-]+\.[a-zA-Z]{1,5})`\s*\|/g,          // table cell paths (backticks required)
     /(?:read|see|check|refer to|documented in)\s+`?([a-zA-Z0-9_./-]+\.[a-zA-Z]{1,5})`?/gi,
 ];
 
 const DIR_PATTERNS = [
     /`([a-zA-Z0-9_./-]+\/)`/g,
-    /\|\s*`?([a-zA-Z0-9_./-]+\/)`?\s*\|/g,
+    /\|\s*`([a-zA-Z0-9_./-]+\/)`\s*\|/g,  // backticks required in table cells
 ];
 
 const EXCLUDE_PATTERNS = [
@@ -151,6 +153,13 @@ export async function checkReferenceIntegrity(rootPath) {
                     }
                 }
 
+                // Sort broken refs: relative paths first (most likely to break on rename)
+                broken.sort((a, b) => {
+                    const aRel = a.startsWith('./') || a.startsWith('../');
+                    const bRel = b.startsWith('./') || b.startsWith('../');
+                    return bRel - aRel;
+                });
+
                 let status, points, message;
                 if (broken.length === 0) {
                     status = 'pass'; points = 5;
@@ -212,6 +221,13 @@ export async function checkReferenceIntegrity(rootPath) {
                 }
             }
 
+            // Sort broken examples: relative paths first
+            brokenExamples.sort((a, b) => {
+                const aRel = a.startsWith('./') || a.startsWith('../');
+                const bRel = b.startsWith('./') || b.startsWith('../');
+                return bRel - aRel;
+            });
+
             let status, points, message;
             if (totalRefs === 0) {
                 status = 'pass'; points = 4;
@@ -221,10 +237,10 @@ export async function checkReferenceIntegrity(rootPath) {
                 message = `All ${totalRefs} file references across ${skillContents.length} skills resolve`;
             } else if (brokenRefs <= 3) {
                 status = 'warn'; points = 3;
-                message = `${brokenRefs}/${totalRefs} broken skill references: ${brokenExamples.join('; ')}`;
+                message = `${brokenRefs}/${totalRefs} broken skill references (check relative paths first — they break on renames): ${brokenExamples.join('; ')}`;
             } else {
                 status = 'fail'; points = 1;
-                message = `${brokenRefs}/${totalRefs} skill references broken — skills point to files that don't exist`;
+                message = `${brokenRefs}/${totalRefs} skill references broken — relative paths like ../skill-name/ break silently when you rename directories: ${brokenExamples.slice(0, 3).join('; ')}`;
             }
             checks.push({ name: 'Skill references resolve', status, points, maxPoints: 5, message });
         }

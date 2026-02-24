@@ -170,6 +170,34 @@ const FIX_REMEDIATION = {
     },
 };
 
+/** Short explanations for layer names shown as tooltips on hover */
+const LAYER_DESCRIPTIONS = {
+    'MCP Server Health': 'MCP = Model Context Protocol. These are tools Claude can call — databases, APIs, calendars, etc. More servers = more things Claude can do for you.',
+    'MCP Security': 'MCP servers often need API keys (secrets) to access services. This checks those keys aren\'t stored where they could leak.',
+    'Settings Hierarchy': 'Claude reads settings from multiple files — global, project, and local. This checks they\'re layered correctly and not contradicting each other.',
+    'PRP / Implementation Blueprints': 'PRP = Product Requirements + Plan. A structured brief you give Claude before a big task so it understands scope, constraints, and steps before writing code.',
+    'Plugin Coverage': 'Plugins extend Claude\'s capabilities. This checks which categories (code, data, browsing, etc.) you have covered.',
+    'Context Pressure': 'Claude has a fixed attention window. This checks your CLAUDE.md and imported files aren\'t so large they crowd out the actual work.',
+    'Attribution & Display': 'How Claude signs its outputs — useful for team setups where you need to know which responses came from AI.',
+    'Spec & Planning Artifacts': 'Written specs and plans you create before asking Claude to build something. Reduces back-and-forth.',
+    'Interaction Configuration': 'Settings that control how Claude behaves — response style, verbosity, asking for confirmation, etc.',
+    'Rules System': 'Persistent rules Claude follows in every session — your "always do X, never do Y" constraints.',
+    'Permissions Audit': 'Which file paths and tools Claude is allowed to touch. This checks for overly broad or stale permissions.',
+    'Sandbox Config': 'Whether Claude runs in an isolated environment to prevent unintended side effects.',
+    'Brain Health Infrastructure': 'Files that track how your brain is improving over time — quality metrics, growth logs, pattern confidence scores.',
+    'Reference Integrity': 'Checks that file paths mentioned in your CLAUDE.md and skills actually exist. Broken paths mean Claude follows dead links.',
+    'Progressive Disclosure': 'Is CLAUDE.md short and scannable, with detail discoverable in linked files? Or is everything crammed into one giant file?',
+    'Skill Orchestration': 'Do your skills call each other and share context, or is each skill an island?',
+    'Context-Aware Skills': 'Skills that read from your memory and knowledge base before acting — not just static prompts.',
+    'Delegation Patterns': 'Evidence that you\'re using Claude for complex multi-step tasks, not just one-shot questions.',
+    'Interview & Spec Patterns': 'Evidence that Claude asks clarifying questions before starting work, and creates specs before building.',
+    'Compound Evidence': 'Signs that each session builds on previous ones — growing memory, evolving patterns, maturing skills.',
+};
+
+function getLayerDescription(layerName) {
+    return LAYER_DESCRIPTIONS[layerName] || null;
+}
+
 function getRemediation(title) {
     const key = title.toLowerCase();
     for (const [pattern, data] of Object.entries(FIX_REMEDIATION)) {
@@ -217,7 +245,7 @@ function renderDimension(dim, label, dimId) {
         <div class="term-row" id="${rowId}" role="button" tabindex="0" aria-expanded="false" onclick="(function(){var el=document.getElementById('${rowId}');var open=el.classList.toggle('open');el.setAttribute('aria-expanded',open)})()" onkeydown="(function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();var el=document.getElementById('${rowId}');var open=el.classList.toggle('open');el.setAttribute('aria-expanded',open)}})(event)">
             <div style="display:grid;grid-template-columns:14px 1fr 100px 44px;align-items:center;gap:8px;padding:12px 0;min-height:44px;">
                 ${dotHtml(status)}
-                <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(layer.name)}</span>
+                <span style="font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"${getLayerDescription(layer.name) ? ` title="${escapeHtml(getLayerDescription(layer.name))}"` : ''}>${escapeHtml(layer.name)}${getLayerDescription(layer.name) ? ' <span style="color:#767676;font-size:9px;cursor:help;" title="' + escapeHtml(getLayerDescription(layer.name)) + '">ⓘ</span>' : ''}</span>
                 <span style="height:4px;background:#e5e5e5;position:relative;"><span style="position:absolute;left:0;top:0;height:100%;width:${layerPct}%;background:${layerPct >= 60 ? '#1a7a3a' : layerPct >= 40 ? '#b08800' : '#cf222e'};"></span></span>
                 <span style="text-align:right;font-family:'Space Mono',monospace;font-size:10px;color:#767676;">${layerPct}%</span>
             </div>
