@@ -70,9 +70,9 @@ export async function checkModelConfig(rootPath) {
             points = 3;
             message = `Model set via environment variable: ${envModel}`;
         } else {
-            status = 'pass';
-            points = 2;
-            message = 'Using default model — no explicit model configuration (fine for most users)';
+            status = 'warn';
+            points = 0;
+            message = 'No model configured — set model or modelAliases in .claude/settings.json to pin your preferred model';
         }
         checks.push({ name: 'Model configuration', status, points, maxPoints: 3, message });
     }
@@ -101,9 +101,9 @@ export async function checkModelConfig(rootPath) {
 
         let status, points, message;
         if (!hasAliases) {
-            status = 'pass';
-            points = 2;
-            message = 'No model aliases configured — using defaults';
+            status = 'warn';
+            points = 0;
+            message = 'No model aliases configured — set modelAliases in settings to control which model runs for which task';
         } else if (invalidAliases.length === 0) {
             status = 'pass';
             points = 3;
@@ -137,9 +137,9 @@ export async function checkModelConfig(rootPath) {
 
         let status, points, message;
         if (!effortLevel) {
-            status = 'pass';
-            points = 2;
-            message = 'No effort level set — using default (high)';
+            status = 'warn';
+            points = 0;
+            message = 'No effort level set — consider setting effortLevel (high/medium/low) to control token usage';
         } else if (VALID_EFFORT_LEVELS.includes(effortLevel.toLowerCase())) {
             status = 'pass';
             points = 2;

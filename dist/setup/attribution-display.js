@@ -70,9 +70,9 @@ export async function checkAttributionDisplay(rootPath) {
             points = 2;
             message = `Attribution configured: ${details.join(', ')}`;
         } else {
-            status = 'pass';
-            points = 2;
-            message = 'Using default attribution settings';
+            status = 'warn';
+            points = 0;
+            message = 'Attribution not configured — set attribution.commit and attribution.pr in .claude/settings.json';
         }
         checks.push({ name: 'Attribution settings', status, points, maxPoints: 2, message });
     }
@@ -100,9 +100,9 @@ export async function checkAttributionDisplay(rootPath) {
             points = 2;
             message = `Display customized: ${displaySettings.join(', ')}`;
         } else {
-            status = 'pass';
-            points = 2;
-            message = 'Using default display settings';
+            status = 'warn';
+            points = 0;
+            message = 'Display not customized — consider setting statusLine, spinnerVerbs, or outputStyle in .claude/settings.json';
         }
         checks.push({ name: 'Display configuration', status, points, maxPoints: 2, message });
     }
@@ -147,9 +147,9 @@ export async function checkAttributionDisplay(rootPath) {
             points = 1;
             message = `Found ${existingPlansDir}/ directory but plansDirectory not set in settings — consider configuring it`;
         } else {
-            status = 'pass';
-            points = 2;
-            message = 'No plans directory — not needed for all workflows';
+            status = 'warn';
+            points = 0;
+            message = 'No plans directory configured — set plansDirectory in settings or create a plans/ directory';
         }
         checks.push({ name: 'Plans directory', status, points, maxPoints: 2, message });
     }

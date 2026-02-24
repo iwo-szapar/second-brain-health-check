@@ -2,7 +2,7 @@
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-23 (v0.12.6)
+> Last verified against code: 2026-02-24 (v0.13.1)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -15,7 +15,7 @@ Only compiled JS is distributed:
 
 ```
 dist/
-  index.js                     # MCP server entry point (4 tools, v0.12.6)
+  index.js                     # MCP server entry point (4 tools, v0.13.0)
   cli.js                       # CLI entry point
   types.js                     # Grade functions + normalizeScore
   health-check.js              # Orchestrator + detectBrainState() + mapChecksToCEPatterns()
@@ -46,6 +46,13 @@ dist/
     spec-planning.js           # Layer 23: Spec & Planning Artifacts (10 pts)
     knowledge-base.js          # Layer 24: Knowledge Base Architecture (10 pts)
     context-pressure.js        # Layer 25: Context Pressure (10 pts) — NEW in v0.8.0
+    prp-files.js               # Layer 26: PRP / Implementation Blueprints (8 pts) — NEW in v0.13.0
+    examples-directory.js      # Layer 27: Examples Directory (6 pts) — NEW in v0.13.0
+    planning-doc.js            # Layer 28: Planning Documentation (4 pts) — NEW in v0.13.0
+    task-tracking.js           # Layer 29: Task Tracking (4 pts) — NEW in v0.13.0
+    validate-command.js        # Layer 30: Validate Command (6 pts) — NEW in v0.13.0
+    settings-local.js          # Layer 31: Settings Local Overrides (4 pts) — NEW in v0.13.0
+    feature-request-template.js # Layer 32: Feature Request Template (3 pts) — NEW in v0.13.0
   usage/
     sessions.js                # Layer 1: Sessions (25 pts)
     patterns.js                # Layer 2: Patterns (25 pts)
@@ -75,11 +82,11 @@ dist/
 
 | Dimension | Max | What it measures |
 |-----------|-----|------------------|
-| Setup Quality | ~249 | Is the brain correctly configured? (static file analysis) |
+| Setup Quality | ~284 | Is the brain correctly configured? (static file analysis) |
 | Usage Activity | ~125 | Is the brain being used? (file dates, session counts, pattern growth) |
 | AI Fluency | ~60 | How effectively does the user work with AI? (delegation, context engineering, compounding) |
 
-**Total: ~424 points** (exact total depends on dynamic maxPoints in some layers)
+**Total: ~459 points** (exact total depends on dynamic maxPoints in some layers)
 
 All dimensions are **normalized to /100** for display. The report and dashboard show `normalizedScore/100` for each dimension, calculated as `Math.round((points / maxPoints) * 100)`.
 
@@ -87,9 +94,9 @@ All dimensions are **normalized to /100** for display. The report and dashboard 
 
 1. Runs `detectBrainState()` for fast pre-scan (~100ms) — returns maturity level and what exists
 2. If `mode: 'quick'`, returns brain state only (no full checks)
-3. Runs all setup layers (including context pressure) in parallel via `Promise.all()`, then usage, then fluency
+3. Runs all setup layers in parallel via `Promise.allSettled()` for fault isolation, then usage, then fluency
 4. Sums points per dimension. Generates top 5 fixes sorted by normalized deficit
-5. Runs `mapChecksToCEPatterns()` to map 38 layers to 7 CE patterns
+5. Runs `mapChecksToCEPatterns()` to map 45 layers to 7 CE patterns
 6. Attaches `brainState` and `cePatterns` to report for adaptive formatting
 
 ### Security Hardening
@@ -112,10 +119,11 @@ Written to `<rootPath>/.health-check.json` after every successful `check_health`
 
 ```json
 {
+  "schema_version": 1,
   "runs": [
     {
       "timestamp": "2026-02-23T07:47:50.100Z",
-      "version": "0.12.2",
+      "version": "0.13.0",
       "overallPct": 82,
       "setup": 80,
       "usage": 79,
@@ -134,7 +142,8 @@ Written to `<rootPath>/.health-check.json` after every successful `check_health`
 ```
 
 **Fields:**
-- `runs`: Array of all historical runs (unbounded — can grow large over time)
+- `schema_version`: Integer version of the run object schema (added in v0.13.0). Bump when schema changes.
+- `runs`: Array of all historical runs (max 20, oldest trimmed)
 - `version`: npm package version that produced the run (from `package.json`)
 - `overallPct`: Normalized overall score 0-100
 - `setup` / `usage` / `fluency`: Per-dimension normalized scores 0-100
@@ -142,34 +151,19 @@ Written to `<rootPath>/.health-check.json` after every successful `check_health`
 - `cePatterns`: Array of CE pattern scores `{ name, pct }`
 - `checks`: Array of all layer scores `{ dim, name, pts, max }`
 
-**Known gap (task-2570):** No `schema_version` field. If the run object schema changes between npm versions, old runs in the array can't be migrated safely. Fix: add `"schema_version": 1` at the top level and bump when schema changes.
-
 ---
 
 ## Known Engineering Debt
 
 These are confirmed gaps identified 2026-02-23. Tasks filed for each.
 
-### 1. No Layer Fault Isolation (task-2571)
+### ~~1. No Layer Fault Isolation (task-2571)~~ — RESOLVED in v0.13.0
 
-`health-check.js:249` runs all 38 layers via `Promise.all()`. If any single layer throws an unhandled error, **the entire dimension fails** and returns no results. Should use `Promise.allSettled()` with a fallback:
+Fixed: All 3 dimension groups now use `Promise.allSettled()` with `settleToLayers()` fallback. A failing layer produces a zero-score entry with error message instead of crashing the entire dimension.
 
-```js
-// Current (broken on single layer failure):
-const [setupLayers] = await Promise.all([Promise.all([checkClaudeMd(), ...])]);
+### ~~2. No State File Schema Version (task-2570)~~ — RESOLVED in v0.13.0
 
-// Fix: fault-isolate each layer
-const results = await Promise.allSettled([checkClaudeMd(), ...]);
-const setupLayers = results.map((r, i) =>
-  r.status === 'fulfilled' ? r.value : { name: layerNames[i], points: 0, maxPoints: 0, checks: [], error: r.reason.message }
-);
-```
-
-Risk: Most likely to trigger on: `hooks.js` (execFileSync bash), `gitignore-hygiene.js` (execFileSync git), any layer hitting a permission-denied file.
-
-### 2. No State File Schema Version (task-2570)
-
-`.health-check.json` has `version` (package version) but no `schema_version` (run object schema version). When the `checks[]` schema changes (new fields, renamed dims), old runs in the array are silently incompatible. Fix: add `schema_version: 1` at root level.
+Fixed: `.health-check.json` now includes `schema_version: 1` at root level. Existing files without it are backfilled to 1 on next run.
 
 ### 3. Pattern Tracker Parsing is Brittle
 
@@ -185,19 +179,9 @@ Risk: Most likely to trigger on: `hooks.js` (execFileSync bash), `gitignore-hygi
 
 ---
 
-## Pending Layers (v0.11.0)
+## ~~Pending Layers (v0.11.0)~~ — IMPLEMENTED in v0.13.0
 
-Seven new Setup Quality layers identified from `context-engineering-intro` research (task-2572). Filed in `memory/semantic/patterns/health-check-new-layers-from-ce-intro.md`.
-
-| Layer | Check | Points Est. |
-|-------|-------|-------------|
-| PRP Files | `.claude/PRPs/` directory with 2+ files | +8 |
-| Examples Directory | `examples/` with non-template content | +6 |
-| PLANNING.md | Task scratchpad file present and non-empty | +4 |
-| TASK.md | Active task tracking file | +4 |
-| Validate Command | `validate` skill/command present | +6 |
-| settings.local.json | User-local overrides file exists | +4 |
-| Feature Request Template | `.github/FEATURE_REQUEST.md` or equivalent | +3 |
+All seven new Setup Quality layers from `context-engineering-intro` research (task-2572) are now implemented as Layers 26-32. See Setup Quality section above for full documentation.
 
 ---
 
@@ -245,7 +229,7 @@ Fast pre-scan using `fs.stat()` calls. Returns:
 
 ### CE Pattern Mapping — `health-check.js:mapChecksToCEPatterns()`
 
-Maps 38 layer scores to 7 Context Engineering patterns:
+Maps 45 layer scores to 7 Context Engineering patterns:
 
 | Pattern | Mapped Layers |
 |---------|--------------|
@@ -261,7 +245,7 @@ Output: `{ pattern, name, score, maxScore, percentage }` per pattern. Displayed 
 
 ---
 
-## Setup Quality — 25 Layers (~249 pts)
+## Setup Quality — 32 Layers (~284 pts)
 
 ### Layer 1: CLAUDE.md Foundation (23 pts) — `setup/claude-md.js`
 
@@ -438,6 +422,72 @@ Measures whether the brain is causing context bloat. Traffic light zones: GREEN 
 | Knowledge files exist | 3 | .claude/docs/ or .claude/knowledge/ has files (3) | — | No knowledge dir (0) | Directory scan |
 | Context surface area | 2 | <30KB total (2) | 30-75KB (1) | >75KB (0) | Sum all .claude/ text files |
 | Progressive disclosure evidence | 2 | CLAUDE.md references external docs (2) | — | No references (0) | Regex for file paths, "Read when", doc table patterns |
+
+### Layer 26: PRP / Implementation Blueprints (8 pts) — `setup/prp-files.js` — NEW in v0.13.0
+
+Checks for Product Requirements Plan files — structured planning artifacts that front-load context before execution.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| PRP directory | 4 | 2+ .md files (4) | 1 file (2) | No directory (0) | Scans PRPs/, .claude/PRPs/, plans/, blueprints/ |
+| Structured PRP content | 4 | 2+ files with structured headings (4) | 1 file (2) | No structured content (0) | `/^#{1,3}\s.*(goal|objective|requirement|acceptance|problem|solution|spec|feature)/im` |
+
+### Layer 27: Examples Directory (6 pts) — `setup/examples-directory.js` — NEW in v0.13.0
+
+Checks for examples/ directory with real content for AI reference.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Examples directory | 3 | 5+ files (3) | 1-4 files (2) | No directory (0) | `readdir('examples/')` |
+| Real example content | 3 | 80%+ real content (3) | Some real (1) | All templates (0) | File size >200 bytes + no placeholder markers |
+
+### Layer 28: Planning Documentation (4 pts) — `setup/planning-doc.js` — NEW in v0.13.0
+
+Checks for PLANNING.md or architecture documentation.
+
+| Check | Max | Pass | Fail | Detection |
+|-------|-----|------|------|-----------|
+| Planning document exists | 2 | Found and >100 chars (2) | Not found (0) | Checks PLANNING.md, ARCHITECTURE.md, docs/architecture.md, docs/PLANNING.md |
+| CLAUDE.md references planning | 2 | Reference found (2) | No reference (0) | Path or keyword match in CLAUDE.md |
+
+### Layer 29: Task Tracking (4 pts) — `setup/task-tracking.js` — NEW in v0.13.0
+
+Checks for active task tracking files or directories.
+
+| Check | Max | Pass | Fail | Detection |
+|-------|-----|------|------|-----------|
+| Task tracking exists | 2 | Found (2) | Not found (0) | Checks TASK.md, TODO.md, tasks/, .claude/tasks/ |
+| CLAUDE.md references tasks | 2 | Reference found (2) | No reference (0) | Task/todo keyword + path match in CLAUDE.md |
+
+### Layer 30: Validate Command (6 pts) — `setup/validate-command.js` — NEW in v0.13.0
+
+Checks for a validation skill/command that enforces quality before shipping.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Validate command exists | 3 | Found (3) | — | Not found (0) | Checks .claude/commands/validate.md, skills with "validate"/"check" in name |
+| Validate command quality | 3 | 200+ chars + quality keywords (3) | Exists but minimal (1) | Empty or missing (0) | Content length + test/lint/build/check keyword regex |
+
+### Layer 31: Settings Local Overrides (4 pts) — `setup/settings-local.js` — NEW in v0.13.0
+
+Checks for user-local settings that override project defaults.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Local settings file | 2 | Found (2) | — | Not found (0) | Checks .claude/settings.local.json, CLAUDE.local.md |
+| Local settings content | 2 | Has overrides (2) | Exists but empty (1) | No file (0) | JSON parse for keys, or markdown length check |
+
+### Layer 32: Feature Request Template (3 pts) — `setup/feature-request-template.js` — NEW in v0.13.0
+
+Checks for structured intake templates for feature requests.
+
+| Check | Max | Pass | Warn | Fail | Detection |
+|-------|-----|------|------|------|-----------|
+| Feature request template | 3 | Found with structured sections (3) | Found but minimal (1) | Not found (0) | Checks .github/FEATURE_REQUEST.md, .github/ISSUE_TEMPLATE/, INITIAL.md |
+
+---
+
+## Setup Quality — 32 Layers (~284 pts)
 
 ---
 
@@ -620,7 +670,7 @@ Input: `{ path?, language?, workspace_type?, use_case?, mode? }` — defaults to
 - `language`: One of 14 supported languages (en, es, de, fr, pl, pt, ja, ko, zh, it, nl, ru, tr, ar). Appends translation instruction to output.
 - `workspace_type`: solo | team | enterprise — adds scoring context notes
 - `use_case`: development | content | operations | research | mixed — adds use case context
-- `mode`: `full` (default, all 38 checks) | `quick` (detection only, ~100ms — returns brain maturity and what exists)
+- `mode`: `full` (default, all 45 checks) | `quick` (detection only, ~100ms — returns brain maturity and what exists)
 
 Output: Adaptive markdown report based on brain maturity. Full report includes CE pattern section, time estimates on fixes, and score-band CTA.
 

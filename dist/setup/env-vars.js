@@ -162,9 +162,9 @@ export async function checkEnvVars(rootPath) {
             points = 3;
             message = `Performance vars configured: ${configured.join(', ')}`;
         } else {
-            status = 'pass';
-            points = 3;
-            message = 'Using default performance settings';
+            status = 'warn';
+            points = 0;
+            message = 'No performance tuning — consider setting MAX_TOOL_OUTPUT_SIZE or CLAUDE_CODE_MAX_TURNS for your workflow';
         }
         checks.push({ name: 'Performance tuning', status, points, maxPoints: 3, message });
     }

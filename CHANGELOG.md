@@ -4,6 +4,18 @@ All notable changes to the Second Brain Health Check MCP are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.13.1] - 2026-02-24
+
+### Fixed
+- Empty folder inflated score: `attribution-display.js`, `model-config.js`, and `env-vars.js` all gave full points for "using defaults" — an empty folder with no configuration scored ~15% instead of ~0-3%. Fixed by changing "no config" paths from `pass` (full points) to `warn` (0 points) in 7 checks across 3 files:
+  - Attribution settings: unconfigured → 0/2 (was 2/2)
+  - Display configuration: unconfigured → 0/2 (was 2/2)
+  - Plans directory: unconfigured → 0/2 (was 2/2)
+  - Model configuration: no model set → 0/3 (was 2/3)
+  - Model alias validity: no aliases → 0/3 (was 2/3)
+  - Effort level: not set → 0/2 (was 2/2)
+  - Performance tuning: no vars set → 0/3 (was 3/3)
+
 ## [0.13.0] - 2026-02-23
 
 ### Added

@@ -150,7 +150,7 @@ server.registerTool('check_health', {
         mode: z
             .enum(['full', 'quick', 'manifest'])
             .optional()
-            .describe("Scan mode. 'full' (default) runs all 38 check layers. " +
+            .describe("Scan mode. 'full' (default) runs all 45 check layers. " +
             "'quick' runs detection only (~100ms) — returns brain maturity level and what exists, " +
             "without running full checks. Use 'quick' to decide whether to run a full scan. " +
             "'manifest' runs full check + writes brain-manifest.yaml to project root."),

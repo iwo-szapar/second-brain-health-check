@@ -3,6 +3,7 @@
  *
  * Runs all setup, usage, and fluency checks, produces a full report.
  * v0.8.1: Added detectBrainState() pre-scan and mapChecksToCEPatterns().
+ * v0.13.0: schema_version in state file, Promise.allSettled fault isolation, 7 new setup layers.
  */
 import { resolve } from 'node:path';
 import { stat, realpath, readFile, writeFile } from 'node:fs/promises';
@@ -33,6 +34,14 @@ import { checkInteractionConfig } from './setup/interaction-config.js';
 import { checkSpecPlanning } from './setup/spec-planning.js';
 import { checkKnowledgeBase } from './setup/knowledge-base.js';
 import { checkContextPressure } from './setup/context-pressure.js';
+// New setup layers (v0.13.0)
+import { checkPrpFiles } from './setup/prp-files.js';
+import { checkExamplesDirectory } from './setup/examples-directory.js';
+import { checkPlanningDoc } from './setup/planning-doc.js';
+import { checkTaskTracking } from './setup/task-tracking.js';
+import { checkValidateCommand } from './setup/validate-command.js';
+import { checkSettingsLocal } from './setup/settings-local.js';
+import { checkFeatureRequestTemplate } from './setup/feature-request-template.js';
 // Usage layers
 import { checkSessions } from './usage/sessions.js';
 import { checkPatterns } from './usage/patterns.js';
@@ -49,6 +58,42 @@ import { checkReferenceIntegrity } from './fluency/reference-integrity.js';
 import { checkDelegationPatterns } from './fluency/delegation-patterns.js';
 import { checkInterviewPatterns } from './fluency/interview-patterns.js';
 import { VERSION } from './version.js';
+
+// Layer name arrays for Promise.allSettled fallback
+const setupLayerNames = [
+    'CLAUDE.md Quality', 'Skills & Commands', 'Directory Structure', 'Memory Architecture',
+    'Brain Health Infrastructure', 'Hooks', 'Personalization Quality', 'MCP Security',
+    'Config Hygiene', 'Plugin Coverage', 'Settings Hierarchy', 'Permissions Audit',
+    'Sandbox Config', 'Model Config', 'Environment Variables', 'MCP Server Health',
+    'Attribution & Display', 'Agent Configuration Depth', 'Gitignore Hygiene',
+    'Team Readiness', 'Rules System', 'Interaction Configuration', 'Spec & Planning Artifacts',
+    'Knowledge Base Architecture', 'Context Pressure',
+    'PRP / Implementation Blueprints', 'Examples Directory', 'Planning Documentation',
+    'Task Tracking', 'Validate Command', 'Settings Local Overrides', 'Feature Request Template',
+];
+const usageLayerNames = [
+    'Sessions', 'Patterns', 'Memory Evolution', 'Review Loop',
+    'Compound Evidence', 'Cross-References', 'Workflow Maturity',
+];
+const fluencyLayerNames = [
+    'Progressive Disclosure', 'Skill Orchestration', 'Context-Aware Skills',
+    'Reference Integrity', 'Delegation Patterns', 'Interview & Spec Patterns',
+];
+
+/**
+ * Map Promise.allSettled results to layer objects.
+ * Fulfilled -> pass through. Rejected -> zero-score fallback with error message.
+ */
+function settleToLayers(results, names) {
+    return results.map((r, i) =>
+        r.status === 'fulfilled' ? r.value : {
+            name: names[i] || `Layer ${i + 1}`,
+            points: 0,
+            maxPoints: 0,
+            checks: [{ name: 'Layer Error', status: 'fail', points: 0, maxPoints: 0, message: `Layer failed: ${r.reason?.message || 'Unknown error'}` }],
+        }
+    );
+}
 
 /**
  * Fast pre-scan (~100ms) to detect brain maturity before running full checks.
@@ -124,7 +169,7 @@ export async function detectBrainState(rootPath) {
 }
 
 /**
- * Maps the 37 existing layer scores to the 7 Context Engineering patterns.
+ * Maps layer scores to the 7 Context Engineering patterns.
  * Pure computation — no additional filesystem scanning.
  */
 export function mapChecksToCEPatterns(report) {
@@ -133,19 +178,19 @@ export function mapChecksToCEPatterns(report) {
             id: 'progressive_disclosure',
             name: 'Progressive Disclosure',
             description: 'Is the entry point lean? Are details discoverable?',
-            layers: ['CLAUDE.md Quality', 'Knowledge Base Architecture', 'Settings Hierarchy'],
+            layers: ['CLAUDE.md Quality', 'Knowledge Base Architecture', 'Settings Hierarchy', 'PRP / Implementation Blueprints', 'Settings Local Overrides'],
         },
         {
             id: 'knowledge_as_ram',
             name: 'Knowledge Files as RAM',
             description: 'Is domain knowledge in files, not crammed into CLAUDE.md?',
-            layers: ['Knowledge Base Architecture', 'Directory Structure'],
+            layers: ['Knowledge Base Architecture', 'Directory Structure', 'Planning Documentation'],
         },
         {
             id: 'hooks_as_guardrails',
             name: 'Hooks as Guardrails',
             description: 'Are quality requirements automated, not dependent on memory?',
-            layers: ['Hooks', 'Rules System'],
+            layers: ['Hooks', 'Rules System', 'Validate Command'],
         },
         {
             id: 'three_layer_memory',
@@ -157,19 +202,19 @@ export function mapChecksToCEPatterns(report) {
             id: 'compound_learning',
             name: 'Compound Learning',
             description: 'Does each session make the system smarter?',
-            layers: ['Review Loop', 'Compound Evidence', 'Workflow Maturity', 'Patterns'],
+            layers: ['Review Loop', 'Compound Evidence', 'Workflow Maturity', 'Patterns', 'Task Tracking'],
         },
         {
             id: 'self_correction',
             name: 'Self-Correction Protocol',
             description: 'How does this age? What detects decay?',
-            layers: ['Brain Health Infrastructure', 'Memory Evolution', 'Cross-References'],
+            layers: ['Brain Health Infrastructure', 'Memory Evolution', 'Cross-References', 'Feature Request Template'],
         },
         {
             id: 'context_surfaces',
             name: 'Context Surfaces',
             description: 'Do agents have live data access via MCP?',
-            layers: ['MCP Server Health', 'Plugin Coverage', 'Interaction Configuration', 'Context Pressure'],
+            layers: ['MCP Server Health', 'Plugin Coverage', 'Interaction Configuration', 'Context Pressure', 'Examples Directory'],
         },
     ];
 
@@ -245,9 +290,9 @@ export async function runHealthCheck(path, options = {}) {
         };
     }
 
-    // Run all checks in parallel (setup, usage, fluency)
-    const [setupLayers, usageLayers, fluencyLayers] = await Promise.all([
-        Promise.all([
+    // Run all checks in parallel with fault isolation (Promise.allSettled per dimension)
+    const [setupResults, usageResults, fluencyResults] = await Promise.all([
+        Promise.allSettled([
             checkClaudeMd(rootPath),
             checkSkills(rootPath),
             checkStructure(rootPath),
@@ -273,8 +318,16 @@ export async function runHealthCheck(path, options = {}) {
             checkSpecPlanning(rootPath),
             checkKnowledgeBase(rootPath),
             checkContextPressure(rootPath),
+            // New layers (v0.13.0)
+            checkPrpFiles(rootPath),
+            checkExamplesDirectory(rootPath),
+            checkPlanningDoc(rootPath),
+            checkTaskTracking(rootPath),
+            checkValidateCommand(rootPath),
+            checkSettingsLocal(rootPath),
+            checkFeatureRequestTemplate(rootPath),
         ]),
-        Promise.all([
+        Promise.allSettled([
             checkSessions(rootPath),
             checkPatterns(rootPath),
             checkMemoryEvolution(rootPath),
@@ -283,7 +336,7 @@ export async function runHealthCheck(path, options = {}) {
             checkCrossReferences(rootPath),
             checkWorkflowMaturity(rootPath),
         ]),
-        Promise.all([
+        Promise.allSettled([
             checkProgressiveDisclosure(rootPath),
             checkSkillOrchestration(rootPath),
             checkContextAwareSkills(rootPath),
@@ -292,6 +345,11 @@ export async function runHealthCheck(path, options = {}) {
             checkInterviewPatterns(rootPath),
         ]),
     ]);
+
+    const setupLayers = settleToLayers(setupResults, setupLayerNames);
+    const usageLayers = settleToLayers(usageResults, usageLayerNames);
+    const fluencyLayers = settleToLayers(fluencyResults, fluencyLayerNames);
+
     const setupTotal = setupLayers.reduce((sum, l) => sum + l.points, 0);
     const setupMax = setupLayers.reduce((sum, l) => sum + l.maxPoints, 0);
     const usageTotal = usageLayers.reduce((sum, l) => sum + l.points, 0);
@@ -349,6 +407,7 @@ export async function runHealthCheck(path, options = {}) {
 /**
  * Save health check results to .health-check.json for delta tracking.
  * Appends to a runs array (max 20 entries to avoid bloat).
+ * Includes schema_version for future migration safety.
  */
 async function saveHealthCheckState(rootPath, report) {
     const filePath = resolve(rootPath, '.health-check.json');
@@ -373,11 +432,13 @@ async function saveHealthCheckState(rootPath, report) {
         ],
     };
 
-    let state = { runs: [] };
+    let state = { schema_version: 1, runs: [] };
     try {
         const existing = await readFile(filePath, 'utf-8');
         state = JSON.parse(existing);
         if (!Array.isArray(state.runs)) state.runs = [];
+        // Ensure schema_version is always present
+        if (!state.schema_version) state.schema_version = 1;
     } catch { /* no existing file, start fresh */ }
 
     state.runs.push(runEntry);
