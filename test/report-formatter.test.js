@@ -45,8 +45,8 @@ function makeFullReport() {
 describe('formatReport', () => {
     it('returns getting-started guide for empty brain', () => {
         const output = formatReport(makeEmptyReport());
-        assert.ok(output.includes('No Second Brain detected'));
-        assert.ok(output.includes('GETTING STARTED'));
+        assert.ok(output.includes('No brain detected'));
+        assert.ok(output.includes('INSTALL YOUR BRAIN'));
     });
 
     it('returns growth report for low-score minimal brain', () => {

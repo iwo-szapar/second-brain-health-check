@@ -183,7 +183,7 @@ function getOverallPct(report) {
 
 /**
  * Format report for an EMPTY brain (no CLAUDE.md).
- * Friendly 3-step getting started guide instead of 37 failures.
+ * Direct X-ray: show exactly what's missing, then the 3 install steps.
  */
 function formatEmptyReport(report) {
     const lines = [];
@@ -191,32 +191,34 @@ function formatEmptyReport(report) {
     lines.push('  SECOND BRAIN HEALTH CHECK');
     lines.push('================================================================');
     lines.push('');
-    lines.push('STATUS: No Second Brain detected.');
+    lines.push('  X-RAY RESULT: No brain detected.');
     lines.push('');
-    lines.push('That is totally fine. Here is how to get started:');
+    lines.push('  [miss] CLAUDE.md          — AI has no instructions');
+    lines.push('  [miss] .claude/            — no skills, hooks, or settings');
+    lines.push('  [miss] memory/             — nothing is remembered');
+    lines.push('  [miss] .claude/skills/     — no reusable commands');
+    lines.push('');
+    lines.push('  Claude is running blind in this directory.');
+    lines.push('  Every session starts from zero. Fix that in 20 minutes:');
     lines.push('');
     lines.push('----------------------------------------------------------------');
-    lines.push('GETTING STARTED (3 steps, ~20 minutes)');
+    lines.push('INSTALL YOUR BRAIN (3 steps)');
     lines.push('----------------------------------------------------------------');
     lines.push('');
-    lines.push('STEP 1: Create CLAUDE.md (~5 min)');
-    lines.push('  Your AI\'s instruction manual. Start with:');
-    lines.push('  - Who you are and what you do');
-    lines.push('  - Your top 3-5 rules ("always do X", "never do Y")');
-    lines.push('  - Key tools and frameworks you use');
+    lines.push('1. Create CLAUDE.md (~5 min)');
+    lines.push('   Who you are, your top rules, your tools and stack.');
+    lines.push('   This is the one file Claude reads in every session.');
     lines.push('');
-    lines.push('STEP 2: Add skills (~10 min)');
-    lines.push('  Create .claude/skills/ with at least one .md file.');
-    lines.push('  A skill is a reusable prompt for a task you repeat.');
-    lines.push('  Example: a /review skill that checks your code.');
+    lines.push('2. Add skills (~10 min)');
+    lines.push('   mkdir -p .claude/skills');
+    lines.push('   Each .md file becomes a /command you can invoke.');
     lines.push('');
-    lines.push('STEP 3: Set up memory (~5 min)');
-    lines.push('  Create memory/ with subdirectories:');
-    lines.push('  memory/episodic/  — session logs, decisions');
-    lines.push('  memory/semantic/  — patterns, templates, voice');
+    lines.push('3. Set up memory (~5 min)');
+    lines.push('   mkdir -p memory/episodic memory/semantic');
+    lines.push('   Episodic = session logs. Semantic = patterns and voice.');
     lines.push('');
-    lines.push('After these 3 steps, run this health check again.');
-    lines.push('You will go from 0% to ~25-35% immediately.');
+    lines.push('Run the health check again after setup.');
+    lines.push('You will jump from 0% to ~25-35% immediately.');
     lines.push('');
     lines.push(...buildCTA(report));
     return lines.join('\n');

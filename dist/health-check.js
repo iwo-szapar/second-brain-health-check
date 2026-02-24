@@ -290,6 +290,22 @@ export async function runHealthCheck(path, options = {}) {
         };
     }
 
+    // Empty brain: skip all 32+ checks — nothing meaningful to score.
+    // Report formatter will show the getting-started guide instead of 32 failures.
+    if (brainState.maturity === 'empty') {
+        return {
+            path: rootPath,
+            timestamp: new Date().toISOString(),
+            brainState,
+            setup: { totalPoints: 0, maxPoints: 0, normalizedScore: 0, grade: 'F', gradeLabel: 'No brain detected', layers: [] },
+            usage: { totalPoints: 0, maxPoints: 0, normalizedScore: 0, grade: 'Empty', gradeLabel: 'No brain detected', layers: [] },
+            fluency: { totalPoints: 0, maxPoints: 0, normalizedScore: 0, grade: 'Novice', gradeLabel: 'No brain detected', layers: [] },
+            topFixes: [],
+            cePatterns: [],
+        };
+    }
+
+
     // Run all checks in parallel with fault isolation (Promise.allSettled per dimension)
     const [setupResults, usageResults, fluencyResults] = await Promise.all([
         Promise.allSettled([

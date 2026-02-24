@@ -9,6 +9,19 @@ import { readFile, access } from 'node:fs/promises';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
+function isGitRepo(rootPath) {
+    try {
+        execFileSync('git', ['rev-parse', '--is-inside-work-tree'], {
+            cwd: rootPath,
+            stdio: 'pipe',
+            timeout: 5000,
+        });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
 async function fileExists(filePath) {
     try {
         await access(filePath);
@@ -34,56 +47,61 @@ export async function checkEnvVars(rootPath) {
 
     // Check 1: Git-tracked .env files (4 pts)
     {
-        const trackedEnvFiles = [];
-
-        for (const envFile of SENSITIVE_ENV_FILES) {
-            const fullPath = join(rootPath, envFile);
-            if (!(await fileExists(fullPath))) continue;
-
-            try {
-                execFileSync('git', ['ls-files', '--error-unmatch', envFile], {
-                    cwd: rootPath,
-                    stdio: ['pipe', 'pipe', 'pipe'],
-                });
-                trackedEnvFiles.push(envFile);
-            } catch {
-                // not tracked — good
-            }
-        }
-
         let status, points, message;
-        if (trackedEnvFiles.length > 0) {
-            status = 'fail';
-            points = 0;
-            message = `${trackedEnvFiles.length} env file(s) tracked in git: ${trackedEnvFiles.join(', ')} — add to .gitignore and rotate secrets`;
-        } else {
-            // Check if .env files exist and are properly gitignored
-            const gitignore = await readText(join(rootPath, '.gitignore'));
-            const hasEnvIgnore = gitignore && (
-                gitignore.includes('.env') ||
-                gitignore.includes('.env*') ||
-                gitignore.includes('.env.local')
-            );
 
+        if (!isGitRepo(rootPath)) {
+            // No git repo — skip the tracking check, just look for unguarded env files
             const envFilesExist = [];
             for (const envFile of SENSITIVE_ENV_FILES) {
-                if (await fileExists(join(rootPath, envFile))) {
-                    envFilesExist.push(envFile);
+                if (await fileExists(join(rootPath, envFile))) envFilesExist.push(envFile);
+            }
+            if (envFilesExist.length > 0) {
+                status = 'warn'; points = 2;
+                message = `${envFilesExist.length} .env file(s) found — not a git repo, but ensure secrets are not committed if you add version control`;
+            } else {
+                status = 'pass'; points = 4;
+                message = 'No .env files present — secrets managed elsewhere (no git repo to check tracking)';
+            }
+        } else {
+            const trackedEnvFiles = [];
+            for (const envFile of SENSITIVE_ENV_FILES) {
+                const fullPath = join(rootPath, envFile);
+                if (!(await fileExists(fullPath))) continue;
+                try {
+                    execFileSync('git', ['ls-files', '--error-unmatch', envFile], {
+                        cwd: rootPath,
+                        stdio: ['pipe', 'pipe', 'pipe'],
+                    });
+                    trackedEnvFiles.push(envFile);
+                } catch {
+                    // not tracked — good
                 }
             }
 
-            if (envFilesExist.length === 0) {
-                status = 'pass';
-                points = 4;
-                message = 'No .env files present — secrets managed elsewhere';
-            } else if (hasEnvIgnore) {
-                status = 'pass';
-                points = 4;
-                message = `${envFilesExist.length} env file(s) present and .gitignore includes .env patterns`;
+            if (trackedEnvFiles.length > 0) {
+                status = 'fail'; points = 0;
+                message = `${trackedEnvFiles.length} env file(s) tracked in git: ${trackedEnvFiles.join(', ')} — add to .gitignore and rotate secrets`;
             } else {
-                status = 'warn';
-                points = 2;
-                message = `${envFilesExist.length} env file(s) present but .gitignore may not cover them — verify .env is gitignored`;
+                const gitignore = await readText(join(rootPath, '.gitignore'));
+                const hasEnvIgnore = gitignore && (
+                    gitignore.includes('.env') ||
+                    gitignore.includes('.env*') ||
+                    gitignore.includes('.env.local')
+                );
+                const envFilesExist = [];
+                for (const envFile of SENSITIVE_ENV_FILES) {
+                    if (await fileExists(join(rootPath, envFile))) envFilesExist.push(envFile);
+                }
+                if (envFilesExist.length === 0) {
+                    status = 'pass'; points = 4;
+                    message = 'No .env files present — secrets managed elsewhere';
+                } else if (hasEnvIgnore) {
+                    status = 'pass'; points = 4;
+                    message = `${envFilesExist.length} env file(s) present and .gitignore includes .env patterns`;
+                } else {
+                    status = 'warn'; points = 2;
+                    message = `${envFilesExist.length} env file(s) present but .gitignore may not cover them — verify .env is gitignored`;
+                }
             }
         }
         checks.push({ name: 'Git-tracked env files', status, points, maxPoints: 4, message });

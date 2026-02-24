@@ -8,6 +8,37 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
+/**
+ * Resolve @filename imports in CLAUDE.md content.
+ * Reads referenced files and appends their content for analysis.
+ * Only follows one level of imports to avoid cycles.
+ */
+async function resolveImports(rootPath, content) {
+    const importPattern = /@([\w./\-]+\.(?:md|txt))/g;
+    const seen = new Set();
+    const importedFiles = [];
+    const extra = [];
+    let match;
+
+    while ((match = importPattern.exec(content)) !== null) {
+        const importPath = match[1];
+        if (seen.has(importPath)) continue;
+        seen.add(importPath);
+        try {
+            const importedContent = await readFile(join(rootPath, importPath), 'utf-8');
+            extra.push(importedContent);
+            importedFiles.push(importPath);
+        } catch {
+            // File not found or unreadable — skip silently
+        }
+    }
+
+    return {
+        combined: extra.length > 0 ? content + '\n' + extra.join('\n') : content,
+        importedFiles,
+    };
+}
+
 const DOMAIN_PATTERNS = [
     'MEDDPICC', 'sprint', 'SEO', 'billable', 'KPI', 'HIPAA',
     'litigation', 'TypeScript', 'pytest', 'API', 'endpoint',
@@ -35,10 +66,13 @@ export async function checkClaudeMd(rootPath) {
         };
     }
 
+    // Resolve @-imported files so content checks scan the full effective context
+    const { combined, importedFiles } = await resolveImports(rootPath, content);
+
     // Check 1: Quick Start with numbered rules (5 pts)
     {
-        const hasHeading = /^#{1,3}\s.*quick\s*start/im.test(content);
-        const numberedRules = (content.match(/^\d+\.\s/gm) || []).length;
+        const hasHeading = /^#{1,3}\s.*quick\s*start/im.test(combined);
+        const numberedRules = (combined.match(/^\d+\.\s/gm) || []).length;
         let status, points, message;
 
         if (hasHeading && numberedRules >= 3) {
@@ -60,7 +94,7 @@ export async function checkClaudeMd(rootPath) {
 
     // Check 2: About Me with role context (3 pts)
     {
-        const hasAbout = /^#{1,3}\s.*(about\s*me|who\s*(am\s*i|i\s*am)|role|context)/im.test(content);
+        const hasAbout = /^#{1,3}\s.*(about\s*me|who\s*(am\s*i|i\s*am)|role|context)/im.test(combined);
         checks.push({
             name: 'About Me with role context',
             status: hasAbout ? 'pass' : 'fail',
@@ -75,7 +109,7 @@ export async function checkClaudeMd(rootPath) {
     // Check 3: Profession-specific rules (5 pts)
     {
         const found = DOMAIN_PATTERNS.filter(p =>
-            new RegExp(p, p === p.toUpperCase() ? '' : 'i').test(content)
+            new RegExp(p, p === p.toUpperCase() ? '' : 'i').test(combined)
         );
         let status, points;
         if (found.length >= 2) {
@@ -101,8 +135,8 @@ export async function checkClaudeMd(rootPath) {
 
     // Check 4: Gotchas section (3 pts)
     {
-        const hasGotchaHeading = /^#{1,3}\s.*(gotcha|pitfall|avoid|mistake|warning)/im.test(content);
-        const hasNeverAlways = /\b(never|always)\b/gi.test(content);
+        const hasGotchaHeading = /^#{1,3}\s.*(gotcha|pitfall|avoid|mistake|warning)/im.test(combined);
+        const hasNeverAlways = /\b(never|always)\b/gi.test(combined);
         let status, points, message;
 
         if (hasGotchaHeading) {
@@ -124,9 +158,9 @@ export async function checkClaudeMd(rootPath) {
 
     // Check 5: Project structure with folder tree (2 pts)
     {
-        const hasTreeChars = /[├└│─]/.test(content);
-        const hasTablePaths = /\|.*(?:src\/|lib\/|api\/)/.test(content);
-        const indentedPaths = (content.match(/^\s{2,}[\w./-]+\/[\w./-]+/gm) || []).length;
+        const hasTreeChars = /[├└│─]/.test(combined);
+        const hasTablePaths = /\|.*(?:src\/|lib\/|api\/)/.test(combined);
+        const indentedPaths = (combined.match(/^\s{2,}[\w./-]+\/[\w./-]+/gm) || []).length;
         const hasStructure = hasTreeChars || hasTablePaths || indentedPaths >= 3;
 
         checks.push({
@@ -141,15 +175,19 @@ export async function checkClaudeMd(rootPath) {
     }
 
     // Check 6: Appropriate length 2K-6K chars (2 pts)
+    // Length is measured on CLAUDE.md itself — @-imported files provide additional context
     {
         const len = content.length;
         const inRange = len >= 2000 && len <= 6000;
+        const importSuffix = importedFiles.length > 0
+            ? ` (+ ${importedFiles.length} imported file${importedFiles.length > 1 ? 's' : ''}: ${importedFiles.join(', ')})`
+            : '';
         checks.push({
             name: 'Appropriate length (2K-6K chars)',
             status: inRange ? 'pass' : 'warn',
             points: inRange ? 2 : 1,
             maxPoints: 2,
-            message: `CLAUDE.md is ${len.toLocaleString()} characters${inRange ? '' : len < 2000 ? ' — consider adding more detail' : ' — consider splitting into linked files'}`,
+            message: `CLAUDE.md is ${len.toLocaleString()} characters${importSuffix}${inRange ? '' : len < 2000 ? ' — consider adding more detail' : ' — consider splitting into linked files'}`,
         });
     }
 
