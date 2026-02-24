@@ -55,16 +55,16 @@ export async function checkWorkflowMaturity(rootPath) {
         let status, points, message;
         if (logFound && lineCount >= 20) {
             status = 'pass'; points = 4;
-            message = `Skill invocation log found with ${lineCount} entries — workflows are being tracked`;
+            message = `Skill usage is being tracked — ${lineCount} entries in log (skills are the /commands Claude runs on your behalf)`;
         } else if (logFound && lineCount >= 5) {
             status = 'warn'; points = 3;
-            message = `Skill invocation log exists with ${lineCount} entries — still building usage history`;
+            message = `Skill usage log found with ${lineCount} entries — still early, keep using /skills to build history`;
         } else if (logFound) {
             status = 'warn'; points = 2;
-            message = `Skill invocation log exists but sparse (${lineCount} entries)`;
+            message = `Skill usage log exists but has only ${lineCount} entries — use your /skills more to build a usage record`;
         } else {
             status = 'fail'; points = 0;
-            message = 'No skill invocation logs found — consider tracking skill usage for workflow optimization';
+            message = 'Skill usage is not being tracked — create memory/skill-usage.md and log which /skills you use and how often. Without this, you can\'t tell which skills are actually useful.';
         }
         checks.push({ name: 'Skill invocation evidence', status, points, maxPoints: 4, message });
     }
@@ -78,19 +78,18 @@ export async function checkWorkflowMaturity(rootPath) {
         let status, points, message;
         if (commandCount >= 3) {
             status = 'pass'; points = 3;
-            message = `${commandCount} command definitions — structured workflow entry points`;
+            message = `${commandCount} command definitions found — commands are multi-step workflows you trigger with /command-name`;
         } else if (commandCount >= 1) {
             status = 'warn'; points = 2;
-            message = `${commandCount} command(s) defined — commands create repeatable workflow entry points`;
+            message = `${commandCount} command(s) in .claude/commands/ — commands chain multiple skills into one action (e.g. /review runs lint + test + summarize)`;
         } else {
-            // Check if skills are being used as de facto commands
             const skillCount = await countMdFiles(join(rootPath, '.claude', 'skills'));
             if (skillCount >= 5) {
                 status = 'warn'; points = 1;
-                message = `No commands but ${skillCount} skills — consider adding commands to orchestrate skill chains`;
+                message = `No commands found but ${skillCount} skills exist — add .claude/commands/ to chain skills together into repeatable multi-step workflows`;
             } else {
                 status = 'fail'; points = 0;
-                message = 'No commands in .claude/commands/ — commands define repeatable workflows';
+                message = 'No commands in .claude/commands/ — a command is a named workflow (like /morning-review) that Claude runs when you ask for it';
             }
         }
         checks.push({ name: 'Command definitions', status, points, maxPoints: 3, message });
@@ -129,16 +128,16 @@ export async function checkWorkflowMaturity(rootPath) {
         let status, points, message;
         if (categories.size >= 3) {
             status = 'pass'; points = 3;
-            message = `Skills span ${categories.size} workflow categories: ${[...categories].join(', ')}`;
+            message = `Skills cover ${categories.size} areas: ${[...categories].join(', ')} — AI can help you across different types of work`;
         } else if (categories.size >= 2) {
             status = 'warn'; points = 2;
-            message = `Skills cover ${categories.size} categories (${[...categories].join(', ')}) — expand to more workflow types`;
+            message = `Skills cover ${categories.size} areas (${[...categories].join(', ')}) — add skills for other types of work you do regularly`;
         } else if (skillNames.length >= 3) {
             status = 'warn'; points = 1;
-            message = `${skillNames.length} skills but concentrated in ${categories.size || 'uncategorized'} area(s)`;
+            message = `${skillNames.length} skills but all in the same area — branch out: add a content skill, a research skill, or an ops skill`;
         } else {
             status = 'fail'; points = 0;
-            message = 'Too few skills to assess workflow diversity';
+            message = 'Not enough skills to measure workflow coverage — add at least 3 skills covering different types of work you do';
         }
         checks.push({ name: 'Workflow diversity', status, points, maxPoints: 3, message });
     }
