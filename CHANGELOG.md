@@ -4,6 +4,11 @@ All notable changes to the Second Brain Health Check MCP are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.13.4] - 2026-02-25
+
+### Fixed
+- Windows path separator bug in home directory boundary check — `startsWith(homeDir + '/')` always failed on Windows because `path.resolve()` and `realpath()` return backslashes. Normalized both paths to forward slashes before comparison in `health-check.js`, `dashboard/generate.js`, and `tools/generate-pdf.js`.
+
 ## [0.13.1] - 2026-02-24
 
 ### Fixed
