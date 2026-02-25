@@ -122,7 +122,9 @@ export async function generatePdf(projectPath) {
     if (!homeDir) {
         throw new Error('Cannot determine home directory: HOME environment variable is not set.');
     }
-    if (!pdfPath.startsWith(homeDir + '/') && pdfPath !== homeDir) {
+    const nrPdf = pdfPath.replace(/\\/g, '/');
+    const nhPdf = homeDir.replace(/\\/g, '/');
+    if (!nrPdf.startsWith(nhPdf + '/') && nrPdf !== nhPdf) {
         throw new Error(`Output path "${pdfPath}" is outside the home directory.`);
     }
 
