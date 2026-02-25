@@ -641,7 +641,9 @@ export async function saveDashboard(report, outputPath) {
     if (!homeDir) {
         throw new Error('Cannot determine home directory: HOME environment variable is not set.');
     }
-    if (!filePath.startsWith(homeDir + '/') && filePath !== homeDir) {
+    const nrFile = filePath.replace(/\\/g, '/');
+    const nhFile = homeDir.replace(/\\/g, '/');
+    if (!nrFile.startsWith(nhFile + '/') && nrFile !== nhFile) {
         throw new Error(`Output path "${filePath}" is outside the home directory.`);
     }
     await writeFile(filePath, html, 'utf-8');
