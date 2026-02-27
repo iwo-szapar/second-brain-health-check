@@ -4,7 +4,172 @@
  * Converts health check results into a readable markdown report.
  * v0.8.1: Adaptive formatting based on brain maturity level,
  * score-band CTAs, time estimates on fixes, CE pattern section.
+ * v0.13.5: i18n translation maps, formatQuickReport, lang param threading.
  */
+
+/**
+ * i18n translation maps for report structural elements.
+ * Technical terms (CLAUDE.md, MCP, hooks, skills) stay untranslated.
+ */
+const TRANSLATIONS = {
+    es: {
+        'SECOND BRAIN HEALTH CHECK': 'CHEQUEO DE SALUD DEL SEGUNDO CEREBRO',
+        'SECOND BRAIN QUICK SCAN': 'ESCANEO R\u00c1PIDO DEL SEGUNDO CEREBRO',
+        'OVERALL': 'GENERAL',
+        'SETUP QUALITY': 'CALIDAD DE CONFIGURACI\u00d3N',
+        'USAGE ACTIVITY': 'ACTIVIDAD DE USO',
+        'AI FLUENCY': 'FLUIDEZ IA',
+        'SETUP QUALITY BREAKDOWN': 'DESGLOSE DE CALIDAD DE CONFIGURACI\u00d3N',
+        'USAGE ACTIVITY BREAKDOWN': 'DESGLOSE DE ACTIVIDAD DE USO',
+        'AI FLUENCY BREAKDOWN': 'DESGLOSE DE FLUIDEZ IA',
+        'TOP FIXES (highest impact)': 'PRINCIPALES CORRECCIONES (mayor impacto)',
+        'CONTEXT ENGINEERING PATTERNS (7 patterns)': 'PATRONES DE INGENIER\u00cdA DE CONTEXTO (7 patrones)',
+        'X-RAY RESULT: No brain detected.': 'RESULTADO: No se detect\u00f3 ning\u00fan cerebro.',
+        'INSTALL YOUR BRAIN (3 steps)': 'INSTALA TU CEREBRO (3 pasos)',
+        'WHAT YOU HAVE (good start!)': 'LO QUE TIENES (\u00a1buen comienzo!)',
+        'YOUR NEXT 20-MINUTE SESSION (top 3 fixes)': 'TU PR\u00d3XIMA SESI\u00d3N DE 20 MIN (3 correcciones)',
+        'PATTERNS TO UNLOCK': 'PATRONES POR DESBLOQUEAR',
+        'Maturity': 'Madurez',
+        'Components detected': 'Componentes detectados',
+        'Recommendation': 'Recomendaci\u00f3n',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+    de: {
+        'SECOND BRAIN HEALTH CHECK': 'SECOND BRAIN GESUNDHEITSCHECK',
+        'SECOND BRAIN QUICK SCAN': 'SECOND BRAIN SCHNELLSCAN',
+        'OVERALL': 'GESAMT',
+        'SETUP QUALITY': 'EINRICHTUNGSQUALIT\u00c4T',
+        'USAGE ACTIVITY': 'NUTZUNGSAKTIVIT\u00c4T',
+        'AI FLUENCY': 'KI-KOMPETENZ',
+        'SETUP QUALITY BREAKDOWN': 'DETAILS EINRICHTUNGSQUALIT\u00c4T',
+        'USAGE ACTIVITY BREAKDOWN': 'DETAILS NUTZUNGSAKTIVIT\u00c4T',
+        'AI FLUENCY BREAKDOWN': 'DETAILS KI-KOMPETENZ',
+        'TOP FIXES (highest impact)': 'TOP-KORREKTUREN (h\u00f6chste Wirkung)',
+        'CONTEXT ENGINEERING PATTERNS (7 patterns)': 'CONTEXT ENGINEERING MUSTER (7 Muster)',
+        'X-RAY RESULT: No brain detected.': 'ERGEBNIS: Kein Brain erkannt.',
+        'INSTALL YOUR BRAIN (3 steps)': 'BRAIN INSTALLIEREN (3 Schritte)',
+        'WHAT YOU HAVE (good start!)': 'WAS DU HAST (guter Anfang!)',
+        'YOUR NEXT 20-MINUTE SESSION (top 3 fixes)': 'DEINE N\u00c4CHSTE 20-MIN SITZUNG (Top 3 Korrekturen)',
+        'PATTERNS TO UNLOCK': 'MUSTER ZUM FREISCHALTEN',
+        'Maturity': 'Reife',
+        'Components detected': 'Erkannte Komponenten',
+        'Recommendation': 'Empfehlung',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+    fr: {
+        'SECOND BRAIN HEALTH CHECK': 'BILAN DE SANT\u00c9 DU SECOND CERVEAU',
+        'SECOND BRAIN QUICK SCAN': 'SCAN RAPIDE DU SECOND CERVEAU',
+        'OVERALL': 'G\u00c9N\u00c9RAL',
+        'SETUP QUALITY': 'QUALIT\u00c9 DE CONFIGURATION',
+        'USAGE ACTIVITY': 'ACTIVIT\u00c9 D\'UTILISATION',
+        'AI FLUENCY': 'MA\u00ceTRISE IA',
+        'SETUP QUALITY BREAKDOWN': 'D\u00c9TAILS QUALIT\u00c9 DE CONFIGURATION',
+        'USAGE ACTIVITY BREAKDOWN': 'D\u00c9TAILS ACTIVIT\u00c9 D\'UTILISATION',
+        'AI FLUENCY BREAKDOWN': 'D\u00c9TAILS MA\u00ceTRISE IA',
+        'TOP FIXES (highest impact)': 'CORRECTIONS PRIORITAIRES (plus fort impact)',
+        'CONTEXT ENGINEERING PATTERNS (7 patterns)': 'PATRONS D\'ING\u00c9NIERIE DE CONTEXTE (7 patrons)',
+        'X-RAY RESULT: No brain detected.': 'R\u00c9SULTAT : Aucun cerveau d\u00e9tect\u00e9.',
+        'INSTALL YOUR BRAIN (3 steps)': 'INSTALLER VOTRE CERVEAU (3 \u00e9tapes)',
+        'WHAT YOU HAVE (good start!)': 'CE QUE VOUS AVEZ (bon d\u00e9but !)',
+        'YOUR NEXT 20-MINUTE SESSION (top 3 fixes)': 'VOTRE PROCHAINE SESSION DE 20 MIN (3 corrections)',
+        'PATTERNS TO UNLOCK': 'PATRONS \u00c0 D\u00c9BLOQUER',
+        'Maturity': 'Maturit\u00e9',
+        'Components detected': 'Composants d\u00e9tect\u00e9s',
+        'Recommendation': 'Recommandation',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+    pl: {
+        'SECOND BRAIN HEALTH CHECK': 'BADANIE ZDROWIA DRUGIEGO M\u00d3ZGU',
+        'SECOND BRAIN QUICK SCAN': 'SZYBKI SKAN DRUGIEGO M\u00d3ZGU',
+        'OVERALL': 'OG\u00d3LNIE',
+        'SETUP QUALITY': 'JAKO\u015a\u0106 KONFIGURACJI',
+        'USAGE ACTIVITY': 'AKTYWNO\u015a\u0106 U\u017bYTKOWANIA',
+        'AI FLUENCY': 'BIEG\u0141O\u015a\u0106 AI',
+        'SETUP QUALITY BREAKDOWN': 'SZCZEG\u00d3\u0141Y JAKO\u015aCI KONFIGURACJI',
+        'USAGE ACTIVITY BREAKDOWN': 'SZCZEG\u00d3\u0141Y AKTYWNO\u015aCI',
+        'AI FLUENCY BREAKDOWN': 'SZCZEG\u00d3\u0141Y BIEG\u0141O\u015aCI AI',
+        'TOP FIXES (highest impact)': 'NAJWA\u017bNIEJSZE POPRAWKI (najwy\u017cszy wp\u0142yw)',
+        'CONTEXT ENGINEERING PATTERNS (7 patterns)': 'WZORCE IN\u017bYNIERII KONTEKSTU (7 wzorc\u00f3w)',
+        'X-RAY RESULT: No brain detected.': 'WYNIK: Nie wykryto m\u00f3zgu.',
+        'INSTALL YOUR BRAIN (3 steps)': 'ZAINSTALUJ SW\u00d3J M\u00d3ZG (3 kroki)',
+        'WHAT YOU HAVE (good start!)': 'CO JU\u017b MASZ (dobry pocz\u0105tek!)',
+        'YOUR NEXT 20-MINUTE SESSION (top 3 fixes)': 'TWOJA NAST\u0118PNA 20-MINUTOWA SESJA (3 poprawki)',
+        'PATTERNS TO UNLOCK': 'WZORCE DO ODBLOKOWANIA',
+        'Maturity': 'Dojrza\u0142o\u015b\u0107',
+        'Components detected': 'Wykryte komponenty',
+        'Recommendation': 'Rekomendacja',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+    pt: {
+        'SECOND BRAIN HEALTH CHECK': 'VERIFICA\u00c7\u00c3O DE SA\u00daDE DO SEGUNDO C\u00c9REBRO',
+        'SECOND BRAIN QUICK SCAN': 'SCAN R\u00c1PIDO DO SEGUNDO C\u00c9REBRO',
+        'OVERALL': 'GERAL',
+        'SETUP QUALITY': 'QUALIDADE DA CONFIGURA\u00c7\u00c3O',
+        'USAGE ACTIVITY': 'ATIVIDADE DE USO',
+        'AI FLUENCY': 'FLU\u00caNCIA IA',
+        'SETUP QUALITY BREAKDOWN': 'DETALHES QUALIDADE DA CONFIGURA\u00c7\u00c3O',
+        'USAGE ACTIVITY BREAKDOWN': 'DETALHES ATIVIDADE DE USO',
+        'AI FLUENCY BREAKDOWN': 'DETALHES FLU\u00caNCIA IA',
+        'TOP FIXES (highest impact)': 'CORRE\u00c7\u00d5ES PRIORIT\u00c1RIAS (maior impacto)',
+        'CONTEXT ENGINEERING PATTERNS (7 patterns)': 'PADR\u00d5ES DE ENGENHARIA DE CONTEXTO (7 padr\u00f5es)',
+        'X-RAY RESULT: No brain detected.': 'RESULTADO: Nenhum c\u00e9rebro detectado.',
+        'INSTALL YOUR BRAIN (3 steps)': 'INSTALE SEU C\u00c9REBRO (3 passos)',
+        'WHAT YOU HAVE (good start!)': 'O QUE VOC\u00ca TEM (bom come\u00e7o!)',
+        'YOUR NEXT 20-MINUTE SESSION (top 3 fixes)': 'SUA PR\u00d3XIMA SESS\u00c3O DE 20 MIN (3 corre\u00e7\u00f5es)',
+        'PATTERNS TO UNLOCK': 'PADR\u00d5ES PARA DESBLOQUEAR',
+        'Maturity': 'Maturidade',
+        'Components detected': 'Componentes detectados',
+        'Recommendation': 'Recomenda\u00e7\u00e3o',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+    ja: {
+        'SECOND BRAIN HEALTH CHECK': '\u30bb\u30ab\u30f3\u30c9\u30d6\u30ec\u30a4\u30f3 \u5065\u5eb7\u8a3a\u65ad',
+        'SECOND BRAIN QUICK SCAN': '\u30bb\u30ab\u30f3\u30c9\u30d6\u30ec\u30a4\u30f3 \u30af\u30a4\u30c3\u30af\u30b9\u30ad\u30e3\u30f3',
+        'OVERALL': '\u7dcf\u5408',
+        'SETUP QUALITY': '\u30bb\u30c3\u30c8\u30a2\u30c3\u30d7\u54c1\u8cea',
+        'USAGE ACTIVITY': '\u4f7f\u7528\u72b6\u6cc1',
+        'AI FLUENCY': 'AI\u6d41\u66a2\u6027',
+        'TOP FIXES (highest impact)': '\u512a\u5148\u4fee\u6b63 (\u6700\u5927\u306e\u5f71\u97ff)',
+        'Maturity': '\u6210\u719f\u5ea6',
+        'Components detected': '\u691c\u51fa\u3055\u308c\u305f\u30b3\u30f3\u30dd\u30fc\u30cd\u30f3\u30c8',
+        'Recommendation': '\u63a8\u5968',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+    ko: {
+        'SECOND BRAIN HEALTH CHECK': '\uc138\ucee8\ub4dc \ube0c\ub808\uc778 \uac74\uac15 \uc9c4\ub2e8',
+        'SECOND BRAIN QUICK SCAN': '\uc138\ucee8\ub4dc \ube0c\ub808\uc778 \ube60\ub978 \uc2a4\ucba8',
+        'OVERALL': '\uc885\ud569',
+        'SETUP QUALITY': '\uc124\uc815 \ud488\uc9c8',
+        'USAGE ACTIVITY': '\uc0ac\uc6a9 \ud65c\ub3d9',
+        'AI FLUENCY': 'AI \uc720\ucc3d\uc131',
+        'TOP FIXES (highest impact)': '\uc6b0\uc120 \uc218\uc815 (\ucd5c\ub300 \ud6a8\uacfc)',
+        'Maturity': '\uc131\uc219\ub3c4',
+        'Components detected': '\uac10\uc9c0\ub41c \uad6c\uc131 \uc694\uc18c',
+        'Recommendation': '\ucd94\ucc9c',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+    zh: {
+        'SECOND BRAIN HEALTH CHECK': '\u7b2c\u4e8c\u5927\u8111\u5065\u5eb7\u68c0\u67e5',
+        'SECOND BRAIN QUICK SCAN': '\u7b2c\u4e8c\u5927\u8111\u5feb\u901f\u626b\u63cf',
+        'OVERALL': '\u603b\u4f53',
+        'SETUP QUALITY': '\u914d\u7f6e\u8d28\u91cf',
+        'USAGE ACTIVITY': '\u4f7f\u7528\u6d3b\u52a8',
+        'AI FLUENCY': 'AI\u6d41\u7545\u5ea6',
+        'TOP FIXES (highest impact)': '\u4f18\u5148\u4fee\u590d (\u6700\u5927\u5f71\u54cd)',
+        'Maturity': '\u6210\u719f\u5ea6',
+        'Components detected': '\u68c0\u6d4b\u5230\u7684\u7ec4\u4ef6',
+        'Recommendation': '\u5efa\u8bae',
+        '[pass]': '[\u2713]', '[warn]': '[!]', '[fail]': '[\u2717]', '[miss]': '[-]',
+    },
+};
+
+/**
+ * Translate a string using the i18n map. Falls through to original if no translation exists.
+ */
+function t(text, lang) {
+    if (!lang || lang === 'en' || !TRANSLATIONS[lang]) return text;
+    return TRANSLATIONS[lang][text] || text;
+}
 
 /** Time estimates for common fix categories (minutes) */
 const FIX_TIME_ESTIMATES = {
@@ -185,24 +350,24 @@ function getOverallPct(report) {
  * Format report for an EMPTY brain (no CLAUDE.md).
  * Direct X-ray: show exactly what's missing, then the 3 install steps.
  */
-function formatEmptyReport(report) {
+function formatEmptyReport(report, lang) {
     const lines = [];
     lines.push('================================================================');
-    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push(`  ${t('SECOND BRAIN HEALTH CHECK', lang)}`);
     lines.push('================================================================');
     lines.push('');
-    lines.push('  X-RAY RESULT: No brain detected.');
+    lines.push(`  ${t('X-RAY RESULT: No brain detected.', lang)}`);
     lines.push('');
-    lines.push('  [miss] CLAUDE.md          — AI has no instructions');
-    lines.push('  [miss] .claude/            — no skills, hooks, or settings');
-    lines.push('  [miss] memory/             — nothing is remembered');
-    lines.push('  [miss] .claude/skills/     — no reusable commands');
+    lines.push('  [miss] CLAUDE.md          \u2014 AI has no instructions');
+    lines.push('  [miss] .claude/            \u2014 no skills, hooks, or settings');
+    lines.push('  [miss] memory/             \u2014 nothing is remembered');
+    lines.push('  [miss] .claude/skills/     \u2014 no reusable commands');
     lines.push('');
     lines.push('  Claude is running blind in this directory.');
     lines.push('  Every session starts from zero. Fix that in 20 minutes:');
     lines.push('');
     lines.push('----------------------------------------------------------------');
-    lines.push('INSTALL YOUR BRAIN (3 steps)');
+    lines.push(t('INSTALL YOUR BRAIN (3 steps)', lang));
     lines.push('----------------------------------------------------------------');
     lines.push('');
     lines.push('1. Create CLAUDE.md (~5 min)');
@@ -228,25 +393,25 @@ function formatEmptyReport(report) {
  * Format report for MINIMAL/BASIC brain (score 1-40).
  * Growth mode: celebrate what exists, show top 3 fixes only.
  */
-function formatGrowthReport(report) {
+function formatGrowthReport(report, lang) {
     const lines = [];
     const overallPct = getOverallPct(report);
     const has = report.brainState?.has || {};
 
     lines.push('================================================================');
-    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push(`  ${t('SECOND BRAIN HEALTH CHECK', lang)}`);
     lines.push('================================================================');
     lines.push('');
-    lines.push(`SETUP QUALITY:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
-    lines.push(`USAGE ACTIVITY:   ${report.usage.normalizedScore}/100 (${report.usage.grade} - ${report.usage.gradeLabel})`);
+    lines.push(`${t('SETUP QUALITY', lang)}:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
+    lines.push(`${t('USAGE ACTIVITY', lang)}:   ${report.usage.normalizedScore}/100 (${report.usage.grade} - ${report.usage.gradeLabel})`);
     if (report.fluency) {
-        lines.push(`AI FLUENCY:       ${report.fluency.normalizedScore}/100 (${report.fluency.grade} - ${report.fluency.gradeLabel})`);
+        lines.push(`${t('AI FLUENCY', lang)}:       ${report.fluency.normalizedScore}/100 (${report.fluency.grade} - ${report.fluency.gradeLabel})`);
     }
     lines.push('');
 
     // Celebrate what exists
     lines.push('----------------------------------------------------------------');
-    lines.push('WHAT YOU HAVE (good start!)');
+    lines.push(t('WHAT YOU HAVE (good start!)', lang));
     lines.push('----------------------------------------------------------------');
     lines.push('');
     if (has.claudeMd) lines.push('  [pass] CLAUDE.md exists');
@@ -262,7 +427,7 @@ function formatGrowthReport(report) {
     const fixes = report.topFixes.slice(0, 3);
     if (fixes.length > 0) {
         lines.push('----------------------------------------------------------------');
-        lines.push('YOUR NEXT 20-MINUTE SESSION (top 3 fixes)');
+        lines.push(t('YOUR NEXT 20-MINUTE SESSION (top 3 fixes)', lang));
         lines.push('----------------------------------------------------------------');
         lines.push('');
         let totalMinutes = 0;
@@ -285,7 +450,7 @@ function formatGrowthReport(report) {
             .slice(0, 3);
         if (weakPatterns.length > 0) {
             lines.push('----------------------------------------------------------------');
-            lines.push('PATTERNS TO UNLOCK');
+            lines.push(t('PATTERNS TO UNLOCK', lang));
             lines.push('----------------------------------------------------------------');
             lines.push('');
             for (const p of weakPatterns) {
@@ -303,11 +468,11 @@ function formatGrowthReport(report) {
 /**
  * Format CE patterns section for full reports.
  */
-function formatCEPatterns(cePatterns) {
+function formatCEPatterns(cePatterns, lang) {
     if (!cePatterns || cePatterns.length === 0) return [];
     const lines = [];
     lines.push('----------------------------------------------------------------');
-    lines.push('CONTEXT ENGINEERING PATTERNS (7 patterns)');
+    lines.push(t('CONTEXT ENGINEERING PATTERNS (7 patterns)', lang));
     lines.push('----------------------------------------------------------------');
     lines.push('');
     for (const p of cePatterns) {
@@ -321,41 +486,90 @@ function formatCEPatterns(cePatterns) {
 }
 
 /**
- * Full report — for structured+ brains (score 41+).
+ * Format report for QUICK mode (detection only, no full scan).
+ * Shows brain maturity level and what exists.
  */
-export function formatReport(report) {
+export function formatQuickReport(report, lang) {
+    const lines = [];
+    const bs = report.brainState || {};
+    const has = bs.has || {};
+    const maturity = bs.maturity || 'unknown';
+    const pass = t('[pass]', lang);
+    const miss = t('[miss]', lang);
+
+    lines.push('================================================================');
+    lines.push(`  ${t('SECOND BRAIN QUICK SCAN', lang)}`);
+    lines.push('================================================================');
+    lines.push('');
+    lines.push(`  ${t('Maturity', lang)}: ${maturity.toUpperCase()}`);
+    lines.push('');
+
+    // Show what exists
+    lines.push(`  ${t('Components detected', lang)}:`);
+    lines.push(`    ${has.claudeMd ? pass : miss} CLAUDE.md${has.claudeMd && bs.claudeMdSize ? ` (${bs.claudeMdSize} bytes)` : ''}`);
+    lines.push(`    ${has.claudeDir ? pass : miss} .claude/ directory`);
+    lines.push(`    ${has.skills ? pass : miss} Skills`);
+    lines.push(`    ${has.hooks ? pass : miss} Hooks`);
+    lines.push(`    ${has.memory ? pass : miss} Memory`);
+    lines.push(`    ${has.knowledge ? pass : miss} Knowledge base`);
+    lines.push(`    ${has.agents ? pass : miss} Custom agents`);
+    lines.push(`    ${has.settings ? pass : miss} Settings`);
+    lines.push('');
+
+    if (bs.isReturning && bs.previousScore !== null && bs.previousScore !== undefined) {
+        lines.push(`  Last full scan score: ${bs.previousScore}%`);
+        lines.push('');
+    }
+
+    // Recommendation
+    if (maturity === 'empty') {
+        lines.push(`  ${t('Recommendation', lang)}: No brain detected. Run full scan for a getting-started guide.`);
+    } else if (maturity === 'minimal' || maturity === 'basic') {
+        lines.push(`  ${t('Recommendation', lang)}: Foundation in place. Run full scan to get your score and top fixes.`);
+    } else {
+        lines.push(`  ${t('Recommendation', lang)}: Run full scan to see detailed scores and CE pattern coverage.`);
+    }
+    lines.push('');
+
+    return lines.join('\n');
+}
+
+/**
+ * Full report -- for structured+ brains (score 41+).
+ */
+export function formatReport(report, lang) {
     // Adaptive formatting based on brain state
     const maturity = report.brainState?.maturity;
     const overallPct = getOverallPct(report);
 
     // Empty brain: getting started guide
     if (maturity === 'empty' || (overallPct === 0 && !report.brainState?.has?.claudeMd)) {
-        return formatEmptyReport(report);
+        return formatEmptyReport(report, lang);
     }
 
     // Growth mode for low scores
     if (overallPct <= 40 && (maturity === 'minimal' || maturity === 'basic')) {
-        return formatGrowthReport(report);
+        return formatGrowthReport(report, lang);
     }
 
     // Full report for structured+
     const lines = [];
     const delta = formatDelta(report);
     lines.push('================================================================');
-    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push(`  ${t('SECOND BRAIN HEALTH CHECK', lang)}`);
     lines.push('================================================================');
     lines.push('');
-    lines.push(`OVERALL:          ${getOverallPct(report)}%${delta}`);
+    lines.push(`${t('OVERALL', lang)}:          ${getOverallPct(report)}%${delta}`);
     lines.push('');
-    lines.push(`SETUP QUALITY:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
-    lines.push(`USAGE ACTIVITY:   ${report.usage.normalizedScore}/100 (${report.usage.grade} - ${report.usage.gradeLabel})`);
+    lines.push(`${t('SETUP QUALITY', lang)}:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
+    lines.push(`${t('USAGE ACTIVITY', lang)}:   ${report.usage.normalizedScore}/100 (${report.usage.grade} - ${report.usage.gradeLabel})`);
     if (report.fluency) {
-        lines.push(`AI FLUENCY:       ${report.fluency.normalizedScore}/100 (${report.fluency.grade} - ${report.fluency.gradeLabel})`);
+        lines.push(`${t('AI FLUENCY', lang)}:       ${report.fluency.normalizedScore}/100 (${report.fluency.grade} - ${report.fluency.gradeLabel})`);
     }
     lines.push('');
     // Setup breakdown
     lines.push('----------------------------------------------------------------');
-    lines.push('SETUP QUALITY BREAKDOWN');
+    lines.push(t('SETUP QUALITY BREAKDOWN', lang));
     lines.push('----------------------------------------------------------------');
     lines.push('');
     for (const layer of report.setup.layers) {
@@ -364,7 +578,7 @@ export function formatReport(report) {
     }
     // Usage breakdown
     lines.push('----------------------------------------------------------------');
-    lines.push('USAGE ACTIVITY BREAKDOWN');
+    lines.push(t('USAGE ACTIVITY BREAKDOWN', lang));
     lines.push('----------------------------------------------------------------');
     lines.push('');
     for (const layer of report.usage.layers) {
@@ -374,7 +588,7 @@ export function formatReport(report) {
     // Fluency breakdown
     if (report.fluency) {
         lines.push('----------------------------------------------------------------');
-        lines.push('AI FLUENCY BREAKDOWN');
+        lines.push(t('AI FLUENCY BREAKDOWN', lang));
         lines.push('----------------------------------------------------------------');
         lines.push('');
         for (const layer of report.fluency.layers) {
@@ -383,11 +597,11 @@ export function formatReport(report) {
         }
     }
     // CE Patterns section
-    lines.push(...formatCEPatterns(report.cePatterns));
+    lines.push(...formatCEPatterns(report.cePatterns, lang));
     // Top fixes with time estimates
     if (report.topFixes.length > 0) {
         lines.push('----------------------------------------------------------------');
-        lines.push('TOP FIXES (highest impact)');
+        lines.push(t('TOP FIXES (highest impact)', lang));
         lines.push('----------------------------------------------------------------');
         lines.push('');
         report.topFixes.forEach((fix, i) => {
@@ -434,7 +648,7 @@ export function formatFixSuggestions(report, focus) {
     const sortedLayers = [...targetReport.layers].sort((a, b) => (a.points / a.maxPoints) - (b.points / b.maxPoints));
     const weakest = sortedLayers[0];
     if (!weakest) {
-        lines.push('No issues found — your setup looks good!');
+        lines.push('No issues found \u2014 your setup looks good!');
         return lines.join('\n');
     }
     lines.push(`WEAKEST AREA: ${weakest.name} (${weakest.points}/${weakest.maxPoints})`);
