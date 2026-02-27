@@ -14,7 +14,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { runHealthCheck, detectBrainState } from './health-check.js';
-import { formatReport, formatFixSuggestions } from './report-formatter.js';
+import { formatReport, formatFixSuggestions, formatQuickReport } from './report-formatter.js';
 import { generateDashboardHtml, saveDashboard } from './dashboard/generate.js';
 import { generatePdf } from './tools/generate-pdf.js';
 import { generateManifestYaml, saveManifest } from './brain-manifest.js';
@@ -23,10 +23,9 @@ import { runContextPressure } from './guide/context-pressure-tool.js';
 import { runAuditConfig } from './guide/audit-config.js';
 import { VERSION } from './version.js';
 function buildPresentationInstructions(report, dashboardPath) {
-    const overall = report.setup && report.usage
-        ? Math.round(((report.setup.totalPoints + report.usage.totalPoints + (report.fluency?.totalPoints || 0)) /
-            (report.setup.maxPoints + report.usage.maxPoints + (report.fluency?.maxPoints || 0))) * 100)
-        : 0;
+    const totalMax = (report.setup?.maxPoints || 0) + (report.usage?.maxPoints || 0) + (report.fluency?.maxPoints || 0);
+    const totalPts = (report.setup?.totalPoints || 0) + (report.usage?.totalPoints || 0) + (report.fluency?.totalPoints || 0);
+    const overall = totalMax > 0 ? Math.round((totalPts / totalMax) * 100) : 0;
     const setup = report.setup?.normalizedScore ?? 0;
     const setupGrade = report.setup?.gradeLabel ?? '';
     const usage = report.usage?.normalizedScore ?? 0;
@@ -159,9 +158,18 @@ server.registerTool('check_health', {
     try {
         const effectiveMode = mode === 'manifest' ? 'full' : (mode || 'full');
         const report = await runHealthCheck(path, { mode: effectiveMode });
-        const formatted = formatReport(report);
         const langNote = buildLanguagePrompt(language);
         const ctxNote = buildContextNote(workspace_type, use_case);
+
+        // Quick mode: return detection-only report, skip dashboard/presentation
+        if (effectiveMode === 'quick') {
+            const formatted = formatQuickReport(report, language);
+            return {
+                content: [{ type: 'text', text: formatted + ctxNote + langNote }],
+            };
+        }
+
+        const formatted = formatReport(report, language);
 
         let manifestNote = '';
         if (mode === 'manifest') {
