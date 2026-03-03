@@ -1,6 +1,6 @@
 {
   "name": "second-brain-health-check",
-  "version": "0.14.3",
+  "version": "0.14.4",
   "description": "Context engineering quality scanner for Claude Code. Scores 45 check layers across CLAUDE.md, skills, hooks, memory, and planning artifacts — adaptive reports, CE pattern mapping, time estimates.",
   "type": "module",
   "main": "dist/index.js",
@@ -37,10 +37,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iwo-szapar/second-brain-health-check.git"
+    "url": "git+https://github.com/iwo-szapar/claude-code-health-check.git"
   },
-  "homepage": "https://github.com/iwo-szapar/second-brain-health-check#readme",
+  "homepage": "https://github.com/iwo-szapar/claude-code-health-check#readme",
   "bugs": {
-    "url": "https://github.com/iwo-szapar/second-brain-health-check/issues"
+    "url": "https://github.com/iwo-szapar/claude-code-health-check/issues"
   }
 }
