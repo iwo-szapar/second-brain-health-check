@@ -1,7 +1,7 @@
 <h1 align="center">Second Brain Health Check</h1>
 
 <p align="center">
-<strong>Your Claude Code setup has 38 things that could be better. This finds them in 2 seconds.</strong>
+<strong>Your Claude Code setup has 45 things that could be better. This finds them in 2 seconds.</strong>
 </p>
 
 <p align="center">
@@ -13,175 +13,288 @@
 
 <p align="center"><em>Context Engineering quality scanner for Claude Code</em></p>
 
-Scores your Claude Code Second Brain — CLAUDE.md, skills, hooks, memory, and planning artifacts — across 38 check layers. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes, and time estimates. Zero network calls. Runs locally.
+Scores your Claude Code Second Brain across 45 check layers and 3 dimensions. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes with time estimates, and an HTML dashboard. Free tools run locally with zero network calls. Paid tools unlock progress tracking, context analysis, conversation import, and AI-powered upgrades.
 
 ---
 
-## Quick Start
+## Install
 
-### First time? Run setup
+### One command setup
 
 ```bash
 npx second-brain-health-check setup
 ```
 
-Interactive onboarding that configures your profile and (optionally) your Guide token for weekly coaching. Takes ~2 minutes. Runs the health check at the end.
+Interactive onboarding (~2 minutes):
+1. Asks for your API key (or skip for free tier)
+2. Configures the MCP server in Claude Code
+3. Asks about your role, experience, and goals
+4. Runs the first health check and opens the dashboard
 
-```
-  ================================================================
-    SECOND BRAIN HEALTH CHECK  v0.12.6
-  ================================================================
+### Manual MCP setup
 
-  AUTHENTICATION
-  --------------
-  Do you have a Second Brain Guide token? [Yes / No]
-
-  PROFILE
-  -------
-  What is your name?  Iwo
-  What do you do?     AI Implementation Expert
-  Priorities? (pick all that apply)
-    ▶ Build faster with AI
-      Improve system quality
-      Reduce context switching
-
-  HEALTH CHECK
-  ------------
-  Running 38 checks...
-```
-
-### Just run a health check
-
-```bash
-npx second-brain-health-check
-```
-
-Scans your current directory and prints the full report to stdout. No install required.
-
-### Generate an HTML dashboard
-
-```bash
-npx second-brain-health-check --dashboard
-```
-
----
-
-## CLI Commands
-
-| Command | What it does |
-|:--------|:-------------|
-| `npx second-brain-health-check` | Run the full 38-layer health scan |
-| `npx second-brain-health-check setup` | First-time setup: profile, Guide token, then health check |
-| `npx second-brain-health-check --dashboard` | Generate self-contained HTML report (opens in browser) |
-
-> **Note:** `setup` stores your profile in `~/.health-check.json`. Running it again reconfigures everything. Delete that file to start fresh.
-
----
-
-### Inside Claude Code (interactive, with follow-up)
-
-1. Add the MCP server (once):
 ```bash
 claude mcp add second-brain-health -- npx second-brain-health-check
 ```
 
-2. Then ask Claude:
-```
-Run health check on current project
-```
-
-Claude will run the scan, interpret the results, and help you fix what it finds — interactively.
+Then ask Claude: "Run a health check on my project."
 
 ---
 
-## What You Get
+## Tools
 
-The report adapts to your brain's maturity level. No information overload for beginners, no hand-holding for experts.
+### Free Tools
 
-<details open>
-<summary><strong>Empty Brain -- Getting Started Guide</strong></summary>
+No API key required. Run locally, zero network calls.
 
-```
-  ================================================================
-    SECOND BRAIN HEALTH CHECK
-  ================================================================
+#### `check_health`
 
-  STATUS: No Second Brain detected.
-
-  That is totally fine. Here is how to get started:
-
-  ----------------------------------------------------------------
-  GETTING STARTED (3 steps, ~20 minutes)
-  ----------------------------------------------------------------
-
-  STEP 1: Create CLAUDE.md (~5 min)
-    Your AI's instruction manual. Start with:
-    - Who you are and what you do
-    - Your top 3-5 rules ("always do X", "never do Y")
-    - Key tools and frameworks you use
-
-  STEP 2: Add skills (~10 min)
-    Create .claude/skills/ with YAML-frontmatter files
-    that teach Claude your workflows.
-
-  STEP 3: Set up memory (~5 min)
-    Create .claude/memory/ for episodic and semantic
-    context that persists across sessions.
-
-  ================================================================
-    See what a properly configured Second Brain looks like:
-    https://www.iwoszapar.com/context-engineering
-  ================================================================
-```
-
-</details>
-
-<details open>
-<summary><strong>Configured Brain -- Full Report with CE Patterns</strong></summary>
+Full 45-layer scan across setup quality, usage activity, and AI fluency. Adapts the report to your brain's maturity level.
 
 ```
-  ================================================================
-    SECOND BRAIN HEALTH CHECK
-  ================================================================
+> Run a health check
 
-  SETUP QUALITY:    84/100 (B - Good foundation)
-  USAGE ACTIVITY:   89/100 (Active - Brain is compounding)
-  AI FLUENCY:       92/100 (Expert - Advanced AI collaboration)
+> Check my Second Brain health in quick mode
 
-  ----------------------------------------------------------------
-  CONTEXT ENGINEERING PATTERNS (7 patterns)
-  ----------------------------------------------------------------
-
-  [pass] Progressive Disclosure       |||||||||||||.. 87%
-  [pass] Knowledge Files as RAM       ||||||||||||||. 93%
-  [warn] Hooks as Guardrails          |||||.......... 33%
-  [pass] Three-Layer Memory           ||||||||||||... 80%
-  [pass] Compound Learning            ||||||||||||||. 93%
-  [pass] Self-Correction              |||||||||||.... 73%
-  [pass] Context Surfaces             |||||||||||||.. 87%
-
-  ----------------------------------------------------------------
-  TOP FIXES (highest impact)
-  ----------------------------------------------------------------
-
-  1. Add profession-specific rules to CLAUDE.md (+3 pts setup, ~10 min)
-     Include 2+ domain patterns (MEDDPICC, sprint, SEO, KPI, etc.)
-
-  2. Add PreToolUse hook for file operations (+5 pts setup, ~15 min)
-     Prevents accidental writes to protected paths.
-
-  ================================================================
-    2 points from Production-grade.
-    Missing pattern: Hooks as Guardrails.
-    https://www.iwoszapar.com/context-engineering
-  ================================================================
+> Run health check in Spanish
 ```
 
-</details>
+Parameters:
 
-### HTML Dashboard
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `path` | current directory | Path to project root |
+| `mode` | `full` | `full` (45 layers), `quick` (~100ms detection only), `manifest` (full + YAML output) |
+| `language` | `en` | `en`, `es`, `de`, `fr`, `pl`, `pt`, `ja`, `ko`, `zh`, `it`, `nl`, `ru`, `tr`, `ar` |
+| `workspace_type` | -- | `solo`, `team`, `enterprise` |
+| `use_case` | -- | `development`, `content`, `operations`, `research`, `mixed` |
 
-Run `npx second-brain-health-check --dashboard` to generate a self-contained HTML report with semantic color coding, radar chart, and guided fixes.
+#### `get_fix_suggestions`
+
+Prioritized action plan for your weakest area. Each fix includes a time estimate and point value.
+
+```
+> What should I fix first in my Second Brain?
+
+> Give me fix suggestions focused on setup quality
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `path` | current directory | Path to project root |
+| `focus` | `auto` | `auto` (picks weakest), `setup`, `usage`, `fluency` |
+| `language` | `en` | Same as check_health |
+
+#### `generate_dashboard`
+
+Self-contained HTML dashboard with score visualizations, CE radar chart, and guided fixes. Opens in your browser.
+
+```
+> Generate a health check dashboard
+
+> Generate dashboard and save to ~/reports/brain.html
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `path` | current directory | Path to project root |
+| `output` | `health-check-report.html` | Output file path |
+
+#### `generate_pdf`
+
+PDF report via headless Chrome. Requires Chrome or Chromium installed.
+
+```
+> Generate a PDF health check report
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `project_path` | *(required)* | Absolute path to project |
+
+---
+
+### Paid Tools
+
+Require an API key. Set `SBF_TOKEN` in your environment or run `setup` to configure.
+
+#### `weekly_pulse`
+
+Track progress over time. Shows score deltas, CE pattern trends, streak detection, and targeted suggestions.
+
+```
+> Show my weekly pulse
+
+> Show my progress over the last 30 days
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `period` | `since_last` | `since_last`, `7d`, `30d` |
+| `path` | current directory | Path to project root |
+
+#### `context_pressure`
+
+Analyze how much of your 200K token context window is consumed by fixed overhead -- CLAUDE.md, MEMORY.md, knowledge files, MCP definitions, skills, hooks, and settings.
+
+```
+> Check my context pressure
+
+> How much of my context window am I using?
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `path` | current directory | Path to project root |
+
+#### `audit_config`
+
+Audit your configuration for dead references, conflicts, security issues, unused items, and performance problems.
+
+```
+> Audit my Second Brain config
+
+> Run a security audit on my setup
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `path` | current directory | Path to project root |
+| `check_categories` | all 5 | `references`, `conflicts`, `security`, `unused`, `performance` |
+
+**What each category checks:**
+- **references** -- Dead file paths in CLAUDE.md, missing hook scripts
+- **conflicts** -- Duplicate CLAUDE.md files, overlapping MCP servers, unmatched hooks
+- **security** -- `.env` in `.gitignore`, API key patterns in config files, wildcard permissions
+- **unused** -- Skills with zero invocations in session logs
+- **performance** -- Oversized CLAUDE.md (>300 lines), MEMORY.md (>180 lines), too many MCP tools (>30)
+
+#### `import_context`
+
+Import conversation history from ChatGPT or Claude exports into organized memory files. Scan first to preview, then import to create files.
+
+```
+> Scan my ChatGPT export at ~/Downloads/conversations.json
+
+> Import my ChatGPT conversations, only coding-related ones from 2025
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `source_type` | *(required)* | `chatgpt_export` (conversations.json) or `claude_export` (directory) |
+| `source_path` | *(required)* | Path to export file or directory |
+| `mode` | `scan` | `scan` (preview only) or `import` (write files) |
+| `output_dir` | `memory/imported/` | Where to write imported files |
+| `max_conversations` | unlimited | Limit conversations processed |
+| `min_messages` | `3` | Skip short conversations |
+| `date_after` | -- | ISO date filter (e.g. `2024-01-01`) |
+| `date_before` | -- | ISO date filter |
+| `categories` | all | `coding`, `writing`, `research`, `planning`, `data`, `creative`, `operations` |
+| `merge_existing` | `false` | When true, writes to `memory/semantic/` instead |
+| `language` | `en` | Output language |
+
+#### `upgrade_brain`
+
+Identify missing and outdated files in your Second Brain and generate personalized upgrades. Runs health check and brain inventory locally, then calls the Factory API for template matching and personalization. Requires `UPGRADE_BRAIN_API_KEY`.
+
+```
+> Upgrade my brain
+
+> Show me what files I'm missing (dry run)
+
+> Upgrade brain, high impact only
+```
+
+Parameters:
+
+| Parameter | Default | Options |
+|:----------|:--------|:--------|
+| `path` | current directory | Path to project root |
+| `high_only` | `false` | Only show HIGH impact files |
+| `category` | all | `agent`, `skill`, `memory`, `config`, `docs` |
+| `dry_run` | `false` | Preview the diff without applying |
+
+---
+
+## CLI
+
+```bash
+# First-time setup (interactive)
+npx second-brain-health-check setup
+
+# Run health check (prints report + opens dashboard)
+npx second-brain-health-check
+
+# Scan a specific directory
+npx second-brain-health-check /path/to/project
+
+# Text report only (no browser)
+npx second-brain-health-check --no-open
+
+# Generate PDF report
+npx second-brain-health-check --pdf
+```
+
+---
+
+## What It Measures
+
+Three dimensions. 45 check layers. ~459 raw points, normalized to /100 each.
+
+```
+SETUP QUALITY      32 layers    ~284 pts
+A (85%+) | B (70%+) | C (50%+) | D (30%+) | F (<30%)
+
+USAGE ACTIVITY      7 layers    ~125 pts
+Active (85%+) | Growing (70%+) | Starting (50%+) | Dormant (30%+) | Empty (<30%)
+
+AI FLUENCY          6 layers     ~60 pts
+Expert (85%+) | Proficient (70%+) | Developing (50%+) | Beginner (30%+) | Novice (<30%)
+```
+
+### Adaptive Reports
+
+Reports shift based on brain maturity:
+
+| Brain State | Condition | Report Style |
+|:--|:--|:--|
+| **Empty** | No CLAUDE.md | 3-step getting-started guide (~20 min) |
+| **Minimal** | Small CLAUDE.md, no .claude/ | Growth mode: top 3 fixes, celebrates what exists |
+| **Basic** | CLAUDE.md + .claude/ | Growth mode |
+| **Structured** | Has skills or hooks or memory | Full report with all dimensions |
+| **Configured** | Has skills + hooks + memory | Full report with CE patterns |
+
+### Context Engineering Patterns
+
+All 45 layers map to 7 CE patterns:
+
+| Pattern | What It Measures |
+|:--------|:-----------------|
+| Progressive Disclosure | CLAUDE.md layering, knowledge files, settings hierarchy |
+| Knowledge Files as RAM | Knowledge base architecture, directory structure |
+| Hooks as Guardrails | PreToolUse/PostToolUse hooks, rules system |
+| Three-Layer Memory | Episodic/semantic separation, session logs |
+| Compound Learning | Review loops, compound evidence, workflow maturity |
+| Self-Correction | Health infra, memory evolution, cross-references |
+| Context Surfaces | MCP servers, plugins, interaction config, context pressure |
+
+---
+
+## HTML Dashboard
 
 <p align="center">
 <img src="assets/dashboard-score-panel.png" alt="Dashboard — score panel, status tally, and top fixes" width="720" />
@@ -197,184 +310,55 @@ Run `npx second-brain-health-check --dashboard` to generate a self-contained HTM
 
 ---
 
-## What It Measures
+## Security and Privacy
 
-Three dimensions. 38 check layers. ~424 raw points, normalized to `/100`.
+- Runs entirely locally -- zero network calls on free tier
+- Zero telemetry on free tier
+- Reads file structure and config metadata only -- never reads your code, emails, or documents
+- Secret detection reports "found/not found" only -- actual key values are never shown
+- Home directory boundary -- cannot scan outside `$HOME`
+- Path validation via Zod (no null bytes, length limits)
+- File count limit: 5,000 per directory scan
+- Recursion depth: 3-4 levels max
+- All user content escaped in HTML output
+- stdio transport only
 
-```
-  SETUP QUALITY        25 layers    ~249 pts
-  ████████████████████████████████████████████░░░░░░  Structure & config
-  A (85%+) | B (70%+) | C (50%+) | D (30%+) | F (<30%)
+**Paid tools:** `weekly_pulse`, `context_pressure`, `audit_config`, and `import_context` make zero network calls (they only read local files). `upgrade_brain` sends anonymized scores and file inventory to the Factory API for template matching -- no file contents are sent.
 
-  USAGE ACTIVITY        7 layers    ~125 pts
-  ████████████████████████████████████████████░░░░░░  Growth & patterns
-  Active (85%+) | Growing (70%+) | Starting (50%+) | Dormant (30%+) | Empty (<30%)
+---
 
-  AI FLUENCY            6 layers     ~60 pts
-  ████████████████████████████████████████████░░░░░░  Collaboration depth
-  Expert (85%+) | Proficient (70%+) | Developing (50%+) | Beginner (30%+) | Novice (<30%)
-```
+## Free vs Paid
 
-### Adaptive Reports
-
-Reports shift based on brain maturity, detected via a fast pre-scan (~100ms):
-
-| Brain State | Score Range | Report Style |
+| | Free | Paid |
 |:--|:--|:--|
-| **Empty** | No CLAUDE.md | 3-step getting-started guide with time estimates |
-| **Minimal / Basic** | 1--40 | Growth mode: celebrates what exists, shows top 3 fixes only |
-| **Structured+** | 41+ | Full report with all dimensions, CE patterns, and complete breakdown |
+| `check_health` | 45-layer scan | Same |
+| `get_fix_suggestions` | Prioritized fixes | Same |
+| `generate_dashboard` | HTML dashboard | Same |
+| `generate_pdf` | PDF report | Same |
+| `weekly_pulse` | -- | Score deltas + trends |
+| `context_pressure` | -- | Token budget analysis |
+| `audit_config` | -- | Config audit (5 categories) |
+| `import_context` | -- | ChatGPT/Claude import |
+| `upgrade_brain` | -- | AI-powered file generation |
+| Score tracking | Local `.health-check.json` | Local + server (benchmark-ready) |
+| Network calls | Zero | `upgrade_brain` only |
+
+Get access: [iwoszapar.com/memory-os](https://www.iwoszapar.com/memory-os)
 
 ---
 
-## Context Engineering Patterns
+## Documentation
 
-The scanner maps all 38 check layers to 7 Context Engineering patterns. This is the signal that separates a collection of files from a working system.
-
-```
-  ┌─────────────────────────────────────────────────────────────┐
-  │  CE PATTERN                       COVERAGE                  │
-  ├─────────────────────────────────────────────────────────────┤
-  │                                                             │
-  │  Progressive Disclosure    ██████████████░░  87%            │
-  │  External doc refs, knowledge files, layered context        │
-  │                                                             │
-  │  Knowledge Files as RAM    ███████████████░  93%            │
-  │  Knowledge base architecture, directory structure           │
-  │                                                             │
-  │  Hooks as Guardrails       █████░░░░░░░░░░  33%            │
-  │  PreToolUse / PostToolUse hooks, rules system               │
-  │                                                             │
-  │  Three-Layer Memory        ████████████░░░  80%            │
-  │  Episodic / semantic separation, session logs               │
-  │                                                             │
-  │  Compound Learning         ███████████████░  93%            │
-  │  Review loops, compound evidence, workflow maturity         │
-  │                                                             │
-  │  Self-Correction           ███████████░░░░  73%            │
-  │  Health infra, memory evolution, cross-references           │
-  │                                                             │
-  │  Context Surfaces          ██████████████░░  87%            │
-  │  MCP servers, plugins, interaction config, context pressure │
-  │                                                             │
-  └─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Check Layers
-
-<details>
-<summary><strong>25 Setup Quality Layers</strong> -- CLAUDE.md, skills, hooks, memory, config, security</summary>
-
-&nbsp;
-
-| # | Layer | Pts | What It Checks |
-|--:|:------|----:|:---------------|
-| 1 | CLAUDE.md Foundation | 23 | Quick Start section, About Me, profession-specific rules, gotchas, length (2K--6K chars), freshness (14 days) |
-| 2 | Skills & Commands | 24 | 2+ skills, YAML frontmatter, profession-relevant naming, 200+ char instructions |
-| 3 | Directory Structure | 15 | Organized folders, separation of concerns |
-| 4 | Memory Architecture | 15 | Episodic/semantic separation, not a single blob |
-| 5 | Brain Health Infra | 10 | Health monitoring setup |
-| 6 | Hooks | 19 | PreToolUse/PostToolUse hooks, coverage |
-| 7 | Personalization | 10 | User-specific config |
-| 8 | MCP Security | 8 | Server configuration safety |
-| 9 | Config Hygiene | 7 | Clean settings, no stale config |
-| 10 | Plugin Coverage | 6 | MCP server coverage |
-| 11 | Settings Hierarchy | 12 | Project vs user vs global settings |
-| 12 | Permissions Audit | 12 | Tool permissions configured |
-| 13 | Sandbox Config | 8 | Sandbox boundaries set |
-| 14 | Model Config | 8 | Model selection configured |
-| 15 | Environment Variables | 10 | Env vars managed |
-| 16 | MCP Server Health | 10 | MCP servers responding |
-| 17 | Attribution & Display | 6 | Output styling, status line |
-| 18 | Agent Config Depth | 8 | Custom agents with tool restrictions |
-| 19 | Gitignore Hygiene | 6 | .env and local settings excluded from git |
-| 20 | Team Readiness | 8 | Agent teams enabled, team artifacts |
-| 21 | Rules System | 6 | `.claude/rules/` with scoped rule files |
-| 22 | Interaction Config | 8 | Keybindings, output style, thinking mode |
-| 23 | Spec & Planning | 10 | Plans/specs directories, structured requirements |
-| 24 | Knowledge Base | 10 | `.claude/docs/` or `.claude/knowledge/` with domain context |
-| 25 | Context Pressure | 10 | CLAUDE.md size, knowledge file distribution, total context surface, progressive disclosure |
-
-</details>
-
-<details>
-<summary><strong>7 Usage Activity Layers</strong> -- session frequency, pattern growth, memory evolution</summary>
-
-&nbsp;
-
-Session logs, pattern files, memory file dates, review loop evidence, compound learning artifacts, cross-references between memory files, and workflow diversity across skill categories.
-
-</details>
-
-<details>
-<summary><strong>6 AI Fluency Layers</strong> -- progressive disclosure, delegation, orchestration</summary>
-
-&nbsp;
-
-Progressive disclosure in CLAUDE.md, skill-to-agent delegation, context-aware skill design, file reference integrity (do paths in CLAUDE.md actually resolve?), multi-tier orchestration with model routing, and interview/spec-first patterns.
-
-</details>
-
----
-
-## MCP Tools
-
-```
-  ┌──────────────────────┬──────────────────────────────────────────────────┐
-  │  check_health        │  Full 38-layer scan across 3 dimensions.        │
-  │                      │  Supports 14 languages, workspace type          │
-  │                      │  (solo/team/enterprise), use case context,      │
-  │                      │  and mode (full/quick/manifest).                │
-  │                      │  Adaptive report based on brain maturity.       │
-  ├──────────────────────┼──────────────────────────────────────────────────┤
-  │  get_fix_suggestions │  Focus on weakest dimension. Prioritized        │
-  │                      │  action plan with time estimates.               │
-  ├──────────────────────┼──────────────────────────────────────────────────┤
-  │  generate_dashboard  │  Self-contained HTML dashboard. Refined          │
-  │                      │  Brutalism design, mobile-responsive, CE radar  │
-  │                      │  chart, terminal-style rows, fix guides.        │
-  ├──────────────────────┼──────────────────────────────────────────────────┤
-  │  generate_pdf        │  PDF report via headless Chrome.                │
-  └──────────────────────┴──────────────────────────────────────────────────┘
-```
-
-**Modes:**
-- `full` -- complete 38-layer scan with adaptive reporting
-- `quick` -- detection-only pre-scan (~100ms)
-- `manifest` -- machine-readable YAML output for CI/other tools
-
----
-
-## Security & Privacy
-
-```
-  ┌─ Security & Privacy Model ────────────────────────────────┐
-  │                                                           │
-  │  ◆ Runs entirely locally — zero network calls             │
-  │  ◆ Zero telemetry — nothing is sent anywhere              │
-  │  ◆ Reads file structure and config metadata only          │
-  │  ◆ Never reads your code, emails, or documents            │
-  │  ◆ Secret detection: reports "found/not found" only —     │
-  │    your actual API keys are never shown in output         │
-  │  ◆ Home directory boundary — cannot scan outside $HOME    │
-  │  ◆ stdio transport only                                   │
-  │  ◆ Path null-byte validation via Zod                      │
-  │  ◆ File count limits (5000 max per directory scan)        │
-  │  ◆ Recursion depth limits (3-4 levels)                    │
-  │  ◆ All user content escaped in HTML output                │
-  │                                                           │
-  └───────────────────────────────────────────────────────────┘
-```
-
-Full security details: [SCORING.md -- Security Hardening](./SCORING.md#security-hardening)
+| Document | Purpose |
+|:---------|:--------|
+| [SCORING.md](./SCORING.md) | Every check, threshold, regex, and point value |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history |
 
 ---
 
 ## What Is a Claude Code Second Brain?
 
-A "Second Brain" is the persistent context layer that lives alongside Claude Code — your CLAUDE.md, `.claude/` directory, skills, hooks, memory files, MCP servers, and planning artifacts. It's what makes Claude remember your preferences, follow your rules, and get smarter over time.
+A "Second Brain" is the persistent context layer that lives alongside Claude Code -- your CLAUDE.md, `.claude/` directory, skills, hooks, memory files, MCP servers, and planning artifacts. It's what makes Claude remember your preferences, follow your rules, and get smarter over time.
 
 > Prompt engineering optimizes a single LLM call.
 > Context engineering optimizes the persistent system surrounding those calls --
@@ -384,20 +368,8 @@ This tool scores that **context engineering layer**, not your prompts.
 
 ---
 
-## Documentation
-
-| Document | Purpose |
-|:---------|:--------|
-| [SCORING.md](./SCORING.md) | Every check, threshold, regex, point value -- the source of truth |
-| [CHANGELOG.md](./CHANGELOG.md) | Full version history from v0.1.0 to v0.9.3 |
-
----
-
 <p align="center">
 
-Part of the [Context Engineering](https://www.iwoszapar.com/context-engineering) product suite.
-If your score reveals gaps, [Second Brain AI](https://www.iwoszapar.com/second-brain-ai) builds the full architecture.
-
-Built by [Iwo Szapar](https://www.iwoszapar.com) -- AI Implementation Expert & Second Brain Architect.
+Part of [MemoryOS](https://www.iwoszapar.com/memory-os) by [Iwo Szapar](https://www.iwoszapar.com).
 
 </p>
