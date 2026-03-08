@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Second Brain Health Check — MCP Server
+ * MemoryOS — MCP Server
  *
  * QA validation tool for AI workspace configurations.
  * Checks setup quality, usage activity, and AI fluency.
  *
- * Install: claude mcp add second-brain-health -- npx second-brain-health-check
+ * Install: claude mcp add memoryos -- npx @iwo-szapar/memoryos
  *
  * v0.8.3: State persistence, buyer CTA suppression, brain manifest YAML,
  * CE radar chart, adaptive reports, CE pattern mapping, time estimates.
@@ -53,7 +53,7 @@ do not ask follow-up questions, do not add extra commentary:
 
 ---
 
-## Second Brain Health: ${overall}%
+## MemoryOS Health: ${overall}%
 
 | Dimension | Score | Grade |
 |-----------|-------|-------|
@@ -77,7 +77,7 @@ Present the summary block above verbatim (with actual values filled in), then op
 }
 
 const server = new McpServer({
-    name: 'second-brain-health-check',
+    name: 'memoryos',
     version: VERSION,
 });
 const pathSchema = z
@@ -123,7 +123,7 @@ function buildContextNote(workspaceType, useCase) {
 }
 // Tool 1: check_health
 server.registerTool('check_health', {
-    description: 'Run a full health check on your Second Brain setup. ' +
+    description: 'Run a full health check on your Claude Code setup. ' +
         'Validates configuration quality (CLAUDE.md, skills, hooks, memory structure), ' +
         'checks usage activity (session history, pattern growth, compound learning), ' +
         'and measures AI fluency (progressive disclosure, skill orchestration, context-awareness). ' +
@@ -131,7 +131,7 @@ server.registerTool('check_health', {
         'Adapts report format based on brain maturity — beginners get a getting-started guide, not a wall of failures.',
     inputSchema: {
         path: pathSchema
-            .describe('Path to the Second Brain root directory. ' +
+            .describe('Path to the project root directory. ' +
             'Defaults to current working directory. ' +
             'Should contain CLAUDE.md at its root.'),
         language: z
@@ -210,12 +210,12 @@ server.registerTool('check_health', {
 });
 // Tool 2: get_fix_suggestions
 server.registerTool('get_fix_suggestions', {
-    description: 'Get specific fix suggestions for the lowest-performing area of your Second Brain setup. ' +
+    description: 'Get specific fix suggestions for the lowest-performing area of your Claude Code setup. ' +
         'Runs a health check and then generates a prioritized action plan ' +
         'for the highest-impact improvements. Each fix includes a time estimate.',
     inputSchema: {
         path: pathSchema
-            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+            .describe('Path to the project root directory. Defaults to current working directory.'),
         focus: z
             .enum(['setup', 'usage', 'fluency', 'auto'])
             .optional()
@@ -253,7 +253,7 @@ server.registerTool('generate_dashboard', {
         'Perfect for sharing results or taking screenshots.',
     inputSchema: {
         path: pathSchema
-            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+            .describe('Path to the project root directory. Defaults to current working directory.'),
         output: z
             .string()
             .max(4096)
@@ -310,7 +310,7 @@ server.registerTool('generate_pdf', {
         };
     }
 });
-// --- Guide Tools (paid — requires GUIDE_TOKEN) ---
+// --- MemoryOS Paid Tools (requires SBF_TOKEN / SBK_TOKEN) ---
 
 function requireGuideToken() {
     const token = process.env.SBK_TOKEN || process.env.SBF_TOKEN || process.env.GUIDE_TOKEN;
@@ -318,10 +318,10 @@ function requireGuideToken() {
         return {
             content: [{
                 type: 'text',
-                text: 'This tool requires a Second Brain Guide account.\n\n' +
-                    'Get access: https://www.iwoszapar.com/second-brain-ai\n\n' +
+                text: 'This tool requires a MemoryOS account.\n\n' +
+                    'Get access: https://www.iwoszapar.com/memory-os\n\n' +
                     'Already purchased? Run the setup command:\n' +
-                    '  npx second-brain-health-check setup\n\n' +
+                    '  npx @iwo-szapar/memoryos setup\n\n' +
                     'This will configure your account and unlock paid tools.'
             }],
             isError: true,
@@ -332,7 +332,7 @@ function requireGuideToken() {
 
 // Tool 5: weekly_pulse
 server.registerTool('weekly_pulse', {
-    description: 'Track your Second Brain progress over time. ' +
+    description: 'Track your setup progress over time. ' +
         'Shows score deltas, CE pattern trends, notable events (tier crossings, streaks), ' +
         'and a targeted suggestion for your weakest area. Reads .health-check.json history.',
     inputSchema: {
@@ -342,23 +342,23 @@ server.registerTool('weekly_pulse', {
             .describe("Comparison period. 'since_last' compares to previous run (default), " +
             "'7d' compares to ~7 days ago, '30d' compares to ~30 days ago."),
         path: pathSchema
-            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+            .describe('Path to the project root directory. Defaults to current working directory.'),
     },
 }, async ({ period, path }) => {
     const gate = requireGuideToken();
     if (gate) return gate;
-    // Deprecation notice — flip to true when remote Guide MCP weekly_pulse ships
+    // Deprecation notice — flip to true when remote MemoryOS MCP weekly_pulse ships
     const REMOTE_WEEKLY_PULSE_AVAILABLE = false;
     if (REMOTE_WEEKLY_PULSE_AVAILABLE) {
         return {
             content: [{
                 type: 'text',
-                text: 'weekly_pulse has moved to the Guide MCP server for better tracking and cross-session insights.\n\n' +
+                text: 'weekly_pulse has moved to the MemoryOS remote server for better tracking and cross-session insights.\n\n' +
                     'The remote version uses server-side history instead of local .health-check.json, ' +
                     'giving you accurate deltas even across machines.\n\n' +
-                    'To use it, make sure your Guide MCP is configured:\n' +
-                    '  npx second-brain-health-check setup\n\n' +
-                    'Then call weekly_pulse through the Guide MCP instead of this local tool.',
+                    'To use it, make sure your MemoryOS remote MCP is configured:\n' +
+                    '  npx @iwo-szapar/memoryos setup\n\n' +
+                    'Then call weekly_pulse through the remote MCP instead of this local tool.',
             }],
         };
     }
@@ -377,7 +377,7 @@ server.registerTool('context_pressure', {
         'and settings. Shows a breakdown with token estimates and recommendations to reclaim space.',
     inputSchema: {
         path: pathSchema
-            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+            .describe('Path to the project root directory. Defaults to current working directory.'),
     },
 }, async ({ path }) => {
     const gate = requireGuideToken();
@@ -392,13 +392,13 @@ server.registerTool('context_pressure', {
 
 // Tool 7: audit_config
 server.registerTool('audit_config', {
-    description: 'Audit your Second Brain configuration for dead references, conflicts, ' +
+    description: 'Audit your configuration for dead references, conflicts, ' +
         'security issues, unused items, and performance problems. ' +
         'Checks CLAUDE.md paths, hook scripts, .gitignore, API key exposure, ' +
         'MCP overlaps, and context surface bloat.',
     inputSchema: {
         path: pathSchema
-            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+            .describe('Path to the project root directory. Defaults to current working directory.'),
         check_categories: z
             .array(z.enum(['references', 'conflicts', 'security', 'unused', 'performance']))
             .optional()
@@ -420,7 +420,7 @@ server.registerTool('audit_config', {
 
 // Tool 8: import_context
 server.registerTool('import_context', {
-    description: 'Import conversation history from ChatGPT or Claude exports into your Second Brain memory structure. ' +
+    description: 'Import conversation history from ChatGPT or Claude exports into your memory structure. ' +
         'Scans exports, extracts topics and patterns, and creates organized memory files. ' +
         'Use scan mode first to preview, then import mode to create files. ' +
         'ChatGPT: point to conversations.json. Claude: point to the export directory.',
@@ -511,7 +511,7 @@ server.registerTool('import_context', {
 
 // Tool 9: upgrade_brain
 server.registerTool('upgrade_brain', {
-    description: 'Identify missing and outdated files in your Second Brain and generate personalized upgrades. ' +
+    description: 'Identify missing and outdated files in your setup and generate personalized upgrades. ' +
         'Runs health check + brain inventory locally (Phases 1-3), then calls the Factory API for template ' +
         'diff and personalization (Phases 4-6). Returns a prioritized list of files to add/update with ' +
         'personalized content and a projected score improvement. ' +
@@ -519,7 +519,7 @@ server.registerTool('upgrade_brain', {
         'Requires UPGRADE_BRAIN_API_KEY env var (MemoryOS subscriber benefit).',
     inputSchema: {
         path: pathSchema
-            .describe('Path to the Second Brain root directory. Defaults to current working directory.'),
+            .describe('Path to the project root directory. Defaults to current working directory.'),
         high_only: z
             .boolean()
             .optional()
@@ -566,7 +566,7 @@ server.registerTool('upgrade_brain', {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error(`Second Brain Health Check MCP server running on stdio (v${VERSION})`);
+    console.error(`MemoryOS MCP server running on stdio (v${VERSION})`);
 }
 main().catch((error) => {
     console.error('Fatal error:', error);

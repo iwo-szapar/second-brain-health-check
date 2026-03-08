@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CLI entry point for Second Brain Health Check.
+ * CLI entry point for MemoryOS.
  *
  * Routing logic:
  *   - "setup" subcommand → interactive setup wizard
@@ -9,12 +9,12 @@
  *   - No args AND stdin IS a TTY (user ran it bare) → CLI mode (runs health check)
  *
  * Usage:
- *   npx second-brain-health-check                        Text report + dashboard (default)
- *   npx second-brain-health-check setup                  Configure MCP servers + token
- *   npx second-brain-health-check [path]                 Text report + dashboard
- *   npx second-brain-health-check --no-open [path]       Text report only, no browser
- *   npx second-brain-health-check --pdf [path]           PDF report (needs Chrome)
- *   npx second-brain-health-check --help                 Show usage
+ *   npx @iwo-szapar/memoryos                        Text report + dashboard (default)
+ *   npx @iwo-szapar/memoryos setup                  Configure MCP servers + token
+ *   npx @iwo-szapar/memoryos [path]                 Text report + dashboard
+ *   npx @iwo-szapar/memoryos --no-open [path]       Text report only, no browser
+ *   npx @iwo-szapar/memoryos --pdf [path]           PDF report (needs Chrome)
+ *   npx @iwo-szapar/memoryos --help                 Show usage
  */
 
 const args = process.argv.slice(2);
@@ -36,17 +36,17 @@ if (!hasCliArgs && !process.stdin.isTTY) {
     const { generatePdf } = await import('./tools/generate-pdf.js');
 
     if (args.includes('--help') || args.includes('-h')) {
-        console.log(`Second Brain Health Check
+        console.log(`MemoryOS
 
 Usage:
-  npx second-brain-health-check                        Text report + open dashboard (default)
-  npx second-brain-health-check setup                  Configure MCP servers + token
-  npx second-brain-health-check [path]                 Text report + dashboard for path
-  npx second-brain-health-check --no-open [path]       Text report only, skip browser
-  npx second-brain-health-check --pdf [path]           PDF report via headless Chrome
+  npx @iwo-szapar/memoryos                        Text report + open dashboard (default)
+  npx @iwo-szapar/memoryos setup                  Configure MCP servers + token
+  npx @iwo-szapar/memoryos [path]                 Text report + dashboard for path
+  npx @iwo-szapar/memoryos --no-open [path]       Text report only, skip browser
+  npx @iwo-szapar/memoryos --pdf [path]           PDF report via headless Chrome
 
 Options:
-  setup           Interactive setup wizard — configures Health Check + Guide MCPs
+  setup           Interactive setup wizard — configures MemoryOS MCP servers
   --no-open       Skip opening the HTML dashboard in browser
   --pdf           Generate PDF report via headless Chrome
   --help, -h      Show this help
@@ -54,7 +54,7 @@ Options:
 Path defaults to current directory. Must contain a CLAUDE.md file.
 
 MCP Server:
-  claude mcp add second-brain-health -- npx second-brain-health-check`);
+  claude mcp add memoryos -- npx @iwo-szapar/memoryos`);
         process.exit(0);
     }
 
@@ -81,11 +81,11 @@ MCP Server:
                 }
             }
             if (matches.length === 1) {
-                process.stderr.write(`Auto-detected Second Brain at: ${matches[0]}\n\n`);
+                process.stderr.write(`Auto-detected project at: ${matches[0]}\n\n`);
                 path = matches[0];
             } else if (matches.length > 1) {
-                process.stderr.write(`Multiple Second Brains found. Please specify a path:\n`);
-                for (const m of matches) process.stderr.write(`  npx second-brain-health-check ${m}\n`);
+                process.stderr.write(`Multiple projects found. Please specify a path:\n`);
+                for (const m of matches) process.stderr.write(`  npx @iwo-szapar/memoryos ${m}\n`);
                 process.stderr.write('\n');
             }
         }
@@ -94,7 +94,7 @@ MCP Server:
     // Privacy notice — printed once before analysis begins
     process.stderr.write(
         '\nHealth check runs entirely locally. Zero telemetry.\n' +
-        'Paid features (Guide MCP) connect to the Guide server for onboarding and optimization.\n' +
+        'Paid features connect to the MemoryOS server for onboarding and optimization.\n' +
         'Reads file structure and config metadata — never logs, stores, or transmits secret values.\n' +
         'Secret detection reports "found/not found" only — your actual keys are never shown in output.\n\n'
     );

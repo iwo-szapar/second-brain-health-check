@@ -1,8 +1,8 @@
-# Second Brain Health Check — Scoring Reference (for Claude Code)
+# MemoryOS — Scoring Reference (for Claude Code)
 
 > Source of truth for all scoring logic. If code and this doc disagree, **the code wins** — update this doc.
 >
-> Last verified against code: 2026-02-24 (v0.13.1)
+> Last verified against code: 2026-02-24 (v0.13.3)
 
 **Related Documentation:**
 - [README.md](./README.md) — Installation and usage guide
@@ -195,7 +195,7 @@ Fast pre-scan using `fs.stat()` calls. Returns:
 {
   maturity: 'empty' | 'minimal' | 'basic' | 'structured' | 'configured',
   has: { claudeMd, claudeDir, memory, skills, hooks, knowledge, agents, settings },
-  isBuyer: boolean,       // GUIDE_TOKEN env var present
+  isBuyer: boolean,       // SBK_TOKEN, SBF_TOKEN, or GUIDE_TOKEN env var present
   isReturning: boolean    // .health-check.json exists
 }
 ```
@@ -221,7 +221,7 @@ Fast pre-scan using `fs.stat()` calls. Returns:
 | Score Range | CTA |
 |-------------|-----|
 | 0 (empty) | → iwoszapar.com/context-engineering |
-| 1-30 | → iwoszapar.com/second-brain-ai |
+| 1-30 | → iwoszapar.com/memory-os |
 | 31-60 | → iwoszapar.com/context-engineering |
 | 61-84 | "N points from Production-grade. Missing: [pattern]" |
 | 85+ | → iwoszapar.com/teams |
@@ -336,7 +336,7 @@ These layers were added in v0.5.0–v0.9.0. Full check-level docs are in the npm
 | 16 | MCP Server Health | 10 | `setup/mcp-health.js` |
 | 17 | Attribution & Display | 6 | `setup/attribution-display.js` |
 
-> **TODO:** Expand these to full check-level docs (same format as Layers 1-7 above). The local `dist/setup/` only contains layers 1-7 — layers 8-25 are in the npm-published package. To document them, pull from npm: `npm pack second-brain-health-check && tar xf *.tgz`.
+> **TODO:** Expand these to full check-level docs (same format as Layers 1-7 above). The local `dist/setup/` only contains layers 1-7 — layers 8-25 are in the npm-published package. To document them, pull from npm: `npm pack memory-os && tar xf *.tgz`.
 
 ### Layer 18: Agent Configuration Depth (8 pts) — `setup/agent-quality.js`
 
@@ -721,7 +721,7 @@ v0.8.1 uses adaptive formatting based on brain maturity. All dimensions display 
 
 ```
 ================================================================
-  SECOND BRAIN HEALTH CHECK
+  MEMORYOS
 ================================================================
 
 SETUP QUALITY:    84/100 (B - Good foundation)
