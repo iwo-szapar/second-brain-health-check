@@ -1,5 +1,5 @@
 /**
- * import_context — Parse and import ChatGPT/Claude exports into Second Brain memory.
+ * import_context — Parse and import ChatGPT/Claude exports into your memory structure.
  *
  * Supports:
  * - chatgpt_export: conversations.json from ChatGPT Settings > Data Controls > Export

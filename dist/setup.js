@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Setup CLI for Second Brain Health Check + MemoryOS.
+ * Setup CLI for MemoryOS.
  *
  * Flow:
  *   1. Banner + welcome
@@ -10,7 +10,7 @@
  *   5. Health check + dashboard
  *   6. Personalized next steps
  *
- * Run via: npx second-brain-health-check setup
+ * Run via: npx @iwo-szapar/memoryos setup
  */
 
 import { createInterface } from 'node:readline';
@@ -20,8 +20,8 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 
 const REMOTE_MCP_URL = 'https://factory.secondbrain.dev/api/mcp';
-const LOCAL_MCP_NAME = 'second-brain-health';
-const REMOTE_MCP_NAME = 'second-brain-guide';
+const LOCAL_MCP_NAME = 'memoryos';
+const REMOTE_MCP_NAME = 'memory-os-remote';
 
 // ── Profile Options ──────────────────────────────────────────────────────────
 
@@ -120,7 +120,7 @@ function printBanner() {
 }
 
 function printWelcome(version) {
-    console.log(`  ${bold('MemoryOS')} ${dim(`v${version}`)} ${dim('\u2014 by Second Brain')}`);
+    console.log(`  ${bold('MemoryOS')} ${dim(`v${version}`)} ${dim('\u2014 by MemoryOS')}`);
     console.log('');
     console.log(`  ${dim('Context engineering quality scanner for Claude Code.')}`);
     console.log(`  ${dim('Scores 45 layers across setup, usage, and AI fluency.')}`);
@@ -433,7 +433,7 @@ function getNextSteps(profile, isPaid) {
         if (experience === 'beginner') {
             lines.push(green('  \u25B6') + '  ' + white('"Show me fix suggestions for my weakest area"'));
         } else {
-            lines.push(green('  \u25B6') + '  ' + white('"Run upgrade_brain to level up my Second Brain"'));
+            lines.push(green('  \u25B6') + '  ' + white('"Run upgrade_brain to level up my setup"'));
         }
     } else {
         lines.push(green('  \u25B6') + '  ' + white('"Run check_health on this project"'));
@@ -458,7 +458,7 @@ export async function runSetup() {
         console.log('');
         console.log('  Run it directly in your terminal (not through Claude Code):');
         console.log('');
-        console.log('    npx second-brain-health-check setup');
+        console.log('    npx @iwo-szapar/memoryos setup');
         console.log('');
         console.log('  It will ask you to paste a token from a MemoryOS purchase email,');
         console.log('  or press Enter for the free tier (4 tools).');
@@ -546,7 +546,7 @@ export async function runSetup() {
     // ── Tier display ──
     console.log('');
     if (isPaid) {
-        console.log(`    ${greenBg(' MEMORIOS ')} ${bold('All 9 tools unlocked')}`);
+        console.log(`    ${greenBg(' MEMORYOS ')} ${bold('All 9 tools unlocked')}`);
     } else {
         console.log(`    ${dimBg(' FREE ')} ${bold('4 tools')} ${dim('(check_health, fix suggestions, dashboard, PDF)')}`);
     }
@@ -555,12 +555,12 @@ export async function runSetup() {
     console.log(section('\u2461 Configure MCP', 'Adding health check server to Claude Code.'));
     console.log('');
 
-    let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'second-brain-health-check']);
+    let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'memoryos']);
     if (localResult !== null) {
         console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} added`);
     } else {
         execClaude(['mcp', 'remove', LOCAL_MCP_NAME]);
-        const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'second-brain-health-check']);
+        const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'memoryos']);
         if (retry !== null) {
             console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} ${dim('(replaced)')}`);
         } else {

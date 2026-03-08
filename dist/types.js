@@ -1,5 +1,5 @@
 /**
- * Second Brain Health Check — Type definitions
+ * MemoryOS — Type definitions
  *
  * QA validation tool for AI workspace configurations.
  * Checks setup quality and usage activity.

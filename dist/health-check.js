@@ -145,7 +145,7 @@ export async function detectBrainState(rootPath) {
     }
 
     // Check for buyer signal and returning user
-    const isBuyer = !!(process.env.GUIDE_TOKEN);
+    const isBuyer = !!(process.env.SBK_TOKEN || process.env.SBF_TOKEN || process.env.GUIDE_TOKEN);
     let isReturning = false;
     let previousScore = null;
     try {

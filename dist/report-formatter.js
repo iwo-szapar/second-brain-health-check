@@ -145,7 +145,7 @@ function buildCTA(report) {
     if (overallPct === 0 || report.brainState?.maturity === 'empty') {
         return [
             '================================================================',
-            '  See what a properly configured Second Brain looks like:',
+            '  See what a properly configured setup looks like:',
             '  https://www.iwoszapar.com/context-engineering',
             '================================================================',
         ];
@@ -191,7 +191,7 @@ function getOverallPct(report) {
 function formatEmptyReport(report) {
     const lines = [];
     lines.push('================================================================');
-    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push('  MEMORYOS');
     lines.push('================================================================');
     lines.push('');
     lines.push('  X-RAY RESULT: No brain detected.');
@@ -237,7 +237,7 @@ function formatGrowthReport(report) {
     const has = report.brainState?.has || {};
 
     lines.push('================================================================');
-    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push('  MEMORYOS');
     lines.push('================================================================');
     lines.push('');
     lines.push(`SETUP QUALITY:    ${report.setup.normalizedScore}/100 (${report.setup.grade} - ${report.setup.gradeLabel})`);
@@ -345,7 +345,7 @@ export function formatReport(report) {
     const lines = [];
     const delta = formatDelta(report);
     lines.push('================================================================');
-    lines.push('  SECOND BRAIN HEALTH CHECK');
+    lines.push('  MEMORYOS');
     lines.push('================================================================');
     lines.push('');
     lines.push(`OVERALL:          ${getOverallPct(report)}%${delta}`);

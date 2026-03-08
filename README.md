@@ -1,19 +1,19 @@
-<h1 align="center">Claude Code Health Check For Your AI Second Brain</h1>
+<h1 align="center">MemoryOS</h1>
 
 <p align="center">
 <strong>Your Claude Code setup has 45 things that could be better. This finds them in 2 seconds.</strong>
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/second-brain-health-check"><img src="https://img.shields.io/npm/v/second-brain-health-check?style=flat-square&color=222" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@iwo-szapar/memoryos"><img src="https://img.shields.io/npm/v/memory-os?style=flat-square&color=222" alt="npm version" /></a>
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-222?style=flat-square" alt="License: MIT" /></a>
 <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-222?style=flat-square" alt="Node" /></a>
 <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-222?style=flat-square" alt="MCP Compatible" /></a>
 </p>
 
-<p align="center"><em>Context Engineering quality scanner for Claude Code</em></p>
+<p align="center"><em>Open-source context engineering scanner for Claude Code</em></p>
 
-Scores your Claude Code Second Brain across 45 check layers and 3 dimensions. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes with time estimates, and an HTML dashboard. Free tools run locally with zero network calls. Paid tools unlock progress tracking, context analysis, conversation import, and AI-powered upgrades.
+Scores your Claude Code setup across 45 check layers and 3 dimensions. Returns adaptive reports with Context Engineering pattern mapping, prioritized fixes with time estimates, and an HTML dashboard. Free tools run locally with zero network calls. Paid tools unlock progress tracking, context analysis, conversation import, and AI-powered upgrades.
 
 ---
 
@@ -22,7 +22,7 @@ Scores your Claude Code Second Brain across 45 check layers and 3 dimensions. Re
 ### One command setup
 
 ```bash
-npx second-brain-health-check setup
+npx @iwo-szapar/memoryos setup
 ```
 
 Interactive onboarding (~2 minutes):
@@ -34,7 +34,7 @@ Interactive onboarding (~2 minutes):
 ### Manual MCP setup
 
 ```bash
-claude mcp add second-brain-health -- npx second-brain-health-check
+claude mcp add memoryos -- npx @iwo-szapar/memoryos
 ```
 
 Then ask Claude: "Run a health check on my project."
@@ -54,7 +54,7 @@ Full 45-layer scan across setup quality, usage activity, and AI fluency. Adapts 
 ```
 > Run a health check
 
-> Check my Second Brain health in quick mode
+> Check my setup health in quick mode
 
 > Run health check in Spanish
 ```
@@ -74,7 +74,7 @@ Parameters:
 Prioritized action plan for your weakest area. Each fix includes a time estimate and point value.
 
 ```
-> What should I fix first in my Second Brain?
+> What should I fix first in my setup?
 
 > Give me fix suggestions focused on setup quality
 ```
@@ -162,7 +162,7 @@ Parameters:
 Audit your configuration for dead references, conflicts, security issues, unused items, and performance problems.
 
 ```
-> Audit my Second Brain config
+> Audit my config
 
 > Run a security audit on my setup
 ```
@@ -209,7 +209,7 @@ Parameters:
 
 #### `upgrade_brain`
 
-Identify missing and outdated files in your Second Brain and generate personalized upgrades. Runs health check and brain inventory locally, then calls the Factory API for template matching and personalization. Requires `UPGRADE_BRAIN_API_KEY`.
+Identify missing and outdated files in your setup and generate personalized upgrades. Runs health check and inventory locally, then calls the Factory API for template matching and personalization. Requires `UPGRADE_BRAIN_API_KEY`.
 
 ```
 > Upgrade my brain
@@ -234,19 +234,19 @@ Parameters:
 
 ```bash
 # First-time setup (interactive)
-npx second-brain-health-check setup
+npx @iwo-szapar/memoryos setup
 
 # Run health check (prints report + opens dashboard)
-npx second-brain-health-check
+npx @iwo-szapar/memoryos
 
 # Scan a specific directory
-npx second-brain-health-check /path/to/project
+npx @iwo-szapar/memoryos /path/to/project
 
 # Text report only (no browser)
-npx second-brain-health-check --no-open
+npx @iwo-szapar/memoryos --no-open
 
 # Generate PDF report
-npx second-brain-health-check --pdf
+npx @iwo-szapar/memoryos --pdf
 ```
 
 ---
@@ -356,20 +356,18 @@ Get access: [iwoszapar.com/memory-os](https://www.iwoszapar.com/memory-os)
 
 ---
 
-## What Is a Claude Code Second Brain?
-
-A "Second Brain" is the persistent context layer that lives alongside Claude Code -- your CLAUDE.md, `.claude/` directory, skills, hooks, memory files, MCP servers, and planning artifacts. It's what makes Claude remember your preferences, follow your rules, and get smarter over time.
+## What Is Context Engineering?
 
 > Prompt engineering optimizes a single LLM call.
 > Context engineering optimizes the persistent system surrounding those calls --
 > the files, hooks, memory, and skills that shape every session.
 
-This tool scores that **context engineering layer**, not your prompts.
+Your CLAUDE.md, `.claude/` directory, skills, hooks, memory files, MCP servers, and planning artifacts form a persistent context layer. MemoryOS scores that layer -- not your prompts.
 
 ---
 
 <p align="center">
 
-Part of [MemoryOS](https://www.iwoszapar.com/memory-os) by [Iwo Szapar](https://www.iwoszapar.com).
+[MemoryOS](https://www.iwoszapar.com/memory-os) by [Iwo Szapar](https://www.iwoszapar.com). MIT License.
 
 </p>
