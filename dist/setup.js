@@ -19,7 +19,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 
-const REMOTE_MCP_URL = 'https://factory.secondbrain.dev/api/mcp';
+const REMOTE_MCP_URL = 'https://second-brain-factory.com/api/mcp';
 const LOCAL_MCP_NAME = 'memoryos';
 const REMOTE_MCP_NAME = 'memory-os-remote';
 
