@@ -563,6 +563,78 @@ server.registerTool('upgrade_brain', {
     }
 });
 
+// Tool 10: recommend_loops
+server.registerTool('recommend_loops', {
+    description: 'Recommend session-scoped monitoring loops based on brain state and subscription tier. ' +
+        'Returns JSON recipes that the caller can pass to CronCreate. ' +
+        'Does NOT create loops itself — returns recommendations only. ' +
+        'Use this to get personalized loop suggestions for /setup-loops.',
+    inputSchema: {
+        path: pathSchema
+            .describe('Path to the project root directory. Defaults to current working directory.'),
+        tier: z
+            .enum(['free', 'paid'])
+            .optional()
+            .describe("Subscription tier. 'free' returns basic loops, 'paid' returns all loops. " +
+            "Auto-detected from SBF_TOKEN env var if not provided."),
+    },
+}, async ({ path, tier }) => {
+    try {
+        const effectiveTier = tier || (process.env.SBF_TOKEN ? 'paid' : 'free');
+        const brainState = await detectBrainState(path || process.cwd());
+        const loops = [];
+        // Always recommend: Heartbeat (quick health check)
+        loops.push({
+            name: 'Heartbeat',
+            category: 'HEALTH',
+            interval_minutes: 30,
+            interval_label: '30m',
+            prompt: '[HEALTH] Run `mcp__memoryos__check_health` with mode \'quick\'. If the score dropped more than 5 points from baseline, report what changed. Otherwise output: Heartbeat OK — [score]/100',
+        });
+        // Always recommend: Session Pulse (work summary)
+        loops.push({
+            name: 'Session Pulse',
+            category: 'HEALTH',
+            interval_minutes: 240,
+            interval_label: '4h',
+            prompt: '[HEALTH] Run `git log --oneline --since=\'4 hours ago\'`. If there are commits, summarize changes. If no commits, stay silent.',
+        });
+        // Paid tier: Drift Watch (full health comparison)
+        if (effectiveTier === 'paid') {
+            loops.push({
+                name: 'Drift Watch',
+                category: 'HEALTH',
+                interval_minutes: 120,
+                interval_label: '2h',
+                prompt: '[HEALTH] Run `mcp__memoryos__check_health` with mode \'full\'. Compare to baseline. If score dropped >5 points, list the top 3 fixes. If stable, report: Drift Watch — stable at [score]/100',
+            });
+        }
+        // Paid tier + mature brain: Memory Nudge
+        if (effectiveTier === 'paid' && (brainState.maturity === 'structured' || brainState.maturity === 'configured')) {
+            loops.push({
+                name: 'Memory Nudge',
+                category: 'HEALTH',
+                interval_minutes: 480,
+                interval_label: '8h',
+                prompt: '[HEALTH] Check if `/learn` has been used today by looking at recent git log. If not used, remind the user. If already used, stay silent.',
+            });
+        }
+        const summary = `Recommended ${loops.length} loops for ${effectiveTier} tier (brain maturity: ${brainState.maturity}).`;
+        return {
+            content: [
+                { type: 'text', text: summary },
+                { type: 'text', text: '\n\n```json\n' + JSON.stringify({ loops, tier: effectiveTier, maturity: brainState.maturity }, null, 2) + '\n```' },
+            ],
+        };
+    }
+    catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+            content: [{ type: 'text', text: `recommend_loops failed: ${message}` }],
+            isError: true,
+        };
+    }
+});
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
