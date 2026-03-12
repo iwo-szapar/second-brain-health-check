@@ -6,7 +6,7 @@
  */
 import { execFile } from 'node:child_process';
 import { writeFile, unlink, access } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomBytes } from 'node:crypto';
 import { runHealthCheck } from '../health-check.js';
@@ -122,7 +122,7 @@ export async function generatePdf(projectPath) {
     if (!homeDir) {
         throw new Error('Cannot determine home directory: HOME environment variable is not set.');
     }
-    if (!pdfPath.startsWith(homeDir + '/') && pdfPath !== homeDir) {
+    if (!pdfPath.startsWith(homeDir + sep) && pdfPath !== homeDir) {
         throw new Error(`Output path "${pdfPath}" is outside the home directory.`);
     }
 
