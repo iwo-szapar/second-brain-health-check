@@ -10,7 +10,7 @@
  *   5. Health check + dashboard
  *   6. Personalized next steps
  *
- * Run via: npx @iwo-szapar/memoryos setup
+ * Run via: npx @iwo-szapar/second-brain-health-check setup
  */
 
 import { createInterface } from 'node:readline';
@@ -20,7 +20,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 
 const REMOTE_MCP_URL = 'https://second-brain-factory.com/api/mcp';
-const LOCAL_MCP_NAME = 'memoryos';
+const LOCAL_MCP_NAME = 'second-brain-health-check';
 const REMOTE_MCP_NAME = 'memory-os-remote';
 
 // ── Profile Options ──────────────────────────────────────────────────────────
@@ -458,7 +458,7 @@ export async function runSetup() {
         console.log('');
         console.log('  Run it directly in your terminal (not through Claude Code):');
         console.log('');
-        console.log('    npx @iwo-szapar/memoryos setup');
+        console.log('    npx @iwo-szapar/second-brain-health-check setup');
         console.log('');
         console.log('  It will ask you to paste a token from a MemoryOS purchase email,');
         console.log('  or press Enter for the free tier (4 tools).');
@@ -555,12 +555,15 @@ export async function runSetup() {
     console.log(section('\u2461 Configure MCP', 'Adding health check server to Claude Code.'));
     console.log('');
 
-    let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'memoryos']);
+    // Migration: remove old 'memoryos' server name if present
+    execClaude(['mcp', 'remove', 'memoryos']);
+
+    let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', '@iwo-szapar/second-brain-health-check']);
     if (localResult !== null) {
         console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} added`);
     } else {
         execClaude(['mcp', 'remove', LOCAL_MCP_NAME]);
-        const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', 'memoryos']);
+        const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', '@iwo-szapar/second-brain-health-check']);
         if (retry !== null) {
             console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} ${dim('(replaced)')}`);
         } else {

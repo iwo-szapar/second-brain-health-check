@@ -9,12 +9,12 @@
  *   - No args AND stdin IS a TTY (user ran it bare) → CLI mode (runs health check)
  *
  * Usage:
- *   npx @iwo-szapar/memoryos                        Text report + dashboard (default)
- *   npx @iwo-szapar/memoryos setup                  Configure MCP servers + token
- *   npx @iwo-szapar/memoryos [path]                 Text report + dashboard
- *   npx @iwo-szapar/memoryos --no-open [path]       Text report only, no browser
- *   npx @iwo-szapar/memoryos --pdf [path]           PDF report (needs Chrome)
- *   npx @iwo-szapar/memoryos --help                 Show usage
+ *   npx @iwo-szapar/second-brain-health-check                        Text report + dashboard (default)
+ *   npx @iwo-szapar/second-brain-health-check setup                  Configure MCP servers + token
+ *   npx @iwo-szapar/second-brain-health-check [path]                 Text report + dashboard
+ *   npx @iwo-szapar/second-brain-health-check --no-open [path]       Text report only, no browser
+ *   npx @iwo-szapar/second-brain-health-check --pdf [path]           PDF report (needs Chrome)
+ *   npx @iwo-szapar/second-brain-health-check --help                 Show usage
  */
 
 const args = process.argv.slice(2);
@@ -39,11 +39,11 @@ if (!hasCliArgs && !process.stdin.isTTY) {
         console.log(`MemoryOS
 
 Usage:
-  npx @iwo-szapar/memoryos                        Text report + open dashboard (default)
-  npx @iwo-szapar/memoryos setup                  Configure MCP servers + token
-  npx @iwo-szapar/memoryos [path]                 Text report + dashboard for path
-  npx @iwo-szapar/memoryos --no-open [path]       Text report only, skip browser
-  npx @iwo-szapar/memoryos --pdf [path]           PDF report via headless Chrome
+  npx @iwo-szapar/second-brain-health-check                        Text report + open dashboard (default)
+  npx @iwo-szapar/second-brain-health-check setup                  Configure MCP servers + token
+  npx @iwo-szapar/second-brain-health-check [path]                 Text report + dashboard for path
+  npx @iwo-szapar/second-brain-health-check --no-open [path]       Text report only, skip browser
+  npx @iwo-szapar/second-brain-health-check --pdf [path]           PDF report via headless Chrome
 
 Options:
   setup           Interactive setup wizard — configures MemoryOS MCP servers
@@ -54,7 +54,7 @@ Options:
 Path defaults to current directory. Must contain a CLAUDE.md file.
 
 MCP Server:
-  claude mcp add memoryos -- npx @iwo-szapar/memoryos`);
+  claude mcp add second-brain-health-check -- npx @iwo-szapar/second-brain-health-check`);
         process.exit(0);
     }
 
@@ -85,7 +85,7 @@ MCP Server:
                 path = matches[0];
             } else if (matches.length > 1) {
                 process.stderr.write(`Multiple projects found. Please specify a path:\n`);
-                for (const m of matches) process.stderr.write(`  npx @iwo-szapar/memoryos ${m}\n`);
+                for (const m of matches) process.stderr.write(`  npx @iwo-szapar/second-brain-health-check ${m}\n`);
                 process.stderr.write('\n');
             }
         }
