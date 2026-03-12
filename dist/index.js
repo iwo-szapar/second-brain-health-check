@@ -5,7 +5,7 @@
  * QA validation tool for AI workspace configurations.
  * Checks setup quality, usage activity, and AI fluency.
  *
- * Install: claude mcp add memoryos -- npx @iwo-szapar/memoryos
+ * Install: claude mcp add second-brain-health-check -- npx @iwo-szapar/second-brain-health-check
  *
  * v0.8.3: State persistence, buyer CTA suppression, brain manifest YAML,
  * CE radar chart, adaptive reports, CE pattern mapping, time estimates.
@@ -77,7 +77,7 @@ Present the summary block above verbatim (with actual values filled in), then op
 }
 
 const server = new McpServer({
-    name: 'memoryos',
+    name: 'second-brain-health-check',
     version: VERSION,
 });
 const pathSchema = z
@@ -321,7 +321,7 @@ function requireGuideToken() {
                 text: 'This tool requires a MemoryOS account.\n\n' +
                     'Get access: https://www.iwoszapar.com/memory-os\n\n' +
                     'Already purchased? Run the setup command:\n' +
-                    '  npx @iwo-szapar/memoryos setup\n\n' +
+                    '  npx @iwo-szapar/second-brain-health-check setup\n\n' +
                     'This will configure your account and unlock paid tools.'
             }],
             isError: true,
@@ -357,7 +357,7 @@ server.registerTool('weekly_pulse', {
                     'The remote version uses server-side history instead of local .health-check.json, ' +
                     'giving you accurate deltas even across machines.\n\n' +
                     'To use it, make sure your MemoryOS remote MCP is configured:\n' +
-                    '  npx @iwo-szapar/memoryos setup\n\n' +
+                    '  npx @iwo-szapar/second-brain-health-check setup\n\n' +
                     'Then call weekly_pulse through the remote MCP instead of this local tool.',
             }],
         };
@@ -589,7 +589,7 @@ server.registerTool('recommend_loops', {
             category: 'HEALTH',
             interval_minutes: 30,
             interval_label: '30m',
-            prompt: '[HEALTH] Run `mcp__memoryos__check_health` with mode \'quick\'. If the score dropped more than 5 points from baseline, report what changed. Otherwise output: Heartbeat OK — [score]/100',
+            prompt: '[HEALTH] Run `mcp__second_brain_health_check__check_health` with mode \'quick\'. If the score dropped more than 5 points from baseline, report what changed. Otherwise output: Heartbeat OK — [score]/100',
         });
         // Always recommend: Session Pulse (work summary)
         loops.push({
@@ -606,7 +606,7 @@ server.registerTool('recommend_loops', {
                 category: 'HEALTH',
                 interval_minutes: 120,
                 interval_label: '2h',
-                prompt: '[HEALTH] Run `mcp__memoryos__check_health` with mode \'full\'. Compare to baseline. If score dropped >5 points, list the top 3 fixes. If stable, report: Drift Watch — stable at [score]/100',
+                prompt: '[HEALTH] Run `mcp__second_brain_health_check__check_health` with mode \'full\'. Compare to baseline. If score dropped >5 points, list the top 3 fixes. If stable, report: Drift Watch — stable at [score]/100',
             });
         }
         // Paid tier + mature brain: Memory Nudge

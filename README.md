@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@iwo-szapar/memoryos"><img src="https://img.shields.io/npm/v/memory-os?style=flat-square&color=222" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@iwo-szapar/second-brain-health-check"><img src="https://img.shields.io/npm/v/memory-os?style=flat-square&color=222" alt="npm version" /></a>
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-222?style=flat-square" alt="License: MIT" /></a>
 <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-222?style=flat-square" alt="Node" /></a>
 <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-222?style=flat-square" alt="MCP Compatible" /></a>
@@ -22,7 +22,7 @@ Scores your Claude Code setup across 45 check layers and 3 dimensions. Returns a
 ### One command setup
 
 ```bash
-npx @iwo-szapar/memoryos setup
+npx @iwo-szapar/second-brain-health-check setup
 ```
 
 Interactive onboarding (~2 minutes):
@@ -34,7 +34,7 @@ Interactive onboarding (~2 minutes):
 ### Manual MCP setup
 
 ```bash
-claude mcp add memoryos -- npx @iwo-szapar/memoryos
+claude mcp add second-brain-health-check -- npx @iwo-szapar/second-brain-health-check
 ```
 
 Then ask Claude: "Run a health check on my project."
@@ -234,19 +234,19 @@ Parameters:
 
 ```bash
 # First-time setup (interactive)
-npx @iwo-szapar/memoryos setup
+npx @iwo-szapar/second-brain-health-check setup
 
 # Run health check (prints report + opens dashboard)
-npx @iwo-szapar/memoryos
+npx @iwo-szapar/second-brain-health-check
 
 # Scan a specific directory
-npx @iwo-szapar/memoryos /path/to/project
+npx @iwo-szapar/second-brain-health-check /path/to/project
 
 # Text report only (no browser)
-npx @iwo-szapar/memoryos --no-open
+npx @iwo-szapar/second-brain-health-check --no-open
 
 # Generate PDF report
-npx @iwo-szapar/memoryos --pdf
+npx @iwo-szapar/second-brain-health-check --pdf
 ```
 
 ---
