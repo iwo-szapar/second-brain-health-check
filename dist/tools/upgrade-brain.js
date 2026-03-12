@@ -14,13 +14,13 @@
  * PRD: product/context-engineering/mcp/PRD-UPGRADE-BRAIN.md
  */
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
-import { join, resolve, relative } from 'path';
+import { join, resolve, relative, sep } from 'path';
 
 // ─── Path Safety ─────────────────────────────────────────────────────────────
 
 function assertPathWithinHome(resolvedPath) {
     const homeDir = process.env.HOME || process.env.USERPROFILE || '/';
-    if (!resolvedPath.startsWith(homeDir + '/') && resolvedPath !== homeDir) {
+    if (!resolvedPath.startsWith(homeDir + sep) && resolvedPath !== homeDir) {
         throw new Error(
             `Path must be inside your home directory.\n` +
             `Home: ${homeDir}\nResolved: ${resolvedPath}\n` +

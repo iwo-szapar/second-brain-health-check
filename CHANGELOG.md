@@ -4,10 +4,15 @@ All notable changes to MemoryOS (formerly Second Brain Health Check) are documen
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.16.2] - 2026-03-12
+
+### Fixed
+- Windows compatibility: path boundary check now uses OS-native separator (`path.sep`) instead of hardcoded `/`. Previously, `C:\Users\<name>\.claude` was rejected as "outside the home directory" on Windows. Affects `health-check.js`, `dashboard/generate.js`, `tools/generate-pdf.js`, and `tools/upgrade-brain.js`.
+
 ## [0.16.1] - 2026-03-12
 
 ### Fixed
-- Windows compatibility: path boundary check now uses OS-native separator (`path.sep`) instead of hardcoded `/`. Previously, `C:\Users\<name>\.claude` was rejected as "outside the home directory" on Windows. Affects `health-check.js`, `dashboard/generate.js`, and `tools/generate-pdf.js`.
+- Windows compatibility: path boundary check now uses OS-native separator (`path.sep`) instead of hardcoded `/`. Previously, `C:\Users\<name>\.claude` was rejected as "outside the home directory" on Windows. Affects `health-check.js`, `dashboard/generate.js`, and `tools/generate-pdf.js`. (Incomplete — upgrade-brain.js missed, fixed in 0.16.2)
 
 ## [0.13.1] - 2026-02-24
 
