@@ -8,7 +8,7 @@
  * Based on iwoszapar.com design system (DESIGN_SYSTEM.md).
  */
 import { writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { resolve, sep } from 'node:path';
 import { VERSION } from '../version.js';
 import { getBrainVizHtml } from './brain-viz.js';
 
@@ -765,7 +765,7 @@ export async function saveDashboard(report, outputPath) {
     if (!homeDir) {
         throw new Error('Cannot determine home directory: HOME environment variable is not set.');
     }
-    if (!filePath.startsWith(homeDir + '/') && filePath !== homeDir) {
+    if (!filePath.startsWith(homeDir + sep) && filePath !== homeDir) {
         throw new Error(`Output path "${filePath}" is outside the home directory.`);
     }
     await writeFile(filePath, html, 'utf-8');

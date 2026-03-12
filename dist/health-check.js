@@ -5,7 +5,7 @@
  * v0.8.1: Added detectBrainState() pre-scan and mapChecksToCEPatterns().
  * v0.13.0: schema_version in state file, Promise.allSettled fault isolation, 7 new setup layers.
  */
-import { resolve } from 'node:path';
+import { resolve, sep } from 'node:path';
 import { stat, realpath, readFile, writeFile } from 'node:fs/promises';
 import { getSetupGrade, getUsageGrade, getFluencyGrade, normalizeScore } from './types.js';
 // Setup layers
@@ -264,7 +264,7 @@ export async function runHealthCheck(path, options = {}) {
     if (!homeDir) {
         throw new Error('Cannot determine home directory: HOME environment variable is not set.');
     }
-    if (!rootPath.startsWith(homeDir + '/') && rootPath !== homeDir) {
+    if (!rootPath.startsWith(homeDir + sep) && rootPath !== homeDir) {
         throw new Error(`Path "${rootPath}" is outside the home directory.`);
     }
     // Ensure path is a directory
