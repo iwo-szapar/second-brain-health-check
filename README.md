@@ -366,6 +366,68 @@ Your CLAUDE.md, `.claude/` directory, skills, hooks, memory files, MCP servers, 
 
 ---
 
+## Troubleshooting
+
+### Migrating from `@iwo-szapar/memoryos`
+
+The old package `@iwo-szapar/memoryos` is deprecated. If you see `Memoryos [tool_name]` (capital M) in your tool output, you're on the old package.
+
+**Claude Code CLI:**
+
+```bash
+claude mcp remove memoryos
+claude mcp remove second-brain-health-check
+npm cache clean --force
+claude mcp add second-brain-health-check -- npx @iwo-szapar/second-brain-health-check@latest
+```
+
+**Claude Desktop / Cowork:**
+
+The CLI commands above only modify Claude Code config (`.claude.json`). Claude Desktop stores MCP config in a separate file:
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+- **Linux:** `~/.config/Claude/claude_desktop_config.json`
+
+Open that file, find the old `"memoryos"` entry under `"mcpServers"`, and replace it with:
+
+```json
+"second-brain-health-check": {
+  "command": "npx",
+  "args": ["@iwo-szapar/second-brain-health-check@latest"],
+  "env": {
+    "SBK_TOKEN": "your_sbk_token_here"
+  }
+}
+```
+
+Then restart the app.
+
+### Windows: path errors
+
+If you see `Path "c:\Users\..." is outside the home directory`, the drive letter casing doesn't match. Fixed in v0.17.2+. Update with:
+
+```bash
+npm cache clean --force
+```
+
+Then re-run the tool. The server picks up the latest version on next invocation.
+
+### Stale npx cache
+
+If fixes don't take effect after updating, npx may be serving a cached old version. Signs: error messages reference `UPGRADE_BRAIN_API_KEY` (removed in v0.17.2), or tool output lacks the `[MemoryOS vX.Y.Z]` version prefix.
+
+```bash
+npm cache clean --force
+npx clear-npx-cache
+```
+
+### How to check your version
+
+Every tool response starts with `[MemoryOS v0.17.4]` (or your installed version). If you don't see this prefix, you're on v0.17.3 or older.
+
+---
+
 <p align="center">
 
 [MemoryOS](https://www.iwoszapar.com/memory-os) by [Iwo Szapar](https://www.iwoszapar.com). MIT License.
