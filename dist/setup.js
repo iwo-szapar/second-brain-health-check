@@ -56,7 +56,7 @@ function bold(s) { return `\x1b[1m${s}\x1b[0m`; }
 function green(s) { return `\x1b[32m${s}\x1b[0m`; }
 function yellow(s) { return `\x1b[33m${s}\x1b[0m`; }
 function red(s) { return `\x1b[31m${s}\x1b[0m`; }
-function white(s) { return `\x1b[97m${s}\x1b[0m`; }
+function white(s) { return `\x1b[1m${s}\x1b[0m`; } // bold instead of bright-white — works on light+dark terminals
 function greenBg(s) { return `\x1b[42m\x1b[30m${s}\x1b[0m`; }
 function dimBg(s) { return `\x1b[100m\x1b[97m${s}\x1b[0m`; }
 
