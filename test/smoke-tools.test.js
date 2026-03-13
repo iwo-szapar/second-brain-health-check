@@ -1,19 +1,13 @@
 /**
  * Smoke tests for all 9 MCP tools.
- * Each test validates the tool runs without crashing on a real brain.
- * Uses this repo (iwoszapar.com) as the test brain.
+ * Each test validates the tool runs without crashing.
+ * Creates a minimal fixture brain inside $HOME for cross-platform CI compatibility.
  */
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm, readFile, access } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { homedir } from 'node:os';
-import { fileURLToPath } from 'node:url';
-
-// Resolve repo root (two levels up from test/)
-const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const PACKAGE_ROOT = resolve(__dirname, '..');
-const BRAIN_PATH = resolve(PACKAGE_ROOT, '..', '..');
 
 // Tool imports
 import { runHealthCheck } from '../dist/health-check.js';
@@ -43,11 +37,32 @@ function extractText(result) {
     return JSON.stringify(result);
 }
 
-// Use a temp dir inside home (saveDashboard enforces home dir boundary)
+// Use a temp dir inside home (health check enforces home dir boundary)
 let tmpDir;
+let BRAIN_PATH;
 
 before(async () => {
     tmpDir = await mkdtemp(join(homedir(), '.smoke-test-'));
+    // Create a minimal but realistic fixture brain for smoke tests.
+    // This works on all platforms (Linux, macOS, Windows) and in CI.
+    BRAIN_PATH = join(tmpDir, 'test-brain');
+    await mkdir(BRAIN_PATH, { recursive: true });
+    await mkdir(join(BRAIN_PATH, '.claude', 'skills'), { recursive: true });
+    await mkdir(join(BRAIN_PATH, 'memory', 'episodic'), { recursive: true });
+    await mkdir(join(BRAIN_PATH, 'memory', 'semantic'), { recursive: true });
+    await writeFile(join(BRAIN_PATH, 'CLAUDE.md'), [
+        '# Test Brain',
+        '',
+        'This is a test CLAUDE.md for smoke tests.',
+        '',
+        '## Quick Start',
+        '',
+        'Run tests with `npm test`.',
+    ].join('\n'));
+    await writeFile(join(BRAIN_PATH, 'memory', 'MEMORY.md'), '# Memory Index\n');
+    await writeFile(join(BRAIN_PATH, '.claude', 'settings.json'), JSON.stringify({
+        permissions: { allow: [] },
+    }));
 });
 
 after(async () => {
