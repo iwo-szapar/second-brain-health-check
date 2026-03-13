@@ -519,6 +519,8 @@ export async function runSetup() {
     }
 
     const isPaid = !!token;
+    let tokenType = token?.startsWith('sbk_') ? 'customer' : 'creator';
+    let remoteMcpPath = '/api/mcp'; // default for creators
 
     // ── Validate token against Factory (if paid) ──
     if (isPaid) {
@@ -531,7 +533,10 @@ export async function runSetup() {
             });
             process.stdout.write(CLEAR_LINE);
             if (res.ok) {
-                console.log(`    ${green('\u2713')} Token validated`);
+                const data = await res.json();
+                tokenType = data.type || tokenType;
+                remoteMcpPath = data.mcp_url || remoteMcpPath;
+                console.log(`    ${green('\u2713')} Token validated (${tokenType})`);
             } else if (res.status === 401) {
                 console.log(yellow('    \u26A0 Token invalid or expired. Check your purchase email.'));
             } else {
@@ -591,15 +596,16 @@ export async function runSetup() {
         }
 
         const header = `Authorization: Bearer ${token}`;
+        const remoteUrl = REMOTE_MCP_URL.replace('/api/mcp', remoteMcpPath);
         execClaude(['mcp', 'remove', REMOTE_MCP_NAME]);
         const remoteResult = execClaude([
-            'mcp', 'add', REMOTE_MCP_NAME, '--transport', 'http', '--url', REMOTE_MCP_URL, '--header', header
+            'mcp', 'add', REMOTE_MCP_NAME, '--transport', 'http', '--url', remoteUrl, '--header', header
         ]);
         if (remoteResult !== null) {
             console.log(`    ${green('\u2713')} ${bold(REMOTE_MCP_NAME)} added ${dim('(remote)')}`);
         } else {
             console.log(`    ${yellow('\u26A0')} ${REMOTE_MCP_NAME} ${dim('\u2014 add manually:')}`);
-            console.log(dim(`      claude mcp add ${REMOTE_MCP_NAME} --transport http --url ${REMOTE_MCP_URL}`));
+            console.log(dim(`      claude mcp add ${REMOTE_MCP_NAME} --transport http --url ${remoteUrl}`));
         }
     }
 
