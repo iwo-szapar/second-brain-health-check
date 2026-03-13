@@ -23,6 +23,7 @@ import { runContextPressure } from './guide/context-pressure-tool.js';
 import { runAuditConfig } from './guide/audit-config.js';
 import { runImportContext } from './tools/import-context.js';
 import { runUpgradeBrain } from './tools/upgrade-brain.js';
+import { runDoctor } from './tools/doctor.js';
 import { phoneHome } from './guide/phone-home.js';
 import { VERSION } from './version.js';
 const VERSION_TAG = `[MemoryOS v${VERSION}]`;
@@ -642,6 +643,30 @@ server.registerTool('recommend_loops', {
         const message = error instanceof Error ? error.message : String(error);
         return tagVersion({
             content: [{ type: 'text', text: `recommend_loops failed: ${message}` }],
+            isError: true,
+        });
+    }
+});
+// Tool 11: doctor
+server.registerTool('doctor', {
+    description: 'Run diagnostics and output a pasteable support block. ' +
+        'Shows: package version, OS, Node version, token status (redacted), ' +
+        'key paths, Factory connectivity, and MCP server configuration. ' +
+        'Paste the output in a support email for instant triage. Free tool, no token needed.',
+    inputSchema: {
+        path: pathSchema
+            .describe('Path to the project root directory. Defaults to current working directory.'),
+    },
+}, async ({ path }) => {
+    try {
+        const output = await runDoctor(path);
+        return tagVersion({
+            content: [{ type: 'text', text: output }],
+        });
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return tagVersion({
+            content: [{ type: 'text', text: `Doctor failed: ${message}` }],
             isError: true,
         });
     }

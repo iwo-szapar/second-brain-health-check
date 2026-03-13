@@ -560,17 +560,29 @@ export async function runSetup() {
     console.log(section('\u2461 Configure MCP', 'Adding health check server to Claude Code.'));
     console.log('');
 
-    // Migration: remove old 'memoryos' server name if present
+    // Migration: remove old 'memoryos' server name (both scopes)
     execClaude(['mcp', 'remove', 'memoryos']);
+    execClaude(['mcp', 'remove', 'memoryos', '--scope', 'user']);
+    // Migration: detect old @iwo-szapar/memoryos npm package and remove its MCP entry
+    try {
+        const mcpList = execClaude(['mcp', 'list']);
+        if (mcpList && mcpList.includes('@iwo-szapar/memoryos')) {
+            console.log(dim('    Detected old @iwo-szapar/memoryos package — removing...'));
+            execClaude(['mcp', 'remove', 'memoryos', '--scope', 'user']);
+            execClaude(['mcp', 'remove', 'memoryos', '--scope', 'project']);
+            console.log(`    ${green('\u2713')} Old memoryos package removed`);
+        }
+    } catch { /* mcp list may not be available */ }
 
-    let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', '@iwo-szapar/second-brain-health-check']);
+    let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--scope', 'user', '--', 'npx', '@iwo-szapar/second-brain-health-check']);
     if (localResult !== null) {
-        console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} added`);
+        console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} added ${dim('(user scope)')}`);
     } else {
         execClaude(['mcp', 'remove', LOCAL_MCP_NAME]);
-        const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--', 'npx', '@iwo-szapar/second-brain-health-check']);
+        execClaude(['mcp', 'remove', LOCAL_MCP_NAME, '--scope', 'user']);
+        const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--scope', 'user', '--', 'npx', '@iwo-szapar/second-brain-health-check']);
         if (retry !== null) {
-            console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} ${dim('(replaced)')}`);
+            console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} ${dim('(replaced, user scope)')}`);
         } else {
             console.log(`    ${yellow('\u26A0')} ${LOCAL_MCP_NAME} ${dim('may already be configured')}`);
         }
@@ -598,14 +610,40 @@ export async function runSetup() {
         const header = `Authorization: Bearer ${token}`;
         const remoteUrl = REMOTE_MCP_URL.replace('/api/mcp', remoteMcpPath);
         execClaude(['mcp', 'remove', REMOTE_MCP_NAME]);
+        execClaude(['mcp', 'remove', REMOTE_MCP_NAME, '--scope', 'user']);
         const remoteResult = execClaude([
-            'mcp', 'add', REMOTE_MCP_NAME, '--transport', 'http', '--url', remoteUrl, '--header', header
+            'mcp', 'add', REMOTE_MCP_NAME, '--scope', 'user', '--transport', 'http', '--url', remoteUrl, '--header', header
         ]);
         if (remoteResult !== null) {
             console.log(`    ${green('\u2713')} ${bold(REMOTE_MCP_NAME)} added ${dim('(remote)')}`);
         } else {
             console.log(`    ${yellow('\u26A0')} ${REMOTE_MCP_NAME} ${dim('\u2014 add manually:')}`);
             console.log(dim(`      claude mcp add ${REMOTE_MCP_NAME} --transport http --url ${remoteUrl}`));
+        }
+    }
+
+    // ── VSCode .mcp.json (if VSCode detected) ──
+    const vscodeDirPath = join(process.cwd(), '.vscode');
+    const mcpJsonPath = join(process.cwd(), '.mcp.json');
+    if (existsSync(vscodeDirPath) && !existsSync(mcpJsonPath)) {
+        try {
+            const mcpJsonConfig = {
+                servers: {
+                    [LOCAL_MCP_NAME]: {
+                        command: 'npx',
+                        args: ['@iwo-szapar/second-brain-health-check'],
+                    },
+                },
+            };
+            if (isPaid && token) {
+                mcpJsonConfig.servers[LOCAL_MCP_NAME].env = {
+                    SBK_TOKEN: token,
+                };
+            }
+            writeFileSync(mcpJsonPath, JSON.stringify(mcpJsonConfig, null, 2) + '\n');
+            console.log(`    ${green('\u2713')} .mcp.json created ${dim('(VSCode extension)')}`);
+        } catch {
+            console.log(dim('    Could not create .mcp.json for VSCode'));
         }
     }
 
