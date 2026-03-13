@@ -20,8 +20,9 @@ import { join, resolve, relative, sep } from 'path';
 
 function assertPathWithinHome(resolvedPath) {
     const homeDir = process.env.HOME || process.env.USERPROFILE || '/';
-    const normalizedPath = resolvedPath.replace(/\\/g, '/');
-    const normalizedHome = homeDir.replace(/\\/g, '/');
+    const isWindows = process.platform === 'win32';
+    const normalizedPath = isWindows ? resolvedPath.replace(/\\/g, '/').toLowerCase() : resolvedPath.replace(/\\/g, '/');
+    const normalizedHome = isWindows ? homeDir.replace(/\\/g, '/').toLowerCase() : homeDir.replace(/\\/g, '/');
     if (!normalizedPath.startsWith(normalizedHome + '/') && normalizedPath !== normalizedHome) {
         throw new Error(
             `Path must be inside your home directory.\n` +
@@ -254,8 +255,8 @@ export async function runUpgradeBrain(options = {}) {
     // Phase 4-6: Call Factory endpoint
     const endpoint = factory_url || 'https://www.iwoszapar.com/api/upgrade/generate';
 
-    // Token resolution: explicit > env var > settings.local.json
-    let token = api_key || process.env.UPGRADE_BRAIN_API_KEY;
+    // Token resolution: explicit > env var > SBK/SBF token > settings.local.json
+    let token = api_key || process.env.UPGRADE_BRAIN_API_KEY || process.env.SBK_TOKEN || process.env.SBF_TOKEN;
     if (!token) {
         // Try reading sbk_ key from settings.local.json (common config location)
         try {
