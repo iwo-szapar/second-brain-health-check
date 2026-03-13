@@ -255,15 +255,15 @@ export async function runUpgradeBrain(options = {}) {
     // Phase 4-6: Call Factory endpoint
     const endpoint = factory_url || 'https://www.iwoszapar.com/api/upgrade/generate';
 
-    // Token resolution: explicit > env var > SBK/SBF token > settings.local.json
-    let token = api_key || process.env.UPGRADE_BRAIN_API_KEY || process.env.SBK_TOKEN || process.env.SBF_TOKEN;
+    // Token resolution: explicit > SBK_TOKEN > SBF_TOKEN > legacy UPGRADE_BRAIN_API_KEY > settings file
+    let token = api_key || process.env.SBK_TOKEN || process.env.SBF_TOKEN || process.env.UPGRADE_BRAIN_API_KEY;
     if (!token) {
         // Try reading sbk_ key from settings.local.json (common config location)
         try {
             const settingsPath = join(brainRoot, '.claude', 'settings.local.json');
             if (existsSync(settingsPath)) {
                 const settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
-                token = settings.env?.UPGRADE_BRAIN_API_KEY || settings.env?.SBK_API_KEY || settings.upgrade_brain_api_key;
+                token = settings.env?.SBK_TOKEN || settings.env?.SBF_TOKEN || settings.env?.UPGRADE_BRAIN_API_KEY || settings.upgrade_brain_api_key;
             }
         } catch { /* ignore parse errors */ }
     }
@@ -272,8 +272,8 @@ export async function runUpgradeBrain(options = {}) {
         throw new Error(
             'No API key found. Your sbk_ key is needed for upgrade_brain.\n' +
             'Option 1: Pass api_key parameter directly with your sbk_ key\n' +
-            'Option 2: Set UPGRADE_BRAIN_API_KEY env var in your MCP server config\n' +
-            'Option 3: Add to .claude/settings.local.json: { "env": { "UPGRADE_BRAIN_API_KEY": "sbk_..." } }\n' +
+            'Option 2: Set SBK_TOKEN env var in your MCP server config\n' +
+            'Option 3: Add to .claude/settings.local.json: { "env": { "SBK_TOKEN": "sbk_..." } }\n' +
             'Get your key from: https://www.iwoszapar.com (MemoryOS subscriber benefit).'
         );
     }

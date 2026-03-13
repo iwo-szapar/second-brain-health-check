@@ -527,7 +527,7 @@ server.registerTool('upgrade_brain', {
         'diff and personalization (Phases 4-6). Returns a prioritized list of files to add/update with ' +
         'personalized content and a projected score improvement. ' +
         'Use after /upgrade-brain skill in Claude Code to apply the generated files. ' +
-        'Requires UPGRADE_BRAIN_API_KEY env var (MemoryOS subscriber benefit).',
+        'Requires SBK_TOKEN env var (MemoryOS subscriber benefit).',
     inputSchema: {
         path: pathSchema
             .describe('Path to the project root directory. Defaults to current working directory.'),
@@ -551,7 +551,7 @@ server.registerTool('upgrade_brain', {
         api_key: z
             .string()
             .optional()
-            .describe('API key for the Factory endpoint. Falls back to UPGRADE_BRAIN_API_KEY env var.'),
+            .describe('API key for the Factory endpoint. Falls back to SBK_TOKEN env var.'),
     },
 }, async ({ path, high_only, category, dry_run, factory_url, api_key }) => {
     try {
