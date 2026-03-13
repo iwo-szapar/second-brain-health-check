@@ -5,7 +5,7 @@
  * v0.8.1: Added detectBrainState() pre-scan and mapChecksToCEPatterns().
  * v0.13.0: schema_version in state file, Promise.allSettled fault isolation, 7 new setup layers.
  */
-import { resolve, sep } from 'node:path';
+import { resolve, sep, basename } from 'node:path';
 import { stat, realpath, readFile, writeFile } from 'node:fs/promises';
 import { getSetupGrade, getUsageGrade, getFluencyGrade, normalizeScore } from './types.js';
 // Setup layers
@@ -112,28 +112,43 @@ export async function detectBrainState(rootPath) {
     };
     let claudeMdSize = 0;
 
+    // Detect if rootPath is already a .claude directory (e.g. C:\Users\Timo\.claude)
+    const isClaudeDir = basename(rootPath) === '.claude';
+
+    // Build paths that adapt based on whether rootPath IS the .claude dir
+    const claudeDir = isClaudeDir ? rootPath : resolve(rootPath, '.claude');
+    const claudeMdPath = isClaudeDir ? resolve(rootPath, 'CLAUDE.md') : resolve(rootPath, 'CLAUDE.md');
+    const memoryPath = isClaudeDir ? resolve(rootPath, '..', 'memory') : resolve(rootPath, 'memory');
+
     const checks = await Promise.allSettled([
-        stat(resolve(rootPath, 'CLAUDE.md')).then(s => { has.claudeMd = true; claudeMdSize = s.size; }),
-        stat(resolve(rootPath, '.claude')).then(s => { if (s.isDirectory()) has.claudeDir = true; }),
-        stat(resolve(rootPath, 'memory')).then(s => { if (s.isDirectory()) has.memory = true; }),
-        stat(resolve(rootPath, '.claude/skills')).then(s => { if (s.isDirectory()) has.skills = true; }),
-        stat(resolve(rootPath, '.claude/settings.json')).then(async (s) => {
+        stat(claudeMdPath).then(s => { has.claudeMd = true; claudeMdSize = s.size; })
+            .catch(() => {
+                // Fallback: check for CLAUDE.md inside .claude/ (global config pattern)
+                return stat(resolve(claudeDir, 'CLAUDE.md')).then(s => { has.claudeMd = true; claudeMdSize = s.size; });
+            }),
+        stat(claudeDir).then(s => { if (s.isDirectory()) has.claudeDir = true; }),
+        stat(memoryPath).then(s => { if (s.isDirectory()) has.memory = true; }),
+        stat(resolve(claudeDir, 'skills')).then(s => { if (s.isDirectory()) has.skills = true; }),
+        stat(resolve(claudeDir, 'settings.json')).then(async (s) => {
             has.settings = true;
             try {
-                const content = await readFile(resolve(rootPath, '.claude/settings.json'), 'utf-8');
+                const content = await readFile(resolve(claudeDir, 'settings.json'), 'utf-8');
                 const parsed = JSON.parse(content);
                 if (parsed.hooks && Object.keys(parsed.hooks).length > 0) has.hooks = true;
             } catch { /* no hooks */ }
         }),
-        stat(resolve(rootPath, '.claude/docs')).then(s => { if (s.isDirectory()) has.knowledge = true; })
-            .catch(() => stat(resolve(rootPath, '.claude/knowledge')).then(s => { if (s.isDirectory()) has.knowledge = true; })),
-        stat(resolve(rootPath, '.claude/agents')).then(s => { if (s.isDirectory()) has.agents = true; }),
+        stat(resolve(claudeDir, 'docs')).then(s => { if (s.isDirectory()) has.knowledge = true; })
+            .catch(() => stat(resolve(claudeDir, 'knowledge')).then(s => { if (s.isDirectory()) has.knowledge = true; })),
+        stat(resolve(claudeDir, 'agents')).then(s => { if (s.isDirectory()) has.agents = true; }),
     ]);
 
     // Determine maturity level
     let maturity;
-    if (!has.claudeMd) {
+    if (!has.claudeMd && !has.claudeDir) {
         maturity = 'empty';
+    } else if (!has.claudeMd && has.claudeDir) {
+        // Has .claude/ dir but no CLAUDE.md — at least minimal
+        maturity = has.skills || has.hooks || has.settings ? 'basic' : 'minimal';
     } else if (claudeMdSize < 500 && !has.claudeDir) {
         maturity = 'minimal';
     } else if (!has.skills && !has.hooks && !has.memory) {
@@ -258,19 +273,27 @@ export function mapChecksToCEPatterns(report) {
 }
 
 export async function runHealthCheck(path, options = {}) {
-    const rootPath = await realpath(resolve(path || process.cwd()));
+    let rootPath = await realpath(resolve(path || process.cwd()));
     // Boundary check: only allow paths within user's home directory
     const homeDir = process.env.HOME || process.env.USERPROFILE;
     if (!homeDir) {
         throw new Error('Cannot determine home directory: HOME environment variable is not set.');
     }
-    if (!rootPath.startsWith(homeDir + sep) && rootPath !== homeDir) {
+    const normalizedRoot = rootPath.replace(/\\/g, '/');
+    const normalizedHome = homeDir.replace(/\\/g, '/');
+    if (!normalizedRoot.startsWith(normalizedHome + '/') && normalizedRoot !== normalizedHome) {
         throw new Error(`Path "${rootPath}" is outside the home directory.`);
     }
     // Ensure path is a directory
     const s = await stat(rootPath);
     if (!s.isDirectory()) {
         throw new Error(`Path "${rootPath}" is not a directory.`);
+    }
+
+    // If rootPath IS a .claude directory, use its parent as the project root.
+    // All check functions expect rootPath to be the project root containing .claude/.
+    if (basename(rootPath) === '.claude') {
+        rootPath = resolve(rootPath, '..');
     }
 
     // Always run brain state detection first

@@ -20,7 +20,9 @@ import { join, resolve, relative, sep } from 'path';
 
 function assertPathWithinHome(resolvedPath) {
     const homeDir = process.env.HOME || process.env.USERPROFILE || '/';
-    if (!resolvedPath.startsWith(homeDir + sep) && resolvedPath !== homeDir) {
+    const normalizedPath = resolvedPath.replace(/\\/g, '/');
+    const normalizedHome = homeDir.replace(/\\/g, '/');
+    if (!normalizedPath.startsWith(normalizedHome + '/') && normalizedPath !== normalizedHome) {
         throw new Error(
             `Path must be inside your home directory.\n` +
             `Home: ${homeDir}\nResolved: ${resolvedPath}\n` +
@@ -251,11 +253,26 @@ export async function runUpgradeBrain(options = {}) {
 
     // Phase 4-6: Call Factory endpoint
     const endpoint = factory_url || 'https://www.iwoszapar.com/api/upgrade/generate';
-    const token = api_key || process.env.UPGRADE_BRAIN_API_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    // Token resolution: explicit > env var > settings.local.json
+    let token = api_key || process.env.UPGRADE_BRAIN_API_KEY;
+    if (!token) {
+        // Try reading sbk_ key from settings.local.json (common config location)
+        try {
+            const settingsPath = join(brainRoot, '.claude', 'settings.local.json');
+            if (existsSync(settingsPath)) {
+                const settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
+                token = settings.env?.UPGRADE_BRAIN_API_KEY || settings.env?.SBK_API_KEY || settings.upgrade_brain_api_key;
+            }
+        } catch { /* ignore parse errors */ }
+    }
 
     if (!token) {
         throw new Error(
-            'No API key found. Set UPGRADE_BRAIN_API_KEY env var or pass api_key option.\n' +
+            'No API key found. Your sbk_ key is needed for upgrade_brain.\n' +
+            'Option 1: Pass api_key parameter directly with your sbk_ key\n' +
+            'Option 2: Set UPGRADE_BRAIN_API_KEY env var in your MCP server config\n' +
+            'Option 3: Add to .claude/settings.local.json: { "env": { "UPGRADE_BRAIN_API_KEY": "sbk_..." } }\n' +
             'Get your key from: https://www.iwoszapar.com (MemoryOS subscriber benefit).'
         );
     }
