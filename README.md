@@ -122,7 +122,7 @@ Parameters:
 
 ### Paid Tools
 
-Require an API key. Set `SBF_TOKEN` in your environment or run `setup` to configure.
+Require an API key. Set `SBK_TOKEN` in your environment or run `setup` to configure.
 
 #### `weekly_pulse`
 
@@ -209,7 +209,7 @@ Parameters:
 
 #### `upgrade_brain`
 
-Identify missing and outdated files in your setup and generate personalized upgrades. Runs health check and inventory locally, then calls the Factory API for template matching and personalization. Requires `UPGRADE_BRAIN_API_KEY`.
+Identify missing and outdated files in your setup and generate personalized upgrades. Runs health check and inventory locally, then calls the Factory API for template matching and personalization. Requires `SBK_TOKEN` env var (MemoryOS subscriber benefit).
 
 ```
 > Upgrade my brain
@@ -381,9 +381,28 @@ npm cache clean --force
 claude mcp add second-brain-health-check -- npx @iwo-szapar/second-brain-health-check@latest
 ```
 
+**VS Code (Claude extension):**
+
+The VS Code extension reads `.mcp.json` in your project root (not `.claude.json`). Create or edit `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "second-brain-health-check": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@iwo-szapar/second-brain-health-check@latest"],
+      "env": {
+        "SBK_TOKEN": "your_sbk_token_here"
+      }
+    }
+  }
+}
+```
+
 **Claude Desktop / Cowork:**
 
-The CLI commands above only modify Claude Code config (`.claude.json`). Claude Desktop stores MCP config in a separate file:
+Claude Desktop stores MCP config in a separate file (not `.claude.json` or `.mcp.json`):
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -402,6 +421,14 @@ Open that file, find the old `"memoryos"` entry under `"mcpServers"`, and replac
 ```
 
 Then restart the app.
+
+**Which config file does what:**
+
+| Client | Config File | Scope |
+|:-------|:-----------|:------|
+| Claude Code CLI | `.claude.json` | Per-project (in project root) or global (`~/.claude.json`) |
+| VS Code extension | `.mcp.json` | Per-project (in project root) |
+| Claude Desktop / Cowork | `claude_desktop_config.json` | Global (see paths above) |
 
 ### Windows: path errors
 
@@ -424,7 +451,7 @@ npx clear-npx-cache
 
 ### How to check your version
 
-Every tool response starts with `[MemoryOS v0.17.4]` (or your installed version). If you don't see this prefix, you're on v0.17.3 or older.
+Every tool response starts with `[MemoryOS v0.17.5]` (or your installed version). If you don't see this prefix, you're on v0.17.4 or older.
 
 ---
 
