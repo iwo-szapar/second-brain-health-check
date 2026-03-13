@@ -253,7 +253,7 @@ export async function runUpgradeBrain(options = {}) {
     const existing_paths = globBrainFiles(brainRoot);
 
     // Phase 4-6: Call Factory endpoint
-    const endpoint = factory_url || 'https://www.iwoszapar.com/api/upgrade/generate';
+    const endpoint = factory_url || 'https://second-brain-factory.com/api/upgrade/generate';
 
     // Token resolution: explicit > SBK_TOKEN > SBF_TOKEN > legacy UPGRADE_BRAIN_API_KEY > settings file
     let token = api_key || process.env.SBK_TOKEN || process.env.SBF_TOKEN || process.env.UPGRADE_BRAIN_API_KEY;
@@ -274,7 +274,7 @@ export async function runUpgradeBrain(options = {}) {
             'Option 1: Pass api_key parameter directly with your sbk_ key\n' +
             'Option 2: Set SBK_TOKEN env var in your MCP server config\n' +
             'Option 3: Add to .claude/settings.local.json: { "env": { "SBK_TOKEN": "sbk_..." } }\n' +
-            'Get your key from: https://www.iwoszapar.com (MemoryOS subscriber benefit).'
+            'Get your key from: https://www.iwoszapar.com/memory-os (MemoryOS subscriber benefit).'
         );
     }
 

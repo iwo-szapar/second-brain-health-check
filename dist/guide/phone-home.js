@@ -10,7 +10,7 @@
  */
 import { VERSION } from '../version.js';
 
-const FACTORY_SCORES_URL = 'https://www.iwoszapar.com/api/health-check/submit';
+const FACTORY_SCORES_URL = 'https://second-brain-factory.com/api/health-check/submit';
 const PHONE_HOME_TIMEOUT_MS = 5000;
 
 /**
@@ -53,8 +53,8 @@ function buildScorePayload(report) {
  * @returns {Promise<{ sent: boolean, error?: string }>}
  */
 export async function phoneHome(report) {
-    // Only send if user has an authenticated account (SBF_TOKEN is the canonical env var)
-    const token = process.env.SBF_TOKEN;
+    // Only send if user has an authenticated account (SBK_TOKEN for customers, SBF_TOKEN legacy)
+    const token = process.env.SBK_TOKEN || process.env.SBF_TOKEN;
     if (!token) {
         return { sent: false, reason: 'no_token' };
     }
