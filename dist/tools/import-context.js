@@ -10,7 +10,7 @@
  * - import: Create organized memory files from conversations
  */
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync, statSync } from 'fs';
-import { join, basename, resolve, relative, dirname } from 'path';
+import { join, basename, resolve, relative, dirname, sep } from 'path';
 
 // --- Path Safety ---
 
@@ -21,7 +21,7 @@ import { join, basename, resolve, relative, dirname } from 'path';
 function assertPathWithinBase(resolvedTarget, baseDir, label) {
     const normalizedBase = resolve(baseDir);
     const normalizedTarget = resolve(resolvedTarget);
-    if (!normalizedTarget.startsWith(normalizedBase + '/') && normalizedTarget !== normalizedBase) {
+    if (!normalizedTarget.startsWith(normalizedBase + sep) && normalizedTarget !== normalizedBase) {
         throw new Error(
             `${label} must be within the project directory.\n` +
             `Base: ${normalizedBase}\nResolved: ${normalizedTarget}\n` +
