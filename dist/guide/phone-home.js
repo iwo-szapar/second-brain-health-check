@@ -92,11 +92,22 @@ export async function phoneHome(report) {
             return { sent: true, reason: 'duplicate' };
         }
 
+        console.error(JSON.stringify({
+            tool: 'phone_home',
+            error: `http_${response.status}`,
+            endpoint: FACTORY_SCORES_URL,
+        }));
         return { sent: false, reason: `http_${response.status}` };
     } catch (error) {
-        // Network failure, timeout, or any other error — silently skip
         const isAbort = (error instanceof DOMException && error.name === 'AbortError') ||
                         (error instanceof Error && error.name === 'AbortError');
-        return { sent: false, reason: isAbort ? 'timeout' : 'network_error' };
+        const reason = isAbort ? 'timeout' : 'network_error';
+        console.error(JSON.stringify({
+            tool: 'phone_home',
+            error: reason,
+            endpoint: FACTORY_SCORES_URL,
+            detail: error instanceof Error ? error.message : String(error),
+        }));
+        return { sent: false, reason };
     }
 }

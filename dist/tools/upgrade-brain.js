@@ -15,22 +15,7 @@
  */
 import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { join, resolve, relative, sep } from 'path';
-
-// ─── Path Safety ─────────────────────────────────────────────────────────────
-
-function assertPathWithinHome(resolvedPath) {
-    const homeDir = process.env.HOME || process.env.USERPROFILE || '/';
-    const isWindows = process.platform === 'win32';
-    const normalizedPath = isWindows ? resolvedPath.replace(/\\/g, '/').toLowerCase() : resolvedPath.replace(/\\/g, '/');
-    const normalizedHome = isWindows ? homeDir.replace(/\\/g, '/').toLowerCase() : homeDir.replace(/\\/g, '/');
-    if (!normalizedPath.startsWith(normalizedHome + '/') && normalizedPath !== normalizedHome) {
-        throw new Error(
-            `Path must be inside your home directory.\n` +
-            `Home: ${homeDir}\nResolved: ${resolvedPath}\n` +
-            `Hint: copy the repo inside ~ first.`
-        );
-    }
-}
+import { normalizePath } from '../utils/normalize-path.js';
 
 // ─── Brain Inventory (Phase 3) ───────────────────────────────────────────────
 
@@ -207,11 +192,7 @@ export async function runUpgradeBrain(options = {}) {
     } = options;
 
     // Resolve brain root
-    const brainRoot = brainPath
-        ? resolve(brainPath)
-        : process.cwd();
-
-    assertPathWithinHome(brainRoot);
+    const brainRoot = normalizePath(brainPath || process.cwd(), { checkBoundary: true });
 
     // Phase 1: Health check (import dynamically to avoid circular deps)
     let scores = { overallPct: 0 };
@@ -298,6 +279,13 @@ export async function runUpgradeBrain(options = {}) {
 
     if (!response.ok) {
         const errData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error(JSON.stringify({
+            tool: 'upgrade_brain',
+            error: `http_${response.status}`,
+            endpoint,
+            prefix: token?.substring(0, 12) || 'none',
+            detail: errData.error,
+        }));
         throw new Error(`Factory endpoint failed (${response.status}): ${errData.error || 'Unknown'}`);
     }
 
