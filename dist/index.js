@@ -25,6 +25,17 @@ import { runImportContext } from './tools/import-context.js';
 import { runUpgradeBrain } from './tools/upgrade-brain.js';
 import { phoneHome } from './guide/phone-home.js';
 import { VERSION } from './version.js';
+const VERSION_TAG = `[MemoryOS v${VERSION}]`;
+/**
+ * Prepend version tag to every tool response for instant version diagnosis.
+ * Works on both success and error responses.
+ */
+function tagVersion(result) {
+    if (result?.content?.[0]?.type === 'text') {
+        result.content[0].text = `${VERSION_TAG} ${result.content[0].text}`;
+    }
+    return result;
+}
 function buildPresentationInstructions(report, dashboardPath, pdfPath) {
     const overall = report.setup && report.usage
         ? Math.round(((report.setup.totalPoints + report.usage.totalPoints + (report.fluency?.totalPoints || 0)) /
@@ -196,16 +207,16 @@ server.registerTool('check_health', {
         // Only for authenticated users, silent on failure
         phoneHome(report).catch(() => { /* intentionally swallowed */ });
 
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: formatted + ctxNote + langNote + manifestNote + dashboardNote + pdfNote + presentationInstructions }],
-        };
+        });
     }
     catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: `Health check failed: ${message}` }],
             isError: true,
-        };
+        });
     }
 });
 // Tool 2: get_fix_suggestions
@@ -232,16 +243,16 @@ server.registerTool('get_fix_suggestions', {
         const report = await runHealthCheck(path);
         const formatted = formatFixSuggestions(report, focus || 'auto');
         const langNote = buildLanguagePrompt(language);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: formatted + langNote }],
-        };
+        });
     }
     catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: `Fix suggestions failed: ${message}` }],
             isError: true,
-        };
+        });
     }
 });
 // Tool 3: generate_dashboard
@@ -265,19 +276,19 @@ server.registerTool('generate_dashboard', {
         const report = await runHealthCheck(path);
         const filePath = await saveDashboard(report, output);
         const formatted = formatReport(report);
-        return {
+        return tagVersion({
             content: [{
                 type: 'text',
                 text: `Dashboard saved to: ${filePath}\n\n${formatted}`,
             }],
-        };
+        });
     }
     catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: `Dashboard generation failed: ${message}` }],
             isError: true,
-        };
+        });
     }
 });
 // Tool 4: generate_pdf
@@ -295,19 +306,19 @@ server.registerTool('generate_pdf', {
 }, async ({ project_path }) => {
     try {
         const pdfPath = await generatePdf(project_path);
-        return {
+        return tagVersion({
             content: [{
                 type: 'text',
                 text: `PDF report saved to: ${pdfPath}`,
             }],
-        };
+        });
     }
     catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: `PDF generation failed: ${message}` }],
             isError: true,
-        };
+        });
     }
 });
 // --- MemoryOS Paid Tools (requires SBF_TOKEN / SBK_TOKEN) ---
@@ -315,7 +326,7 @@ server.registerTool('generate_pdf', {
 function requireGuideToken() {
     const token = process.env.SBK_TOKEN || process.env.SBF_TOKEN || process.env.GUIDE_TOKEN;
     if (!token) {
-        return {
+        return tagVersion({
             content: [{
                 type: 'text',
                 text: 'This tool requires a MemoryOS account.\n\n' +
@@ -325,7 +336,7 @@ function requireGuideToken() {
                     'This will configure your account and unlock paid tools.'
             }],
             isError: true,
-        };
+        });
     }
     return null;
 }
@@ -350,7 +361,7 @@ server.registerTool('weekly_pulse', {
     // Deprecation notice — flip to true when remote MemoryOS MCP weekly_pulse ships
     const REMOTE_WEEKLY_PULSE_AVAILABLE = false;
     if (REMOTE_WEEKLY_PULSE_AVAILABLE) {
-        return {
+        return tagVersion({
             content: [{
                 type: 'text',
                 text: 'weekly_pulse has moved to the MemoryOS remote server for better tracking and cross-session insights.\n\n' +
@@ -360,13 +371,13 @@ server.registerTool('weekly_pulse', {
                     '  npx @iwo-szapar/second-brain-health-check setup\n\n' +
                     'Then call weekly_pulse through the remote MCP instead of this local tool.',
             }],
-        };
+        });
     }
     try {
-        return await runWeeklyPulse(period, path);
+        return tagVersion(await runWeeklyPulse(period, path));
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return { content: [{ type: 'text', text: `Weekly pulse failed: ${message}` }], isError: true };
+        return tagVersion({ content: [{ type: 'text', text: `Weekly pulse failed: ${message}` }], isError: true });
     }
 });
 
@@ -383,10 +394,10 @@ server.registerTool('context_pressure', {
     const gate = requireGuideToken();
     if (gate) return gate;
     try {
-        return await runContextPressure(path);
+        return tagVersion(await runContextPressure(path));
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return { content: [{ type: 'text', text: `Context pressure analysis failed: ${message}` }], isError: true };
+        return tagVersion({ content: [{ type: 'text', text: `Context pressure analysis failed: ${message}` }], isError: true });
     }
 });
 
@@ -411,10 +422,10 @@ server.registerTool('audit_config', {
     const gate = requireGuideToken();
     if (gate) return gate;
     try {
-        return await runAuditConfig(path, check_categories);
+        return tagVersion(await runAuditConfig(path, check_categories));
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return { content: [{ type: 'text', text: `Config audit failed: ${message}` }], isError: true };
+        return tagVersion({ content: [{ type: 'text', text: `Config audit failed: ${message}` }], isError: true });
     }
 });
 
@@ -497,15 +508,15 @@ server.registerTool('import_context', {
             projectRoot: process.cwd()
         });
         const langNote = buildLanguagePrompt(language);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: JSON.stringify(result, null, 2) + langNote }],
-        };
+        });
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: `Import context failed: ${message}` }],
             isError: true,
-        };
+        });
     }
 });
 
@@ -548,18 +559,18 @@ server.registerTool('upgrade_brain', {
         const summary = result._summary || '';
         const outputData = { ...result };
         delete outputData._summary;
-        return {
+        return tagVersion({
             content: [
                 { type: 'text', text: summary },
                 { type: 'text', text: '\n\n```json\n' + JSON.stringify(outputData, null, 2) + '\n```' },
             ],
-        };
+        });
     } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: `Upgrade brain failed: ${message}` }],
             isError: true,
-        };
+        });
     }
 });
 
@@ -620,19 +631,19 @@ server.registerTool('recommend_loops', {
             });
         }
         const summary = `Recommended ${loops.length} loops for ${effectiveTier} tier (brain maturity: ${brainState.maturity}).`;
-        return {
+        return tagVersion({
             content: [
                 { type: 'text', text: summary },
                 { type: 'text', text: '\n\n```json\n' + JSON.stringify({ loops, tier: effectiveTier, maturity: brainState.maturity }, null, 2) + '\n```' },
             ],
-        };
+        });
     }
     catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        return {
+        return tagVersion({
             content: [{ type: 'text', text: `recommend_loops failed: ${message}` }],
             isError: true,
-        };
+        });
     }
 });
 async function main() {
