@@ -574,13 +574,20 @@ export async function runSetup() {
         }
     } catch { /* mcp list may not be available */ }
 
-    let localResult = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--scope', 'user', '--', 'npx', '@iwo-szapar/second-brain-health-check']);
+    // Build mcp add args — include -e SBK_TOKEN if paid user
+    const localAddArgs = ['mcp', 'add', LOCAL_MCP_NAME, '--scope', 'user'];
+    if (isPaid && token) {
+        localAddArgs.push('-e', `SBK_TOKEN=${token}`);
+    }
+    localAddArgs.push('--', 'npx', '@iwo-szapar/second-brain-health-check');
+
+    let localResult = execClaude(localAddArgs);
     if (localResult !== null) {
         console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} added ${dim('(user scope)')}`);
     } else {
         execClaude(['mcp', 'remove', LOCAL_MCP_NAME]);
         execClaude(['mcp', 'remove', LOCAL_MCP_NAME, '--scope', 'user']);
-        const retry = execClaude(['mcp', 'add', LOCAL_MCP_NAME, '--scope', 'user', '--', 'npx', '@iwo-szapar/second-brain-health-check']);
+        const retry = execClaude(localAddArgs);
         if (retry !== null) {
             console.log(`    ${green('\u2713')} ${bold(LOCAL_MCP_NAME)} ${dim('(replaced, user scope)')}`);
         } else {
