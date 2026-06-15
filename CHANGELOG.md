@@ -4,6 +4,14 @@ All notable changes to MemoryOS (formerly Second Brain Health Check) are documen
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+- Reference Integrity false positives: the fluency reference scanner flagged documentation as broken links, depressing the Fluency score for healthy brains. Two classes are now excluded in `dist/fluency/reference-integrity.js`:
+  - **Template/placeholder tokens** — `personal/biznes/YYYY/MM/`, `session/task-XXXX-description`, `memory/episodic/domain/YYYY-MM-DD-slug.md`, and `[Name].tsx`-style bracketed paths are path *shapes* in docs, not references to resolve. Excluded via `YYYY`, `X{3,}`, `\bslug\b`, and `[<>[]{}]` filters.
+  - **Bare single-segment directory labels** — sub-folders named in prose relative to a parent path stated earlier in the same sentence (e.g. `faktury-sprzedaz/`, `faktury-kosztowe/`, `bank-statements/`, `outreach/`, `zips/`) are too ambiguous to resolve at repo root. A directory token with no parent path (`^[^/]+\/$`) is no longer flagged. Files are unaffected. Tradeoff: a genuinely-typo'd bare top-level directory reference will no longer be caught; path-qualified references still are.
+- Added `test/reference-integrity.test.js` covering both false-positive classes plus true-positive checks (real dangling refs in CLAUDE.md and skills must still fail).
+
 ## [0.18.5] - 2026-03-17
 
 ### Fixed
