@@ -53,6 +53,19 @@ const EXCLUDE_PATTERNS = [
     /^personal\//,          // personal directory paths
     /^blog\//,              // blog content paths
     /^growth\//,            // growth directory paths
+    // --- Template / placeholder tokens, not real paths (task-3552) ---
+    // Skill docs and CLAUDE.md describe path *shapes* with placeholders. These
+    // are documentation, not references Claude should resolve.
+    /YYYY/,                 // year placeholder: personal/biznes/YYYY/MM/, YYYY-MM-DD-slug.md
+    /X{3,}/,                // id placeholder: task-XXXX, task-XXX
+    /\bslug\b/i,            // slug placeholder: memory/episodic/domain/YYYY-MM-DD-slug.md
+    /[<>[\]{}]/,            // bracketed template tokens: [Name].tsx, <id>, {{VAR}}
+    // --- Bare single-segment directory labels mentioned in prose (task-3552) ---
+    // A directory token with no parent path (e.g. "zips/", "faktury-kosztowe/")
+    // is almost always a sub-folder named in prose relative to a parent path
+    // stated earlier in the same sentence — too ambiguous to resolve at root.
+    // Trailing "/" scopes this to directories only; files are unaffected.
+    /^[^/]+\/$/,            // e.g. "outreach/", "bank-statements/", "faktury-sprzedaz/"
 ];
 
 // Stricter path patterns for skills — only match references to documentation-like files
