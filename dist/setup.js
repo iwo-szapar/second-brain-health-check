@@ -523,7 +523,6 @@ export async function runSetup() {
     let remoteMcpPath = '/api/mcp'; // default for creators
 
     // ── Validate token against Factory (if paid) ──
-    let tokenVerified = false;
     if (isPaid) {
         process.stdout.write(dim('    Validating...'));
         try {
@@ -537,11 +536,9 @@ export async function runSetup() {
                 const data = await res.json();
                 tokenType = data.type || tokenType;
                 remoteMcpPath = data.mcp_url || remoteMcpPath;
-                tokenVerified = true;
                 console.log(`    ${green('\u2713')} Token validated (${tokenType})`);
             } else if (res.status === 401) {
-                console.log(yellow('    \u26A0 Token invalid or expired. Paid tools may fail with 401.'));
-                console.log(dim('      Check your purchase email or regenerate at iwoszapar.com/memory-os'));
+                console.log(yellow('    \u26A0 Token invalid or expired. Check your purchase email.'));
             } else {
                 console.log(dim('    Could not validate (server unavailable). Continuing.'));
             }
@@ -553,12 +550,10 @@ export async function runSetup() {
 
     // ── Tier display ──
     console.log('');
-    if (isPaid && tokenVerified) {
-        console.log(`    ${greenBg(' MEMORYOS ')} ${bold('All 11 tools unlocked')}`);
-    } else if (isPaid) {
-        console.log(`    ${greenBg(' MEMORYOS ')} ${bold('5 free tools ready')} ${dim('+ 6 paid tools (token unverified)')}`);
+    if (isPaid) {
+        console.log(`    ${greenBg(' MEMORYOS ')} ${bold('All 9 tools unlocked')}`);
     } else {
-        console.log(`    ${dimBg(' FREE ')} ${bold('5 tools')} ${dim('(check_health, fix suggestions, dashboard, PDF, doctor)')}`);
+        console.log(`    ${dimBg(' FREE ')} ${bold('4 tools')} ${dim('(check_health, fix suggestions, dashboard, PDF)')}`);
     }
 
     // ── Configuration ──
