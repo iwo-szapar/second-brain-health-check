@@ -57,8 +57,6 @@ import { checkContextAwareSkills } from './fluency/context-aware-skills.js';
 import { checkReferenceIntegrity } from './fluency/reference-integrity.js';
 import { checkDelegationPatterns } from './fluency/delegation-patterns.js';
 import { checkInterviewPatterns } from './fluency/interview-patterns.js';
-import { getSupabaseClient, resetSupabaseClient } from './utils/supabase-client.js';
-import { resetMemoryOSStats } from './utils/memoryos-stats.js';
 import { VERSION } from './version.js';
 
 // Layer name arrays for Promise.allSettled fallback
@@ -111,7 +109,6 @@ export async function detectBrainState(rootPath) {
         knowledge: false,
         agents: false,
         settings: false,
-        supabaseMemoryOS: false,
     };
     let claudeMdSize = 0;
 
@@ -143,10 +140,6 @@ export async function detectBrainState(rootPath) {
         stat(resolve(claudeDir, 'docs')).then(s => { if (s.isDirectory()) has.knowledge = true; })
             .catch(() => stat(resolve(claudeDir, 'knowledge')).then(s => { if (s.isDirectory()) has.knowledge = true; })),
         stat(resolve(claudeDir, 'agents')).then(s => { if (s.isDirectory()) has.agents = true; }),
-        // Detect opt-in Supabase MemoryOS
-        getSupabaseClient(isClaudeDir ? resolve(rootPath, '..') : rootPath)
-            .then(client => { if (client) has.supabaseMemoryOS = true; })
-            .catch(() => {}),
     ]);
 
     // Determine maturity level
@@ -180,9 +173,6 @@ export async function detectBrainState(rootPath) {
         }
     } catch { /* no history file */ }
 
-    // Determine memory backend
-    const memoryBackend = has.supabaseMemoryOS ? 'supabase' : 'filesystem';
-
     return {
         maturity,
         has,
@@ -190,7 +180,6 @@ export async function detectBrainState(rootPath) {
         isBuyer,
         isReturning,
         previousScore,
-        memoryBackend,
     };
 }
 
@@ -222,13 +211,13 @@ export function mapChecksToCEPatterns(report) {
             id: 'three_layer_memory',
             name: 'Three-Layer Memory',
             description: 'Are episodic/semantic/goals properly separated?',
-            layers: ['Memory System', 'Memory Architecture', 'Sessions'],
+            layers: ['Memory Architecture', 'Sessions'],
         },
         {
             id: 'compound_learning',
             name: 'Compound Learning',
             description: 'Does each session make the system smarter?',
-            layers: ['Review Loop', 'Compound Evidence', 'Workflow Maturity', 'Patterns', 'Pattern Recognition', 'Task Tracking'],
+            layers: ['Review Loop', 'Compound Evidence', 'Workflow Maturity', 'Patterns', 'Task Tracking'],
         },
         {
             id: 'self_correction',

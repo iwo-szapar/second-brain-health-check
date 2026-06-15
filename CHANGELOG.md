@@ -4,6 +4,13 @@ All notable changes to MemoryOS (formerly Second Brain Health Check) are documen
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.18.5] - 2026-03-17
+
+### Fixed
+- Windows path normalization: `existing_paths` from brain inventory now normalize backslashes to forward slashes before sending to server. Previously, `memory\personal\goals.md` never matched `memory/personal/goals.md` in template DB, causing all files to show as "missing".
+- `dry_run` parameter now forwarded to server. Previously the client accepted `dry_run` but never sent it in the request body, so server always returned full file contents (~500KB).
+- Server-side: added defensive path normalization, pagination (default 25, max 100), `high_only` fallback, and `dry_run` content stripping.
+
 ## [0.16.2] - 2026-03-12
 
 ### Fixed

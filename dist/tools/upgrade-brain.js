@@ -230,8 +230,8 @@ export async function runUpgradeBrain(options = {}) {
     profile['KANBAN_TASK_002'] = topFixes[1]?.title || 'Build first agent';
     profile['KANBAN_TASK_003'] = topFixes[2]?.title || 'Create memory system';
 
-    // Phase 3: Brain inventory
-    const existing_paths = globBrainFiles(brainRoot);
+    // Phase 3: Brain inventory (normalize backslashes for Windows compatibility)
+    const existing_paths = globBrainFiles(brainRoot).map(p => p.replace(/\\/g, '/'));
 
     // Phase 4-6: Call Factory endpoint
     const endpoint = factory_url || 'https://second-brain-factory.com/api/upgrade/generate';
@@ -274,6 +274,7 @@ export async function runUpgradeBrain(options = {}) {
             existing_paths,
             high_only,
             category,
+            dry_run,
         }),
     });
 
