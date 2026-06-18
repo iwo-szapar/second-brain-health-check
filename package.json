@@ -1,6 +1,6 @@
 {
   "name": "@iwo-szapar/second-brain-health-check",
-  "version": "0.18.5",
+  "version": "0.18.6",
   "description": "Open-source context engineering scanner for Claude Code. Scores 45 check layers across CLAUDE.md, skills, hooks, memory, and planning artifacts. Free local tools + paid upgrades via MemoryOS.",
   "type": "module",
   "main": "dist/index.js",
@@ -18,7 +18,7 @@
     "zod": "^3.25.0"
   },
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20"
