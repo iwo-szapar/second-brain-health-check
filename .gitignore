@@ -3,3 +3,7 @@ node_modules/
 health-check-report.html
 health-check-report-*.html
 *.pdf
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore

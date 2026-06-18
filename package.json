@@ -40,10 +40,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iwo-szapar/memory-os.git"
+    "url": "git+https://github.com/iwo-szapar/second-brain-health-check.git"
   },
-  "homepage": "https://github.com/iwo-szapar/memory-os#readme",
+  "homepage": "https://github.com/iwo-szapar/second-brain-health-check#readme",
   "bugs": {
-    "url": "https://github.com/iwo-szapar/memory-os/issues"
+    "url": "https://github.com/iwo-szapar/second-brain-health-check/issues"
   }
 }

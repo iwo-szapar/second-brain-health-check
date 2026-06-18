@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/@iwo-szapar/second-brain-health-check"><img src="https://img.shields.io/npm/v/memory-os?style=flat-square&color=222" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@iwo-szapar/second-brain-health-check"><img src="https://img.shields.io/npm/v/@iwo-szapar/second-brain-health-check?style=flat-square&color=222" alt="npm version" /></a>
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-222?style=flat-square" alt="License: MIT" /></a>
 <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-222?style=flat-square" alt="Node" /></a>
 <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-compatible-222?style=flat-square" alt="MCP Compatible" /></a>
@@ -402,6 +402,42 @@ Open that file, find the old `"memoryos"` entry under `"mcpServers"`, and replac
 ```
 
 Then restart the app.
+
+---
+
+## Release Process
+
+Publishing uses npm trusted publishing from GitHub Actions. The workflow in `.github/workflows/publish.yml` runs when a GitHub release is published, then executes:
+
+```bash
+npm ci
+npm test
+npm install -g npm@latest
+npm publish --access public
+```
+
+The workflow intentionally does not use `NPM_TOKEN`. npm authenticates the publish through GitHub Actions OIDC, so the package must have this trusted publisher configured on npm:
+
+| Field | Value |
+|:------|:------|
+| Publisher | GitHub Actions |
+| Organization/user | `iwo-szapar` |
+| Repository | `second-brain-health-check` |
+| Workflow filename | `publish.yml` |
+| Environment | *(empty)* |
+
+Before publishing a release:
+1. Update `package.json` and `CHANGELOG.md`.
+2. Open a release PR and wait for CI on Ubuntu and Windows.
+3. Merge the PR.
+4. Create a GitHub release for the matching tag, for example `v0.18.7`.
+5. Verify npm `latest` after the publish workflow completes:
+
+```bash
+npm view @iwo-szapar/second-brain-health-check version dist-tags --json
+```
+
+If publish fails with `ENEEDAUTH`, check that the npm trusted publisher fields match the table exactly and that `package.json` `repository.url` points to `git+https://github.com/iwo-szapar/second-brain-health-check.git`.
 
 ### Windows: path errors
 
