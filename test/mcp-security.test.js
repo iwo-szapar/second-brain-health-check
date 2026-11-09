@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
 import { checkMcpSecurity } from '../dist/setup/mcp-security.js';
 
 let tmpDir;
@@ -16,6 +17,78 @@ after(async () => {
 });
 
 describe('checkMcpSecurity', () => {
+    for (const path of ['.claude/settings.json', '.claude/settings.local.json', '.mcp.json', '.mcp/extra.json', '.claude.json']) {
+        for (const prefix of ['sbf_', 'sbk_']) {
+            it(`detects tracked ${prefix} credentials in ${path} despite ignore rules`, async () => {
+                const root = await mkdtemp(join(tmpdir(), 'tracked-config-'));
+                const token = prefix + 'fixture'.repeat(6);
+                try {
+                    await mkdir(join(root, '.claude'));
+                    await mkdir(join(root, '.mcp'));
+                    await writeFile(join(root, path), JSON.stringify({ env: { SBF_TOKEN: token } }));
+                    await writeFile(join(root, '.gitignore'), '*\n');
+                    execFileSync('git', ['init', '-q'], { cwd: root });
+                    execFileSync('git', ['add', '-f', '--', path], { cwd: root });
+                    const result = await checkMcpSecurity(root);
+                    assert.equal(result.checks.find(c => c.name === 'Secret detection in MCP configs').status, 'fail');
+                    assert.equal(result.checks.find(c => c.name === 'Git-tracked MCP secrets').status, 'fail');
+                    assert.equal(JSON.stringify(result).includes(token), false);
+                } finally {
+                    await rm(root, { recursive: true, force: true });
+                }
+            });
+        }
+    }
+
+    it('detects credentials in a tracked malformed project .claude.json', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'malformed-claude-'));
+        const token = 'sbf_' + 'fixture'.repeat(6);
+        try {
+            await writeFile(join(root, '.claude.json'), '{"token":"' + token);
+            execFileSync('git', ['init', '-q'], { cwd: root });
+            execFileSync('git', ['add', '.claude.json'], { cwd: root });
+            const result = await checkMcpSecurity(root);
+            assert.equal(result.checks.find(c => c.name === 'Secret detection in MCP configs').status, 'fail');
+            assert.equal(result.checks.find(c => c.name === 'Git-tracked MCP secrets').status, 'fail');
+            assert.equal(JSON.stringify(result).includes(token), false);
+        } finally {
+            await rm(root, { recursive: true, force: true });
+        }
+    });
+
+    it('scans malformed settings and shared permission rules without echoing secrets', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'malformed-config-'));
+        const token = 'sbf_' + 'fixture'.repeat(6);
+        try {
+            await mkdir(join(root, '.claude'));
+            const path = join(root, '.claude', 'settings.json');
+            await writeFile(path, '{"token":"' + token);
+            let result = await checkMcpSecurity(root);
+            assert.equal(result.checks.find(c => c.name === 'Secret detection in MCP configs').status, 'fail');
+            assert.equal(result.checks.find(c => c.name === 'Git-tracked MCP secrets').status, 'warn');
+            await writeFile(path, JSON.stringify({ permissions: { allow: ['Bash(curl -H "Authorization: Bearer ' + token + '")'] } }));
+            result = await checkMcpSecurity(root);
+            assert.equal(result.checks.find(c => c.name === 'Settings permission leaks').status, 'warn');
+            assert.equal(JSON.stringify(result).includes(token), false);
+        } finally {
+            await rm(root, { recursive: true, force: true });
+        }
+    });
+
+    it('distinguishes ignored personal credentials from tracked credentials', async () => {
+        const root = await mkdtemp(join(tmpdir(), 'ignored-config-'));
+        try {
+            await mkdir(join(root, '.claude'));
+            await writeFile(join(root, '.claude', 'settings.local.json'), JSON.stringify({ env: { SBK_TOKEN: 'sbk_' + 'fixture'.repeat(6) } }));
+            await writeFile(join(root, '.gitignore'), '.claude/settings.local.json\n');
+            execFileSync('git', ['init', '-q'], { cwd: root });
+            const result = await checkMcpSecurity(root);
+            assert.equal(result.checks.find(c => c.name === 'Git-tracked MCP secrets').status, 'pass');
+        } finally {
+            await rm(root, { recursive: true, force: true });
+        }
+    });
+
     it('returns passing scores when no MCP config exists', async () => {
         const result = await checkMcpSecurity(tmpDir);
         assert.ok(result.points > 0);

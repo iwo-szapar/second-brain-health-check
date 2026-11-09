@@ -6,12 +6,13 @@
  * and permission allow-list leaks.
  */
 import { readFile, readdir, access } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 import { homedir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 
 // Patterns that indicate a secret value (applied to raw file content or JSON values)
 const SECRET_PATTERNS = [
+    /\bsb[fk]_[A-Za-z0-9_-]{30,}/,
     /sk-[a-zA-Z0-9]{20,}/,
     /key-[a-zA-Z0-9]{20,}/,
     /token-[a-zA-Z0-9]{20,}/,
@@ -97,7 +98,14 @@ export async function checkMcpSecurity(rootPath) {
     // .mcp.json (project-level MCP config)
     const mcpJsonPath = join(rootPath, '.mcp.json');
     const mcpJson = await readJson(mcpJsonPath);
-    if (mcpJson) filesToScan.push({ path: mcpJsonPath, label: '.mcp.json', json: mcpJson, scope: 'project' });
+    if (await fileExists(mcpJsonPath)) filesToScan.push({ path: mcpJsonPath, label: '.mcp.json', json: mcpJson, scope: 'project' });
+
+    for (const name of ['settings.json', 'settings.local.json']) {
+        const path = join(rootPath, '.claude', name);
+        if (await fileExists(path)) {
+            filesToScan.push({ path, label: `.claude/${name}`, json: await readJson(path), scope: 'project' });
+        }
+    }
 
     // .mcp/ directory — scan all JSON files inside
     const mcpDirPath = join(rootPath, '.mcp');
@@ -107,7 +115,7 @@ export async function checkMcpSecurity(rootPath) {
             if (!entry.endsWith('.json')) continue;
             const fullPath = join(mcpDirPath, entry);
             const parsed = await readJson(fullPath);
-            if (parsed) filesToScan.push({ path: fullPath, label: `.mcp/${entry}`, json: parsed, scope: 'project' });
+            filesToScan.push({ path: fullPath, label: `.mcp/${entry}`, json: parsed, scope: 'project' });
         }
     } catch {
         // directory doesn't exist — fine
@@ -116,7 +124,7 @@ export async function checkMcpSecurity(rootPath) {
     // .claude.json at project level
     const claudeJsonPath = join(rootPath, '.claude.json');
     const claudeJson = await readJson(claudeJsonPath);
-    if (claudeJson) filesToScan.push({ path: claudeJsonPath, label: '.claude.json (project)', json: claudeJson, scope: 'project' });
+    if (await fileExists(claudeJsonPath)) filesToScan.push({ path: claudeJsonPath, label: '.claude.json (project)', json: claudeJson, scope: 'project' });
 
     // ~/.claude.json (user-level — contains mcpServers for most setups)
     const userClaudeJsonPath = join(home, '.claude.json');
@@ -242,102 +250,49 @@ export async function checkMcpSecurity(rootPath) {
     // Check 3: Git-tracked secrets (2 pts)
     // ---------------------------------------------------------------
     {
-        let gitTracked = false;
-        let gitIgnored = false;
-        let mcpJsonHasSecrets = false;
-
-        // Check if .mcp.json exists and has secrets
-        if (mcpJson) {
-            mcpJsonHasSecrets = jsonContainsSecrets(mcpJson);
-        }
-
-        // Check if .mcp.json is tracked by git (using execFileSync for safety)
-        try {
-            execFileSync('git', ['ls-files', '--error-unmatch', '.mcp.json'], {
-                cwd: rootPath,
-                stdio: ['pipe', 'pipe', 'pipe'],
-            });
-            gitTracked = true;
-        } catch {
-            // not tracked
-        }
-
-        // Check if .gitignore includes .mcp.json
-        try {
-            const gitignore = await readFile(join(rootPath, '.gitignore'), 'utf-8');
-            if (gitignore.split('\n').some((line) => line.trim() === '.mcp.json' || line.trim() === '.mcp.json*')) {
-                gitIgnored = true;
+        const secretFiles = [];
+        for (const file of filesToScan.filter(file => file.scope === 'project')) {
+            if (file.json ? jsonContainsSecrets(file.json) : rawContainsSecrets(await readFile(file.path, 'utf-8').catch(() => ''))) {
+                secretFiles.push(relative(rootPath, file.path));
             }
-        } catch {
-            // no .gitignore
         }
-
-        let status, points;
-        if (gitTracked && mcpJsonHasSecrets) {
-            status = 'fail';
-            points = 0;
-            checks.push({
-                name: 'Git-tracked MCP secrets',
-                status,
-                points,
-                maxPoints: 2,
-                message: 'Secrets found in git-tracked .mcp.json — add .mcp.json to .gitignore and rotate compromised keys',
-            });
-        } else if (gitIgnored) {
-            status = 'pass';
-            points = 2;
-            checks.push({
-                name: 'Git-tracked MCP secrets',
-                status,
-                points,
-                maxPoints: 2,
-                message: 'MCP config properly gitignored',
-            });
-        } else if (!mcpJson) {
-            status = 'pass';
-            points = 2;
-            checks.push({
-                name: 'Git-tracked MCP secrets',
-                status,
-                points,
-                maxPoints: 2,
-                message: 'No .mcp.json file present — no git-tracking risk',
-            });
-        } else if (!mcpJsonHasSecrets) {
-            status = 'pass';
-            points = 2;
-            checks.push({
-                name: 'Git-tracked MCP secrets',
-                status,
-                points,
-                maxPoints: 2,
-                message: '.mcp.json has no API keys — safe to commit',
-            });
-        } else {
-            // Has secrets but not git-tracked — good
-            status = 'pass';
-            points = 2;
-            checks.push({
-                name: 'Git-tracked MCP secrets',
-                status,
-                points,
-                maxPoints: 2,
-                message: '.mcp.json contains API keys but is not committed to git — keys stay private',
-            });
+        const tracked = [];
+        const unprotected = [];
+        for (const path of secretFiles) {
+            try {
+                execFileSync('git', ['ls-files', '--error-unmatch', '--', path], { cwd: rootPath, stdio: 'pipe', timeout: 5000 });
+                tracked.push(path);
+                continue;
+            } catch { /* not tracked, or Git unavailable */ }
+            try {
+                execFileSync('git', ['check-ignore', '-q', '--', path], { cwd: rootPath, stdio: 'pipe', timeout: 5000 });
+            } catch {
+                unprotected.push(path);
+            }
         }
+        checks.push({
+            name: 'Git-tracked MCP secrets',
+            status: tracked.length ? 'fail' : unprotected.length ? 'warn' : 'pass',
+            points: tracked.length ? 0 : unprotected.length ? 1 : 2,
+            maxPoints: 2,
+            message: tracked.length
+                ? `Secrets found in git-tracked config: ${tracked.join(', ')} — remove credentials and rotate compromised keys; ignore rules do not untrack files`
+                : unprotected.length
+                    ? `Config credentials are not protected by Git ignore rules: ${unprotected.join(', ')}`
+                    : secretFiles.length ? 'Config credentials are untracked and gitignored' : 'No project config credentials found',
+        });
     }
 
     // ---------------------------------------------------------------
     // Check 4: Settings permission leaks (1 pt)
     // ---------------------------------------------------------------
     {
-        const settingsLocalPath = join(rootPath, '.claude', 'settings.local.json');
-        const settingsLocal = await readJson(settingsLocalPath);
+        const settingsFiles = filesToScan.filter(file => file.label.startsWith('.claude/settings') && file.json);
 
         let leaksFound = 0;
 
-        if (settingsLocal) {
-            const permissions = settingsLocal.permissions || {};
+        for (const file of settingsFiles) {
+            const permissions = file.json.permissions || {};
             const allowList = permissions.allow || [];
 
             if (Array.isArray(allowList)) {
@@ -365,7 +320,7 @@ export async function checkMcpSecurity(rootPath) {
         }
 
         let status, points;
-        if (!settingsLocal) {
+        if (settingsFiles.length === 0) {
             status = 'pass';
             points = 1;
             checks.push({
@@ -373,7 +328,7 @@ export async function checkMcpSecurity(rootPath) {
                 status,
                 points,
                 maxPoints: 1,
-                message: 'No .claude/settings.local.json found — no permission leak risk',
+                message: 'No project settings found — no permission leak risk',
             });
         } else if (leaksFound === 0) {
             status = 'pass';

@@ -15,9 +15,10 @@
 
 import { createInterface } from 'node:readline';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { Writable } from 'node:stream';
 
 const REMOTE_MCP_URL = 'https://second-brain-factory.com/api/mcp';
 const LOCAL_MCP_NAME = 'second-brain-health-check';
@@ -377,37 +378,20 @@ function execClaude(args) {
     catch { return null; }
 }
 
-function readClaudeSettings() {
-    for (const p of [join(process.cwd(), '.claude', 'settings.json'), join(homedir(), '.claude', 'settings.json')]) {
-        if (existsSync(p)) {
-            try { return { path: p, data: JSON.parse(readFileSync(p, 'utf-8')) }; } catch { /* skip */ }
-        }
+export function findExistingToken(env = process.env, home = homedir()) {
+    if (env.SBK_TOKEN || env.SBF_TOKEN || env.GUIDE_TOKEN) {
+        return env.SBK_TOKEN || env.SBF_TOKEN || env.GUIDE_TOKEN;
+    }
+    // User-scoped MCP credentials stay outside the project checkout.
+    for (const path of [join(home, '.claude.json'), join(home, '.claude', 'settings.json')]) {
+        try {
+            const data = JSON.parse(readFileSync(path, 'utf-8'));
+            const values = data.mcpServers?.[LOCAL_MCP_NAME]?.env || data.env;
+            const token = values?.SBK_TOKEN || values?.SBF_TOKEN || values?.GUIDE_TOKEN;
+            if (token) return token;
+        } catch { /* missing or invalid user config */ }
     }
     return null;
-}
-
-function findExistingToken() {
-    if (process.env.SBK_TOKEN) return process.env.SBK_TOKEN;
-    if (process.env.SBF_TOKEN) return process.env.SBF_TOKEN;
-    if (process.env.GUIDE_TOKEN) return process.env.GUIDE_TOKEN;
-    const s = readClaudeSettings();
-    return s?.data?.env?.SBK_TOKEN || s?.data?.env?.SBF_TOKEN || null;
-}
-
-function saveTokenToSettings(token) {
-    const projectDir = join(process.cwd(), '.claude');
-    const settingsPath = join(projectDir, 'settings.json');
-    let data = {};
-    if (existsSync(settingsPath)) {
-        try { data = JSON.parse(readFileSync(settingsPath, 'utf-8')); } catch { /* fresh */ }
-    }
-    if (!data.env) data.env = {};
-    data.env.SBK_TOKEN = token;
-    // Keep SBF_TOKEN for backwards compatibility
-    data.env.SBF_TOKEN = token;
-    if (!existsSync(projectDir)) mkdirSync(projectDir, { recursive: true });
-    writeFileSync(settingsPath, JSON.stringify(data, null, 2) + '\n');
-    return settingsPath;
 }
 
 // ── Personalized Next Steps ──────────────────────────────────────────────────
@@ -468,7 +452,14 @@ export async function runSetup() {
         process.exit(0);
     }
 
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    let hideInput = false;
+    const output = new Writable({
+        write(chunk, encoding, done) {
+            if (!hideInput) process.stdout.write(chunk, encoding);
+            done();
+        },
+    });
+    const rl = createInterface({ input: process.stdin, output, terminal: !!process.stdin.isTTY });
 
     const { version } = JSON.parse(
         readFileSync(new URL('../package.json', import.meta.url), 'utf-8')
@@ -486,7 +477,7 @@ export async function runSetup() {
         console.log('    Install it first:');
         console.log(bold('    https://docs.anthropic.com/en/docs/claude-code/overview'));
         console.log('');
-        console.log(dim('    Or add manually to .claude/settings.json mcpServers.'));
+        console.log(dim('    Or configure mcpServers in your private ~/.claude.json file.'));
         rl.close();
         process.exit(1);
     }
@@ -500,7 +491,7 @@ export async function runSetup() {
     let token = existingToken;
 
     if (existingToken) {
-        console.log(`    ${green('\u2713')} ${bold('Token found:')} ${dim(existingToken.slice(0, 12) + '...')}`);
+        console.log(`    ${green('\u2713')} ${bold('Token found:')} ${dim('(hidden)')}`);
         const keepToken = await askYesNo(rl, 'Use this token?', true);
         if (!keepToken) token = null;
     }
@@ -511,19 +502,29 @@ export async function runSetup() {
         console.log(dim('    No token? Press Enter for the free tier (4 tools).'));
         console.log(dim('    Get MemoryOS: https://www.iwoszapar.com/memory-os'));
         console.log('');
-        const input = await ask(rl, `    ${bold('Token:')} `);
+        process.stdout.write(`    ${bold('Token (hidden):')} `);
+        hideInput = true;
+        const wasRaw = process.stdin.isRaw;
+        if (process.stdin.isTTY) process.stdin.setRawMode(true);
+        let input;
+        try {
+            input = await ask(rl, '');
+        } finally {
+            if (process.stdin.isTTY) process.stdin.setRawMode(!!wasRaw);
+            hideInput = false;
+            process.stdout.write('\n');
+        }
         token = input.trim() || null;
         if (token && !token.startsWith('sbf_') && !token.startsWith('sbk_')) {
             console.log(yellow('    \u26A0 Token usually starts with "sbf_" or "sbk_".'));
         }
     }
 
-    const isPaid = !!token;
     let tokenType = token?.startsWith('sbk_') ? 'customer' : 'creator';
-    let remoteMcpPath = '/api/mcp'; // default for creators
+    let remoteMcpPath = tokenType === 'customer' ? '/api/mcp/customer' : '/api/mcp';
 
     // ── Validate token against Factory (if paid) ──
-    if (isPaid) {
+    if (token) {
         process.stdout.write(dim('    Validating...'));
         try {
             const res = await fetch(`${REMOTE_MCP_URL.replace('/api/mcp', '/api/mcp/validate')}`, {
@@ -537,8 +538,9 @@ export async function runSetup() {
                 tokenType = data.type || tokenType;
                 remoteMcpPath = data.mcp_url || remoteMcpPath;
                 console.log(`    ${green('\u2713')} Token validated (${tokenType})`);
-            } else if (res.status === 401) {
-                console.log(yellow('    \u26A0 Token invalid or expired. Check your purchase email.'));
+            } else if (res.status === 401 || res.status === 403) {
+                token = null;
+                console.log(yellow('    \u26A0 Token rejected. Continuing with the free tier; check your purchase email.'));
             } else {
                 console.log(dim('    Could not validate (server unavailable). Continuing.'));
             }
@@ -548,10 +550,12 @@ export async function runSetup() {
         }
     }
 
+    const isPaid = !!token;
+
     // ── Tier display ──
     console.log('');
     if (isPaid) {
-        console.log(`    ${greenBg(' MEMORYOS ')} ${bold('All 9 tools unlocked')}`);
+        console.log(`    ${greenBg(' MEMORYOS ')} ${bold('Paid tier selected; access checked by the server')}`);
     } else {
         console.log(`    ${dimBg(' FREE ')} ${bold('4 tools')} ${dim('(check_health, fix suggestions, dashboard, PDF)')}`);
     }
@@ -596,24 +600,6 @@ export async function runSetup() {
     }
 
     if (isPaid) {
-        try {
-            saveTokenToSettings(token);
-            console.log(`    ${green('\u2713')} Token saved ${dim('to .claude/settings.json')}`);
-        } catch {
-            console.log(`    ${yellow('\u26A0')} ${dim('Save manually: SBK_TOKEN=' + token)}`);
-        }
-
-        // ── .gitignore check ──
-        const gitignorePath = join(process.cwd(), '.gitignore');
-        if (existsSync(gitignorePath)) {
-            const gitignoreContent = readFileSync(gitignorePath, 'utf-8');
-            if (!gitignoreContent.includes('.claude/settings.json') && !gitignoreContent.includes('.claude/')) {
-                console.log(yellow('    \u26A0 .gitignore: add .claude/settings.json to protect your token'));
-            }
-        } else {
-            console.log(yellow('    \u26A0 No .gitignore found. Token in .claude/settings.json may leak to git.'));
-        }
-
         const header = `Authorization: Bearer ${token}`;
         const remoteUrl = REMOTE_MCP_URL.replace('/api/mcp', remoteMcpPath);
         execClaude(['mcp', 'remove', REMOTE_MCP_NAME]);
@@ -629,30 +615,8 @@ export async function runSetup() {
         }
     }
 
-    // ── VSCode .mcp.json (if VSCode detected) ──
-    const vscodeDirPath = join(process.cwd(), '.vscode');
-    const mcpJsonPath = join(process.cwd(), '.mcp.json');
-    if (existsSync(vscodeDirPath) && !existsSync(mcpJsonPath)) {
-        try {
-            const mcpJsonConfig = {
-                servers: {
-                    [LOCAL_MCP_NAME]: {
-                        command: 'npx',
-                        args: ['@iwo-szapar/second-brain-health-check'],
-                    },
-                },
-            };
-            if (isPaid && token) {
-                mcpJsonConfig.servers[LOCAL_MCP_NAME].env = {
-                    SBK_TOKEN: token,
-                };
-            }
-            writeFileSync(mcpJsonPath, JSON.stringify(mcpJsonConfig, null, 2) + '\n');
-            console.log(`    ${green('\u2713')} .mcp.json created ${dim('(VSCode extension)')}`);
-        } catch {
-            console.log(dim('    Could not create .mcp.json for VSCode'));
-        }
-    }
+    // The Claude Code VS Code extension uses the same user-scoped MCP config.
+    // Do not duplicate credentials into project settings or .mcp.json.
 
     // ── Restart reminder ──
     console.log('');
@@ -764,8 +728,8 @@ export async function runSetup() {
 // Only self-execute when run directly (not when imported by cli.js)
 const isDirectRun = process.argv[1]?.endsWith('setup.js');
 if (isDirectRun) {
-    runSetup().catch((err) => {
-        console.error(red(`Setup failed: ${err.message}`));
+    runSetup().catch(() => {
+        console.error(red(`Setup failed: Check your configuration and try again.`));
         process.exit(1);
     });
 }

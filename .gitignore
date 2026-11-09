@@ -3,3 +3,7 @@ node_modules/
 health-check-report.html
 health-check-report-*.html
 *.pdf
+
+# Personal credentials must stay outside version control.
+.claude/settings.json
+.claude/settings.local.json

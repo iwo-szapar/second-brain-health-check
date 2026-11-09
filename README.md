@@ -31,6 +31,10 @@ Interactive onboarding (~2 minutes):
 3. Asks about your role, experience, and goals
 4. Runs the first health check and opens the dashboard
 
+Credentials are saved only in Claude Code's private user-scoped MCP config (`~/.claude.json`), shared by the CLI and Claude Code VS Code extension. Setup does not copy tokens into project settings or `.mcp.json`, and token input is hidden. Rejected tokens select the free tier.
+
+If you previously saved a token in project `.claude/settings.json` or `.mcp.json`, remove the credential from that file. If the file was committed or shared, revoke the token and use a replacement. Adding an ignore rule does not remove an already tracked file or its history.
+
 ### Manual MCP setup
 
 ```bash

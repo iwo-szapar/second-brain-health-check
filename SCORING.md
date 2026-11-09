@@ -336,6 +336,9 @@ These layers were added in v0.5.0–v0.9.0. Full check-level docs are in the npm
 | 16 | MCP Server Health | 10 | `setup/mcp-health.js` |
 | 17 | Attribution & Display | 6 | `setup/attribution-display.js` |
 
+MCP Security scans `.mcp.json`, `.mcp/*.json`, project `.claude.json`, and `.claude/settings{,.local}.json`, plus the user MCP configuration. It recognizes SBF/SBK credentials as well as provider keys. Git-tracked secret checks inspect every project config in this list; ignore rules do not make a tracked secret safe. Permission checks cover both shared and local settings.
+
+
 > **TODO:** Expand these to full check-level docs (same format as Layers 1-7 above). The local `dist/setup/` only contains layers 1-7 — layers 8-25 are in the npm-published package. To document them, pull from npm: `npm pack memory-os && tar xf *.tgz`.
 
 ### Layer 18: Agent Configuration Depth (8 pts) — `setup/agent-quality.js`
