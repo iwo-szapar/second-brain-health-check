@@ -12,6 +12,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Keep setup credentials in Claude Code user-scoped MCP configuration. Stop writing tokens into project settings and VS Code project config; hide token input and remove token-bearing fallback output.
 - Reject invalid credentials during setup. Extend secret detection and Git-tracking checks to SBF/SBK tokens and project settings, including malformed JSON and tracked files covered by ignore rules.
 - Remove the committed personal settings file and add a repository credential regression check.
+- Update the MCP SDK and Zod to patched versions and refresh transitive dependencies.
 
 ## [0.18.6] - 2026-06-18
 
